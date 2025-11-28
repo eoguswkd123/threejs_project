@@ -1,0 +1,15 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "confirm": "확인",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제"
+  },
+  "nav": {
+    "home": "홈",
+    "cadViewer": "CAD 뷰어",
+    "threeDemo": "Three.js Demo"
+  }
+}

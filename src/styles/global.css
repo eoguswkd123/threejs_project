@@ -1,0 +1,19 @@
+/**
+ * Global Styles
+ * 전역 스타일 정의
+ */
+
+/* CSS 변수 */
+:root {
+  --color-primary: #3b82f6;
+  --color-secondary: #6b7280;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+/* 다크모드 변수 */
+:root.dark {
+  --color-bg: #1f2937;
+  --color-text: #f9fafb;
+}
