@@ -9,7 +9,8 @@
       "mcp__context7__resolve-library-id",
       "WebSearch",
       "mcp__context7__get-library-docs",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(GIT_TRACE=1 GIT_SSH_COMMAND=\"ssh -v\" git ls-remote:*)"
     ],
     "deny": [],
     "ask": []
