@@ -2,65 +2,90 @@
 
 프로젝트 개발 시 참고하는 가이드 문서
 
+## 목차
+
+- [네이밍 컨벤션](#네이밍-컨벤션)
+    - [파일/폴더](#파일폴더)
+    - [변수/함수](#변수함수)
+    - [타입/인터페이스](#타입인터페이스)
+- [파일 가이드](#파일-가이드)
+    - [빠른 판단 흐름도](#빠른-판단-흐름도)
+    - [위치 판단 체크리스트](#위치-판단-체크리스트)
+- [코딩 스타일](#코딩-스타일)
+    - [Import 순서](#import-순서)
+    - [Feature 모듈 Import 패턴](#feature-모듈-import-패턴)
+    - [컴포넌트 작성 패턴](#컴포넌트-작성-패턴)
+    - [타입 정의 패턴](#타입-정의-패턴)
+- [테스트 가이드](#테스트-가이드)
+    - [테스트 실행](#테스트-실행)
+    - [테스트 파일 구조](#테스트-파일-구조)
+    - [성능 테스트](#성능-테스트)
+- [Git 워크플로우](#git-워크플로우)
+    - [브랜치 전략](#브랜치-전략)
+    - [커밋 메시지 규칙](#커밋-메시지-규칙)
+- [TODO: 작성 예정 항목](#todo-작성-예정-항목)
+
+---
+
 ## 네이밍 컨벤션
 
 ### 파일/폴더
 
-| 대상 | 규칙 | 예시 |
-|-----|------|------|
-| 컴포넌트 | PascalCase.tsx | `CadScene.tsx` |
-| 훅 | use + camelCase.ts | `useCADLoader.ts` |
-| 유틸리티 | camelCase.ts | `format.ts` |
-| 타입 | camelCase.ts | `cad.ts` |
-| 스토어 | camelCase + Store.ts | `cadStore.ts` |
-| 서비스 | camelCase.ts | `syncEngine.ts` |
-| 상수 | camelCase.ts | `app.ts`, `routes.ts` |
-| 폴더 | PascalCase | `CadRenderer/`, `ThreeCore/` |
-| URL 경로 | kebab-case | `/cad-viewer`, `/teapot-demo` |
+| 대상     | 규칙                 | 예시                          |
+| -------- | -------------------- | ----------------------------- |
+| 컴포넌트 | PascalCase.tsx       | `CadScene.tsx`                |
+| 훅       | use + camelCase.ts   | `useCADLoader.ts`             |
+| 유틸리티 | camelCase.ts         | `format.ts`                   |
+| 타입     | camelCase.ts         | `cad.ts`                      |
+| 스토어   | camelCase + Store.ts | `cadStore.ts`                 |
+| 서비스   | camelCase.ts         | `syncEngine.ts`               |
+| 상수     | camelCase.ts         | `app.ts`, `routes.ts`         |
+| 폴더     | PascalCase           | `CadRenderer/`, `ThreeCore/`  |
+| URL 경로 | kebab-case           | `/cad-viewer`, `/teapot-demo` |
 
 > **참고**: 폴더명(PascalCase)과 URL 경로(kebab-case)는 다른 규칙을 사용합니다.
 > 이는 코드 컨벤션(JavaScript/React)과 웹 표준(RFC 3986, SEO)의 관심사 분리 원칙입니다.
 
 ### 변수/함수
 
-| 유형 | 규칙 | 예시 |
-|-----|------|------|
-| 일반 변수 | camelCase | `userName`, `fileSize` |
-| 상수 | UPPER_SNAKE_CASE | `MAX_FILE_SIZE`, `API_URL` |
-| Boolean | is/has/can + 상태 | `isLoading`, `hasError`, `canEdit` |
-| 핸들러 | handle + 동작 | `handleClick`, `handleSubmit` |
-| 콜백 props | on + 이벤트 | `onClick`, `onSubmit`, `onChange` |
-| 데이터 조회 | get/fetch + 대상 | `getUser`, `fetchData` |
-| 변환 함수 | to + 타입 | `toString`, `toJSON`, `toNumber` |
-| 상태 setter | set + 상태 | `setUserName`, `setIsLoading` |
+| 유형        | 규칙              | 예시                               |
+| ----------- | ----------------- | ---------------------------------- |
+| 일반 변수   | camelCase         | `userName`, `fileSize`             |
+| 상수        | UPPER_SNAKE_CASE  | `MAX_FILE_SIZE`, `API_URL`         |
+| Boolean     | is/has/can + 상태 | `isLoading`, `hasError`, `canEdit` |
+| 핸들러      | handle + 동작     | `handleClick`, `handleSubmit`      |
+| 콜백 props  | on + 이벤트       | `onClick`, `onSubmit`, `onChange`  |
+| 데이터 조회 | get/fetch + 대상  | `getUser`, `fetchData`             |
+| 변환 함수   | to + 타입         | `toString`, `toJSON`, `toNumber`   |
+| 상태 setter | set + 상태        | `setUserName`, `setIsLoading`      |
 
 ### 타입/인터페이스
 
 #### 기본 타입
 
-| 유형 | 규칙 | 예시 |
-|-----|------|------|
-| 인터페이스 | PascalCase | `User`, `CadFile` |
-| 타입 | PascalCase | `Theme`, `Status` |
-| Enum | PascalCase | `FileStatus`, `UserRole` |
+| 유형       | 규칙       | 예시                     |
+| ---------- | ---------- | ------------------------ |
+| 인터페이스 | PascalCase | `User`, `CadFile`        |
+| 타입       | PascalCase | `Theme`, `Status`        |
+| Enum       | PascalCase | `FileStatus`, `UserRole` |
 
 #### 컴포넌트 관련
 
-| 유형 | 규칙 | 예시 |
-|-----|------|------|
+| 유형  | 규칙               | 예시                        |
+| ----- | ------------------ | --------------------------- |
 | Props | 컴포넌트명 + Props | `ButtonProps`, `ModalProps` |
-| State | 컴포넌트명 + State | `FormState`, `AppState` |
+| State | 컴포넌트명 + State | `FormState`, `AppState`     |
 
 #### API 관련
 
-| 유형 | 규칙 | 예시 |
-|-----|------|------|
+| 유형     | 규칙                    | 예시                                |
+| -------- | ----------------------- | ----------------------------------- |
 | API 타입 | 설명 + Response/Request | `UserResponse`, `CreateUserRequest` |
 
 #### 설정
 
-| 유형 | 규칙 | 예시 |
-|-----|------|------|
+| 유형   | 규칙          | 예시                       |
+| ------ | ------------- | -------------------------- |
 | Config | 대상 + Config | `AppConfig`, `ThemeConfig` |
 
 ## 파일 가이드
@@ -93,49 +118,60 @@
     │   ├─ 1개 도메인 전용 → features/[도메인]/constants.ts
     │   └─ 여러 곳에서 사용 → constants/
     │
+    ├─ 정적 데이터셋? (형상 데이터, 대용량 배열)
+    │   └─ 1개 도메인 전용 → features/[도메인]/data/
+    │
     ├─ 설정값? (환경변수 참조)
     │   └─ config/
     │
     ├─ 상태 관리? → stores/
     │
-    └─ CSS/스타일? → styles/
+    ├─ CSS/스타일? → styles/
+    │
+    └─ 테스트 파일?
+        ├─ 테스트 데이터 → tests/fixtures/
+        └─ 테스트 스크립트 → tests/scripts/
 ```
 
 ### 위치 판단 체크리스트
 
 #### Step 1: 도메인 범위 결정
+
 > "이 코드가 특정 도메인(cad, sync, three 등)에서만 사용되나요?"
 
-| 답변 | 컴포넌트 | 훅 | 순수 함수 |
-|-----|---------|-----|---------|
-| 1개 도메인 전용 | `features/[도메인]/components/` | `features/[도메인]/hooks/` | `features/[도메인]/utils/` |
-| 여러 곳에서 사용 | `components/` | `hooks/` | `utils/` |
+| 답변             | 컴포넌트                        | 훅                         | 순수 함수                  |
+| ---------------- | ------------------------------- | -------------------------- | -------------------------- |
+| 1개 도메인 전용  | `features/[도메인]/components/` | `features/[도메인]/hooks/` | `features/[도메인]/utils/` |
+| 여러 곳에서 사용 | `components/`                   | `hooks/`                   | `utils/`                   |
 
 #### Step 2: 복잡도 결정 (순수 함수인 경우)
+
 > "복잡한 로직/클래스가 필요한가요?"
 
-| 답변 | utils | services |
-|-----|-------|----------|
-| 1개 도메인 전용 | `features/[도메인]/utils/` | `services/[도메인]/` |
-| 여러 곳에서 사용 | `utils/` | `services/` |
+| 답변             | utils                      | services             |
+| ---------------- | -------------------------- | -------------------- |
+| 1개 도메인 전용  | `features/[도메인]/utils/` | `services/[도메인]/` |
+| 여러 곳에서 사용 | `utils/`                   | `services/`          |
 
 #### Step 3: 타입/상수/설정 구분
+
 > "어떤 종류의 데이터인가요?"
 
-| 폴더 | 용도 | 기준 | 예시 |
-|------|------|------|------|
-| `types/` | 타입 정의 | 컴파일타임, interface/type 선언 | `MenuItem`, `UserProfile` |
-| `constants/` | 고정 상수 | 런타임, 환경 무관 고정값 | `ROUTES`, `MENU_ITEMS` |
-| `config/` | 앱 설정 | 런타임, 환경변수 참조 | `API_CONFIG` (import.meta.env 사용) |
+| 폴더         | 용도          | 기준                            | 예시                                |
+| ------------ | ------------- | ------------------------------- | ----------------------------------- |
+| `types/`     | 타입 정의     | 컴파일타임, interface/type 선언 | `MenuItem`, `UserProfile`           |
+| `constants/` | 고정 상수     | 런타임, 환경 무관 고정값        | `ROUTES`, `MENU_ITEMS`              |
+| `data/`      | 정적 데이터셋 | 런타임, 대용량 형상/샘플 데이터 | `teapotVertices`, `sampleDxfData`   |
+| `config/`    | 앱 설정       | 런타임, 환경변수 참조           | `API_CONFIG` (import.meta.env 사용) |
 
 #### 판단 예시 모음
 
-| 만들려는 코드 | Step 1 | Step 2 | 최종 위치 |
-|-------------|--------|--------|----------|
-| CAD 파일 3D 렌더링 컴포넌트 | cad 전용 | - | `features/CadRenderer/components/` |
-| 파일 업로드 상태 훅 | 전역 | - | `hooks/useFileUpload.ts` |
-| 날짜 포맷팅 함수 | 전역 | 간단 | `utils/format.ts` |
-| WebSocket 동기화 엔진 | sync 전용 | 클래스 | `services/sync/syncEngine.ts` |
+| 만들려는 코드               | Step 1    | Step 2 | 최종 위치                          |
+| --------------------------- | --------- | ------ | ---------------------------------- |
+| CAD 파일 3D 렌더링 컴포넌트 | cad 전용  | -      | `features/CadRenderer/components/` |
+| 파일 업로드 상태 훅         | 전역      | -      | `hooks/useFileUpload.ts`           |
+| 날짜 포맷팅 함수            | 전역      | 간단   | `utils/format.ts`                  |
+| WebSocket 동기화 엔진       | sync 전용 | 클래스 | `services/sync/syncEngine.ts`      |
 
 ---
 
@@ -174,10 +210,10 @@ Feature 모듈(`features/[도메인]/`)의 import는 **내부**와 **외부**를
 
 #### 원칙
 
-| 컨텍스트 | Import 방식 | 이유 |
-|----------|-------------|------|
-| **내부** (feature 안) | 직접 상대 경로 | 순환 참조 방지, 명확한 의존성 |
-| **외부** (pages 등) | Barrel (index.ts) | 캡슐화, 공개 API |
+| 컨텍스트              | Import 방식       | 이유                          |
+| --------------------- | ----------------- | ----------------------------- |
+| **내부** (feature 안) | 직접 상대 경로    | 순환 참조 방지, 명확한 의존성 |
+| **외부** (pages 등)   | Barrel (index.ts) | 캡슐화, 공개 API              |
 
 #### 올바른 예시
 
@@ -195,17 +231,17 @@ import { TeapotScene } from '@/features/TeapotDemo';
 ```typescript
 // ❌ 내부에서 Barrel 사용 (순환 참조 위험!)
 // features/TeapotDemo/components/TeapotMesh.tsx
-import { useTeapotMaterial } from '..';  // index.ts에서 import
-import { useTeapotMaterial } from '@/features/TeapotDemo';  // 동일한 문제
+import { useTeapotMaterial } from '..'; // index.ts에서 import
+import { useTeapotMaterial } from '@/features/TeapotDemo'; // 동일한 문제
 ```
 
 #### 왜 이렇게 하나요?
 
-| 오해 | 실제 |
-|------|------|
-| "중복 import 아닌가?" | `export ... from`은 **re-export** (참조 통과), import 아님 |
-| "번들에 두 번 포함?" | JS 모듈은 **싱글톤** - 번들에 1번만 포함 |
-| "내부도 barrel 쓰면 편하지 않나?" | **순환 참조 위험** - 초기화 순서 문제 발생 가능 |
+| 오해                              | 실제                                                       |
+| --------------------------------- | ---------------------------------------------------------- |
+| "중복 import 아닌가?"             | `export ... from`은 **re-export** (참조 통과), import 아님 |
+| "번들에 두 번 포함?"              | JS 모듈은 **싱글톤** - 번들에 1번만 포함                   |
+| "내부도 barrel 쓰면 편하지 않나?" | **순환 참조 위험** - 초기화 순서 문제 발생 가능            |
 
 #### Feature 모듈 구조
 
@@ -216,6 +252,9 @@ features/[도메인]/
 │   └── Component.tsx
 ├── hooks/
 │   └── useHook.ts
+├── data/                 # 정적 데이터셋 (형상, 샘플 데이터)
+│   ├── index.ts
+│   └── [domain]Data.ts
 ├── types.ts              # 도메인 타입 정의
 └── constants.ts          # 도메인 상수
 ```
@@ -303,8 +342,8 @@ interface Address {
 interface UserWithAddress {
     id: string;
     name: string;
-    address: Address;           // 인터페이스를 타입으로 사용
-    subAddresses?: Address[];   // 배열로도 사용 가능
+    address: Address; // 인터페이스를 타입으로 사용
+    subAddresses?: Address[]; // 배열로도 사용 가능
 }
 
 // 사용 예시
@@ -322,9 +361,9 @@ interface UserProfile {
 }
 
 // 사용 예시
-const user1: UserProfile = { id: '1', name: 'Kim' };                    // ✅ 생략
-const user2: UserProfile = { id: '1', name: 'Kim', email: 'a@b.com' };  // ✅ 값 있음
-const user3: UserProfile = { id: '1', name: 'Kim', email: null };       // ❌ null 불가
+const user1: UserProfile = { id: '1', name: 'Kim' }; // ✅ 생략
+const user2: UserProfile = { id: '1', name: 'Kim', email: 'a@b.com' }; // ✅ 값 있음
+const user3: UserProfile = { id: '1', name: 'Kim', email: null }; // ❌ null 불가
 
 // Interface - 상속 (extends)
 interface AdminUser extends User {
@@ -351,6 +390,39 @@ type AdminWithTimestamp = AdminUser & {
 
 ---
 
+## 테스트 가이드
+
+### 테스트 실행
+
+| 명령어                  | 설명                 |
+| ----------------------- | -------------------- |
+| `npm run test`          | Vitest 테스트 실행   |
+| `npm run test:ui`       | Vitest UI 모드       |
+| `npm run test:coverage` | 커버리지 리포트 생성 |
+
+### 테스트 파일 구조
+
+```
+tests/
+├── fixtures/              # 테스트용 데이터 (배포 번들 제외)
+│   └── dxf/               # DXF 테스트 파일
+└── scripts/               # 테스트/성능 측정 스크립트
+    ├── generate-test-dxf.cjs  # 테스트 DXF 생성
+    └── perf-test-dxf.cjs      # 파싱 성능 측정
+```
+
+### 성능 테스트
+
+```bash
+# 테스트 DXF 파일 생성
+node tests/scripts/generate-test-dxf.cjs
+
+# 파싱 성능 측정
+node tests/scripts/perf-test-dxf.cjs
+```
+
+---
+
 ## Git 워크플로우
 
 ### 브랜치 전략
@@ -359,10 +431,10 @@ type AdminWithTimestamp = AdminUser & {
 master ← develop ← 기능명_이름
 ```
 
-| 브랜치 | 설명 |
-|--------|------|
-| `master` | 프로덕션 배포 |
-| `develop` | 개발 통합 |
+| 브랜치        | 설명                            |
+| ------------- | ------------------------------- |
+| `master`      | 프로덕션 배포                   |
+| `develop`     | 개발 통합                       |
 | `기능명_이름` | 개인 작업 (예: `cad-layer_kim`) |
 
 ```bash
@@ -382,15 +454,15 @@ git push origin 기능명_이름
 
 ### 커밋 메시지 규칙
 
-| 타입 | 설명 |
-|------|------|
-| `feat` | 새 기능 |
-| `fix` | 버그 수정 |
-| `docs` | 문서 변경 |
-| `refactor` | 리팩토링 |
-| `style` | 포맷팅 |
-| `test` | 테스트 |
-| `chore` | 기타 |
+| 타입       | 설명      |
+| ---------- | --------- |
+| `feat`     | 새 기능   |
+| `fix`      | 버그 수정 |
+| `docs`     | 문서 변경 |
+| `refactor` | 리팩토링  |
+| `style`    | 포맷팅    |
+| `test`     | 테스트    |
+| `chore`    | 기타      |
 
 **형식**: `타입: 설명`
 
@@ -407,27 +479,37 @@ docs: README 업데이트
 ## TODO: 작성 예정 항목
 
 ### 1. 네이밍 컨벤션 ✅
-- [x] 파일/폴더 네이밍
-- [x] 변수/함수 네이밍
-- [x] 타입/인터페이스 네이밍
+
+- ✅ 파일/폴더 네이밍
+- ✅ 변수/함수 네이밍
+- ✅ 타입/인터페이스 네이밍
 
 ### 2. 파일 가이드 ✅
-- [x] 빠른 판단 흐름도
-- [x] 위치 판단 체크리스트
-- [x] 타입/상수/설정 구분 기준
-- [x] 스타일 파일 위치
+
+- ✅ 빠른 판단 흐름도
+- ✅ 위치 판단 체크리스트
+- ✅ 타입/상수/설정 구분 기준
+- ✅ 스타일 파일 위치
 
 ### 3. 코딩 스타일 ✅
-- [x] import 순서
-- [x] Feature 모듈 Import 패턴
-- [x] 컴포넌트 작성 패턴
-- [x] 타입 정의 패턴
 
-### 4. Git 워크플로우 ✅
-- [x] 브랜치 전략
-- [x] 커밋 메시지 규칙
+- ✅ import 순서
+- ✅ Feature 모듈 Import 패턴
+- ✅ 컴포넌트 작성 패턴
+- ✅ 타입 정의 패턴
 
-### 5. 품질 관리 (추후 진행)
-- [ ] 테스트 작성 가이드
-- [ ] 에러 핸들링 규칙
-- [ ] 코드 리뷰 체크리스트
+### 4. 테스트 가이드 ✅
+
+- ✅ 테스트 실행
+- ✅ 테스트 파일 구조
+- ✅ 성능 테스트
+
+### 5. Git 워크플로우 ✅
+
+- ✅ 브랜치 전략
+- ✅ 커밋 메시지 규칙
+
+### 6. 품질 관리 (추후 진행)
+
+- ⏳ 에러 핸들링 규칙
+- ⏳ 코드 리뷰 체크리스트

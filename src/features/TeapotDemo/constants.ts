@@ -31,3 +31,25 @@ export const TESSELLATION_RANGE = {
     max: 50,
     step: 1,
 } as const;
+
+/** 카메라 설정 */
+export const TEAPOT_CAMERA_CONFIG = {
+    position: [0, 100, 200] as const,
+    fov: 45,
+} as const;
+
+/** OrbitControls 설정 */
+export const TEAPOT_ORBIT_CONTROLS_CONFIG = {
+    enableDamping: true,
+    dampingFactor: 0.05,
+    minDistance: 50,
+    maxDistance: 500,
+} as const;
+
+/** 그리드 설정 */
+export const TEAPOT_GRID_CONFIG = {
+    size: 400,
+    divisions: 40,
+    colorCenterLine: 0x444444,
+    colorGrid: 0x222222,
+} as const;
