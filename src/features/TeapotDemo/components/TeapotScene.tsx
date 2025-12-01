@@ -7,26 +7,41 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { TeapotMesh } from './TeapotMesh';
 import { TeapotControls } from './TeapotControls';
-import { DEFAULT_TEAPOT_CONFIG } from '../constants';
+import {
+    DEFAULT_TEAPOT_CONFIG,
+    TEAPOT_CAMERA_CONFIG,
+    TEAPOT_ORBIT_CONTROLS_CONFIG,
+    TEAPOT_GRID_CONFIG,
+} from '../constants';
 import type { TeapotConfig } from '../types';
 
 export function TeapotScene() {
     const [config, setConfig] = useState<TeapotConfig>(DEFAULT_TEAPOT_CONFIG);
 
-    const handleConfigChange = useCallback((newConfig: Partial<TeapotConfig>) => {
-        setConfig((prev) => ({ ...prev, ...newConfig }));
-    }, []);
+    const handleConfigChange = useCallback(
+        (newConfig: Partial<TeapotConfig>) => {
+            setConfig((prev) => ({ ...prev, ...newConfig }));
+        },
+        []
+    );
 
     return (
-        <div className="relative w-full h-full">
+        <div className="relative h-full w-full">
             {/* 3D Canvas */}
-            <Canvas shadows className="bg-gradient-to-b from-gray-900 to-gray-800">
-                <PerspectiveCamera makeDefault position={[0, 100, 200]} fov={45} />
+            <Canvas
+                shadows
+                className="bg-gradient-to-b from-gray-900 to-gray-800"
+            >
+                <PerspectiveCamera
+                    makeDefault
+                    position={[...TEAPOT_CAMERA_CONFIG.position]}
+                    fov={TEAPOT_CAMERA_CONFIG.fov}
+                />
                 <OrbitControls
-                    enableDamping
-                    dampingFactor={0.05}
-                    minDistance={50}
-                    maxDistance={500}
+                    enableDamping={TEAPOT_ORBIT_CONTROLS_CONFIG.enableDamping}
+                    dampingFactor={TEAPOT_ORBIT_CONTROLS_CONFIG.dampingFactor}
+                    minDistance={TEAPOT_ORBIT_CONTROLS_CONFIG.minDistance}
+                    maxDistance={TEAPOT_ORBIT_CONTROLS_CONFIG.maxDistance}
                 />
 
                 {/* 조명 */}
@@ -37,7 +52,10 @@ export function TeapotScene() {
                     castShadow
                     shadow-mapSize={[1024, 1024]}
                 />
-                <directionalLight position={[-100, -100, -50]} intensity={0.3} />
+                <directionalLight
+                    position={[-100, -100, -50]}
+                    intensity={0.3}
+                />
 
                 {/* Teapot */}
                 <TeapotMesh
@@ -50,11 +68,22 @@ export function TeapotScene() {
                 />
 
                 {/* 바닥 그리드 (시각적 참조용) */}
-                <gridHelper args={[400, 40, 0x444444, 0x222222]} rotation={[0, 0, 0]} />
+                <gridHelper
+                    args={[
+                        TEAPOT_GRID_CONFIG.size,
+                        TEAPOT_GRID_CONFIG.divisions,
+                        TEAPOT_GRID_CONFIG.colorCenterLine,
+                        TEAPOT_GRID_CONFIG.colorGrid,
+                    ]}
+                    rotation={[0, 0, 0]}
+                />
             </Canvas>
 
             {/* HTML Overlay 컨트롤 */}
-            <TeapotControls config={config} onConfigChange={handleConfigChange} />
+            <TeapotControls
+                config={config}
+                onConfigChange={handleConfigChange}
+            />
         </div>
     );
 }

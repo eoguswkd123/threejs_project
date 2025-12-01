@@ -81,7 +81,13 @@ function TeapotMeshComponent({
     }, [geometry]);
 
     return (
-        <mesh ref={meshRef} geometry={geometry} material={material} castShadow receiveShadow />
+        <mesh
+            ref={meshRef}
+            geometry={geometry}
+            material={material}
+            castShadow
+            receiveShadow
+        />
     );
 }
 

@@ -1,18 +1,24 @@
-import { Coffee, Home } from 'lucide-react';
+import { Coffee, Home, FileBox } from 'lucide-react';
 import { ROUTES } from './routes';
 import type { MenuItem } from '@/types/menu';
 
 export const MENU_ITEMS: MenuItem[] = [
-  {
-    path: ROUTES.HOME,
-    icon: Home,
-    label: '홈',
-    description: '메인 페이지'
-  },
-  {
-    path: ROUTES.TEAPOT_DEMO,
-    icon: Coffee,
-    label: 'Teapot Demo',
-    description: 'Teapot 와이어프레임 예제'
-  }
-]
+    {
+        path: ROUTES.HOME,
+        icon: Home,
+        label: '홈',
+        description: '메인 페이지',
+    },
+    {
+        path: ROUTES.TEAPOT_DEMO,
+        icon: Coffee,
+        label: 'Teapot Demo',
+        description: 'Teapot 와이어프레임 예제',
+    },
+    {
+        path: ROUTES.CAD_VIEWER,
+        icon: FileBox,
+        label: 'CAD Viewer',
+        description: 'DXF 파일 3D 뷰어',
+    },
+];

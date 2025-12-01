@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 const MainLayout = lazy(() => import('@/components/Layout/MainLayout'));
 const Home = lazy(() => import('@/pages/Home'));
 const TeapotDemo = lazy(() => import('@/pages/TeapotDemo'));
+const CADViewer = lazy(() => import('@/pages/CADViewer'));
 
 export const router = createBrowserRouter([
     {
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
             {
                 path: ROUTES.TEAPOT_DEMO,
                 element: <TeapotDemo />,
+            },
+            {
+                path: ROUTES.CAD_VIEWER,
+                element: <CADViewer />,
             },
         ],
     },
