@@ -120,7 +120,7 @@ export function useDXFWorker(): UseDXFWorkerReturn {
                         resolve(result);
                     } else if (type === 'error') {
                         const errorPayload = payload as {
-                            code: string;
+                            code: UploadError['code'];
                             message: string;
                         };
                         const parseError: UploadError = {
