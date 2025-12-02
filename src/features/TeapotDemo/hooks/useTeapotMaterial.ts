@@ -3,7 +3,9 @@
  * 쉐이딩 모드에 따른 Material 생성 (useMemo 최적화)
  */
 import { useMemo } from 'react';
+
 import * as THREE from 'three';
+
 import type { ShadingMode } from '../types';
 
 /**

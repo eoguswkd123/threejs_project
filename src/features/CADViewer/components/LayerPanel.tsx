@@ -4,6 +4,7 @@
  */
 
 import { Layers, Eye, EyeOff } from 'lucide-react';
+
 import type { LayerInfo } from '../types';
 
 interface LayerPanelProps {

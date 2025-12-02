@@ -22,17 +22,18 @@ Three.js CAD Viewer 프로젝트의 Git 워크플로우 및 커밋 규칙 가이
 master ← PR ← develop ← PR ← 기능명_이름
 ```
 
-| 브랜치 | 설명 |
-|--------|------|
-| `master` | 프로덕션 배포 브랜치 (안정된 릴리스만) |
-| `develop` | 개발 통합 브랜치 (다음 릴리스 준비) |
-| `기능명_이름` | 개인 작업 브랜치 (모든 작업) |
+| 브랜치        | 설명                                   |
+| ------------- | -------------------------------------- |
+| `master`      | 프로덕션 배포 브랜치 (안정된 릴리스만) |
+| `develop`     | 개발 통합 브랜치 (다음 릴리스 준비)    |
+| `기능명_이름` | 개인 작업 브랜치 (모든 작업)           |
 
 ### 브랜치 네이밍 규칙
 
 **형식**: `기능명_이름`
 
 **규칙**:
+
 - 소문자 사용
 - 기능명은 하이픈(`-`)으로 단어 구분
 - 언더스코어(`_`)로 이름 연결
@@ -40,6 +41,7 @@ master ← PR ← develop ← PR ← 기능명_이름
 - 같은 기능 여러 명 작업 시 각자 브랜치 생성
 
 **예시**:
+
 - `cad-layer-filter_kim`
 - `fix-rotation-bug_lee`
 - `update-readme_park`
@@ -79,21 +81,22 @@ git push origin cad-layer-filter_kim
 
 ### 커밋 타입
 
-| 타입 | 설명 | 예시 |
-|------|------|------|
-| `feat` | 새로운 기능 추가 | `feat: CAD 레이어 필터링 기능 추가` |
-| `fix` | 버그 수정 | `fix: 뷰어 회전 시 좌표계 오류 해결` |
-| `docs` | 문서 변경 | `docs: API 사용 가이드 업데이트` |
-| `style` | 코드 포맷팅, 세미콜론 추가 등 (기능 변경 없음) | `style: Prettier 적용` |
-| `refactor` | 코드 리팩토링 (버그 수정, 기능 추가 아님) | `refactor: CAD 파서 구조 개선` |
-| `perf` | 성능 개선 | `perf: Three.js 렌더링 최적화` |
-| `test` | 테스트 코드 추가/수정 | `test: 레이어 패널 단위 테스트 추가` |
-| `build` | 빌드 시스템, 외부 종속성 변경 | `build: Vite 5.0으로 업그레이드` |
-| `ci` | CI 설정 파일 및 스크립트 변경 | `ci: GitHub Actions 워크플로우 추가` |
-| `chore` | 기타 변경 사항 (프로덕션 코드 변경 없음) | `chore: .gitignore 업데이트` |
-| `revert` | 이전 커밋 되돌리기 | `revert: feat: 레이어 필터링 기능 제거` |
+| 타입       | 설명                                           | 예시                                    |
+| ---------- | ---------------------------------------------- | --------------------------------------- |
+| `feat`     | 새로운 기능 추가                               | `feat: CAD 레이어 필터링 기능 추가`     |
+| `fix`      | 버그 수정                                      | `fix: 뷰어 회전 시 좌표계 오류 해결`    |
+| `docs`     | 문서 변경                                      | `docs: API 사용 가이드 업데이트`        |
+| `style`    | 코드 포맷팅, 세미콜론 추가 등 (기능 변경 없음) | `style: Prettier 적용`                  |
+| `refactor` | 코드 리팩토링 (버그 수정, 기능 추가 아님)      | `refactor: CAD 파서 구조 개선`          |
+| `perf`     | 성능 개선                                      | `perf: Three.js 렌더링 최적화`          |
+| `test`     | 테스트 코드 추가/수정                          | `test: 레이어 패널 단위 테스트 추가`    |
+| `build`    | 빌드 시스템, 외부 종속성 변경                  | `build: Vite 5.0으로 업그레이드`        |
+| `ci`       | CI 설정 파일 및 스크립트 변경                  | `ci: GitHub Actions 워크플로우 추가`    |
+| `chore`    | 기타 변경 사항 (프로덕션 코드 변경 없음)       | `chore: .gitignore 업데이트`            |
+| `revert`   | 이전 커밋 되돌리기                             | `revert: feat: 레이어 필터링 기능 제거` |
 
 **중요**:
+
 - 타입은 **영문 소문자만** 사용
 - 콜론(`:`) 뒤에 **공백 하나** 필수
 - 제목은 **명령형 현재 시제** 사용
@@ -102,13 +105,13 @@ git push origin cad-layer-filter_kim
 
 **핵심 질문**: "사용자가 이 변경을 느낄 수 있나?"
 
-| 사용자 영향 있음 (YES) | 사용자 영향 없음 (NO) |
-|----------------------|---------------------|
-| 새 기능? → `feat` | 문서 작업? → `docs` |
-| 버그 수정? → `fix` | 테스트? → `test` |
-| 더 빨라짐? → `perf` | 빌드 설정? → `build` |
-| 코드 정리? → `refactor` | CI/CD? → `ci` |
-| 스타일링? → `style` | 기타 설정? → `chore` |
+| 사용자 영향 있음 (YES)  | 사용자 영향 없음 (NO) |
+| ----------------------- | --------------------- |
+| 새 기능? → `feat`       | 문서 작업? → `docs`   |
+| 버그 수정? → `fix`      | 테스트? → `test`      |
+| 더 빨라짐? → `perf`     | 빌드 설정? → `build`  |
+| 코드 정리? → `refactor` | CI/CD? → `ci`         |
+| 스타일링? → `style`     | 기타 설정? → `chore`  |
 
 ### 커밋 메시지 작성 가이드
 
@@ -155,11 +158,11 @@ feat: CAD 파일을 불러올 때 DXF 파서를 사용해서 엔티티를 파싱
 1. **50자 이내**로 작성
 2. **마침표 사용 안 함**
 3. **명령형 현재 시제** 사용
-   - ✅ "추가" / "수정" / "변경"
-   - ❌ "추가함" / "추가했음" / "추가합니다"
+    - ✅ "추가" / "수정" / "변경"
+    - ❌ "추가함" / "추가했음" / "추가합니다"
 4. **구체적으로** 작성
-   - ✅ `fix: 레이어 패널 null 에러 수정`
-   - ❌ `fix: 버그 수정`
+    - ✅ `fix: 레이어 패널 null 에러 수정`
+    - ❌ `fix: 버그 수정`
 
 ---
 
@@ -203,27 +206,31 @@ git stash list                  # 저장 목록 확인
 ## 참고 자료
 
 ### 프로젝트 문서
+
 - [아키텍처 가이드](ARCHITECTURE.md) - 프로젝트 구조 및 설계
 - [개발 가이드](DEV_GUIDE.md) - 개발 환경 설정 및 코딩 규칙
 - [로드맵](ROADMAP.md) - 프로젝트 개발 계획
 - [용어집](GLOSSARY.md) - 용어 및 약어 정의
 
 ### Conventional Commits
+
 - [Conventional Commits 공식 사이트](https://www.conventionalcommits.org/) - 표준 스펙 및 가이드
 - [Conventional Commits 한글](https://www.conventionalcommits.org/ko/v1.0.0/) - 한국어 번역 문서
 
 ### 도구 및 자동화
+
 - [commitlint](https://commitlint.js.org/) - 커밋 메시지 검증 도구
 - [commitizen](https://github.com/commitizen/cz-cli) - 대화형 커밋 메시지 작성 도구
 - [semantic-release](https://semantic-release.gitbook.io/) - 자동 버전 관리 및 릴리스
 - [standard-version](https://github.com/conventional-changelog/standard-version) - CHANGELOG 자동 생성
 
 ### Git 워크플로우
+
 - [GitHub Flow](https://guides.github.com/introduction/flow/) - GitHub 워크플로우 가이드
 - [Git 브랜치 전략](https://nvie.com/posts/a-successful-git-branching-model/) - Git Flow 모델
 
 ---
 
-**문서 버전**: 1.0
-**최종 업데이트**: 2025-11-28
+**문서 버전**: 0.1.0
+**최종 업데이트**: 2025-12-02
 **작성자**: Development Team

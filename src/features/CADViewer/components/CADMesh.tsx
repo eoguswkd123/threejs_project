@@ -5,10 +5,13 @@
  */
 
 import { useMemo, useEffect, memo } from 'react';
+
 import * as THREE from 'three';
-import type { ParsedCADData, LayerInfo } from '../types';
-import { cadDataToGeometry } from '../utils/dxfToGeometry';
+
 import { DEFAULT_LAYER_COLOR } from '../constants';
+import { cadDataToGeometry } from '../utils/dxfToGeometry';
+
+import type { ParsedCADData, LayerInfo } from '../types';
 
 interface CADMeshProps {
     /** 파싱된 CAD 데이터 */

@@ -3,11 +3,14 @@
  * Three.js TeapotGeometry 렌더링 컴포넌트
  */
 import { useRef, useMemo, useEffect, memo } from 'react';
+
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 import { TeapotGeometry } from 'three/addons/geometries/TeapotGeometry.js';
+
 import { useTeapotMaterial, disposeMaterial } from '../hooks/useTeapotMaterial';
+
 import type { ShadingMode } from '../types';
+import type * as THREE from 'three';
 
 interface TeapotMeshProps {
     /** 테셀레이션 레벨 (2-50) */

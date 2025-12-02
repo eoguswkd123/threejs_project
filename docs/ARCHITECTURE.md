@@ -102,7 +102,7 @@ Teapot Demo는 CAD Viewer의 핵심 패턴을 학습하기 위한 예제입니�
 | OrbitControls        | 동일                        | 카메라 제어        |
 | React Three Fiber    | 동일                        | 렌더링 프레임워크  |
 
-> **참고**: Teapot Demo 상세 구현은 [TEAPOT_IMPLEMENTATION.md](./Phase1.5/TEAPOT_IMPLEMENTATION.md) 참조
+> **참고**: Teapot Demo 상세 구현은 [1.5_TEAPOT_DEMO.md](./phases/01-Foundation/1.5_TEAPOT_DEMO.md) 참조
 
 ---
 
@@ -143,7 +143,6 @@ src/
 │   ├── TeapotDemo/        # Three.js 학습 예제
 │   │   ├── components/    # TeapotScene, TeapotMesh, TeapotControls
 │   │   ├── hooks/         # useTeapotMaterial
-│   │   ├── data/          # 정적 데이터셋 (형상 데이터)
 │   │   ├── constants.ts
 │   │   ├── types.ts
 │   │   └── index.ts
@@ -181,7 +180,6 @@ src/
 │   └── global.css
 │
 ├── types/                 # 타입 정의
-│   ├── env.d.ts           # 환경 타입
 │   ├── menu.ts            # 메뉴 타입
 │   └── index.ts
 │
@@ -220,11 +218,10 @@ tests/                     # 테스트 관련 파일 (배포 번들 제외)
 
 ## 관련 문서
 
-| 문서                                                                   | 설명                        |
-| ---------------------------------------------------------------------- | --------------------------- |
-| [ROADMAP.md](./ROADMAP.md)                                             | 개발 일정 및 마일스톤       |
-| [DEV_GUIDE.md](./DEV_GUIDE.md)                                         | 개발 가이드 및 컨벤션       |
-| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md)                             | Git 워크플로우 및 커밋 규칙 |
-| [GLOSSARY.md](./GLOSSARY.md)                                           | 용어 및 약어 정의           |
-| [CAD_VIEWER_IMPLEMENTATION.md](./Phase2A/CAD_VIEWER_IMPLEMENTATION.md) | CAD Viewer 구현 상세        |
-| [TEAPOT_IMPLEMENTATION.md](./Phase1.5/TEAPOT_IMPLEMENTATION.md)        | Teapot Demo 구현 상세       |
+| 문서                                                     | 설명                        |
+| -------------------------------------------------------- | --------------------------- |
+| [ROADMAP.md](./ROADMAP.md)                               | 개발 일정 및 마일스톤       |
+| [DEV_GUIDE.md](./DEV_GUIDE.md)                           | 개발 가이드 및 컨벤션       |
+| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md)               | Git 워크플로우 및 커밋 규칙 |
+| [GLOSSARY.md](./GLOSSARY.md)                             | 용어 및 약어 정의           |
+| [phases/PHASE_NAV_GUIDE.md](./phases/PHASE_NAV_GUIDE.md) | Phase별 구현 문서 가이드    |

@@ -20,6 +20,14 @@
     - [테스트 실행](#테스트-실행)
     - [테스트 파일 구조](#테스트-파일-구조)
     - [성능 테스트](#성능-테스트)
+- [코드 품질 도구](#코드-품질-도구)
+    - [도구 개요](#도구-개요)
+    - [수동 실행 명령어](#수동-실행-명령어)
+    - [ESLint](#eslint---코드-품질-검사기)
+    - [Prettier](#prettier---코드-포맷터)
+    - [Husky](#husky---git-hooks-관리자)
+    - [lint-staged](#lint-staged---스테이징-파일-전용-실행기)
+    - [실행 흐름도](#실행-흐름도)
 - [Git 워크플로우](#git-워크플로우)
     - [브랜치 전략](#브랜치-전략)
     - [커밋 메시지 규칙](#커밋-메시지-규칙)
@@ -31,17 +39,18 @@
 
 ### 파일/폴더
 
-| 대상     | 규칙                 | 예시                          |
-| -------- | -------------------- | ----------------------------- |
-| 컴포넌트 | PascalCase.tsx       | `CadScene.tsx`                |
-| 훅       | use + camelCase.ts   | `useCADLoader.ts`             |
-| 유틸리티 | camelCase.ts         | `format.ts`                   |
-| 타입     | camelCase.ts         | `cad.ts`                      |
-| 스토어   | camelCase + Store.ts | `cadStore.ts`                 |
-| 서비스   | camelCase.ts         | `syncEngine.ts`               |
-| 상수     | camelCase.ts         | `app.ts`, `routes.ts`         |
-| 폴더     | PascalCase           | `CadRenderer/`, `ThreeCore/`  |
-| URL 경로 | kebab-case           | `/cad-viewer`, `/teapot-demo` |
+| 대상           | 규칙                 | 예시                                 |
+| -------------- | -------------------- | ------------------------------------ |
+| 컴포넌트       | PascalCase.tsx       | `CadScene.tsx`                       |
+| 훅             | use + camelCase.ts   | `useCADLoader.ts`                    |
+| 유틸리티       | camelCase.ts         | `format.ts`                          |
+| 타입           | camelCase.ts         | `cad.ts`                             |
+| 스토어         | camelCase + Store.ts | `cadStore.ts`                        |
+| 서비스         | camelCase.ts         | `syncEngine.ts`                      |
+| 상수           | camelCase.ts         | `app.ts`, `routes.ts`                |
+| 카테고리 폴더  | camelCase            | `components/`, `features/`, `hooks/` |
+| 기능/모듈 폴더 | PascalCase           | `CADViewer/`, `Layout/`, `Home/`     |
+| URL 경로       | kebab-case           | `/cad-viewer`, `/teapot-demo`        |
 
 > **참고**: 폴더명(PascalCase)과 URL 경로(kebab-case)는 다른 규칙을 사용합니다.
 > 이는 코드 컨벤션(JavaScript/React)과 웹 표준(RFC 3986, SEO)의 관심사 분리 원칙입니다.
@@ -423,6 +432,125 @@ node tests/scripts/perf-test-dxf.cjs
 
 ---
 
+## 코드 품질 도구
+
+프로젝트에서 사용하는 코드 품질 관리 도구들
+
+### 도구 개요
+
+| 도구            | 역할                | 비유             | 실행 시점        |
+| --------------- | ------------------- | ---------------- | ---------------- |
+| **ESLint**      | 코드 품질/버그 검사 | 경찰 (위반 적발) | 개발 중, 커밋 시 |
+| **Prettier**    | 코드 스타일 통일    | 스타일리스트     | 저장 시, 커밋 시 |
+| **Husky**       | Git hooks 관리      | 문지기 (통제)    | git 명령 시      |
+| **lint-staged** | 변경 파일만 처리    | 효율 담당        | 커밋 시          |
+
+### 수동 실행 명령어
+
+커밋 전에 미리 검사하거나, 전체 프로젝트를 점검할 때 사용합니다.
+
+| 명령어             | 설명                      |
+| ------------------ | ------------------------- |
+| `npm run lint`     | ESLint 검사 (오류만 표시) |
+| `npm run lint:fix` | ESLint 검사 + 자동 수정   |
+
+```bash
+# 커밋 전 수동 점검 예시
+npm run lint          # 오류 확인
+npm run lint:fix      # 자동 수정 가능한 오류 수정
+```
+
+### ESLint - 코드 품질 검사기
+
+코드의 **버그, 안티패턴, 잠재적 오류**를 감지합니다.
+
+```typescript
+// ❌ ESLint가 잡는 문제들
+const unused = 'never used'; // 사용하지 않는 변수
+console.log(data); // console 사용 금지 (설정에 따라)
+if ((x = 5)) {
+} // 할당 vs 비교 실수
+array.map((item) => {
+    item * 2;
+}); // return 누락
+```
+
+### Prettier - 코드 포맷터
+
+코드의 **일관된 스타일/형식**을 자동 적용합니다.
+
+```typescript
+// 입력 (지저분함)
+const x = { a: 1, b: 2 };
+function foo(x, y, z) {
+    return x + y + z;
+}
+
+// Prettier 적용 후 (깔끔함)
+const x = { a: 1, b: 2 };
+function foo(x, y, z) {
+    return x + y + z;
+}
+```
+
+### Husky - Git Hooks 관리자
+
+Git 이벤트(commit, push 등)에 **스크립트를 자동 실행**합니다.
+
+```bash
+# .husky/pre-commit (커밋 직전 실행)
+npx lint-staged
+```
+
+| Hook         | 트리거 시점      | 용도              |
+| ------------ | ---------------- | ----------------- |
+| `pre-commit` | 커밋 직전        | lint, format 검사 |
+| `pre-push`   | 푸시 직전        | 테스트 실행       |
+| `commit-msg` | 커밋 메시지 작성 | 메시지 형식 검증  |
+
+### lint-staged - 스테이징 파일 전용 실행기
+
+**변경된 파일만** lint/format을 실행하여 효율성을 높입니다.
+
+```json
+// package.json
+"lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md,css}": ["prettier --write"]
+}
+```
+
+> 1000개 파일 중 2개만 수정 → 2개만 검사 (빠름!)
+
+### 실행 흐름도
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Git Commit Flow                              │
+│                                                                     │
+│  코드 작성 → git add → git commit → Husky 트리거 → lint-staged 실행 │
+│                                          │                          │
+│                           ┌──────────────┴──────────────┐           │
+│                           ▼                             ▼           │
+│                       ESLint                        Prettier        │
+│                    (코드 품질)                     (코드 스타일)     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**실제 흐름**:
+
+1. 코드 수정 후 저장 → (VSCode에서 Prettier 자동 포맷)
+2. `git add .`
+3. `git commit -m "feat: 기능 추가"`
+    - Husky가 `pre-commit` hook 트리거
+    - lint-staged 실행
+        - `*.ts,tsx` 파일: `eslint --fix` → `prettier --write`
+        - `*.json,md,css` 파일: `prettier --write`
+4. 모두 통과 → 커밋 완료
+5. 오류 발생 → 커밋 차단! (수정 필요)
+
+---
+
 ## Git 워크플로우
 
 ### 브랜치 전략
@@ -504,12 +632,18 @@ docs: README 업데이트
 - ✅ 테스트 파일 구조
 - ✅ 성능 테스트
 
-### 5. Git 워크플로우 ✅
+### 5. 코드 품질 도구 ✅
+
+- ✅ 도구 개요 (ESLint, Prettier, Husky, lint-staged)
+- ✅ 각 도구 역할 설명
+- ✅ Git 커밋 시 실행 흐름도
+
+### 6. Git 워크플로우 ✅
 
 - ✅ 브랜치 전략
 - ✅ 커밋 메시지 규칙
 
-### 6. 품질 관리 (추후 진행)
+### 7. 품질 관리 (추후 진행)
 
 - ⏳ 에러 핸들링 규칙
 - ⏳ 코드 리뷰 체크리스트

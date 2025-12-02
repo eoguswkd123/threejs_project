@@ -4,22 +4,26 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
-import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { CADMesh } from './CADMesh';
-import { CADControls } from './CADControls';
-import { FileUpload } from './FileUpload';
-import { LayerPanel } from './LayerPanel';
-import { useDXFWorker } from '../hooks/useDXFWorker';
+import { Canvas } from '@react-three/fiber';
+
 import {
     DEFAULT_CAD_CONFIG,
     CAMERA_CONFIG,
     ORBIT_CONTROLS_CONFIG,
     GRID_CONFIG,
 } from '../constants';
+import { useDXFWorker } from '../hooks/useDXFWorker';
 import { calculateCameraDistance } from '../utils/dxfToGeometry';
+
+import { CADControls } from './CADControls';
+import { CADMesh } from './CADMesh';
+import { FileUpload } from './FileUpload';
+import { LayerPanel } from './LayerPanel';
+
 import type { ParsedCADData, CADViewerConfig, LayerInfo } from '../types';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 export function CADScene() {
     const [cadData, setCadData] = useState<ParsedCADData | null>(null);

@@ -4,6 +4,9 @@
  */
 
 import * as THREE from 'three';
+
+import { DEFAULT_BOUNDS, getLODSegments } from '../constants';
+
 import type {
     ParsedLine,
     ParsedCircle,
@@ -13,7 +16,6 @@ import type {
     BoundingBox,
     Point3D,
 } from '../types';
-import { DEFAULT_BOUNDS, getLODSegments } from '../constants';
 
 /**
  * LINE 엔티티 배열을 Three.js BufferGeometry로 변환

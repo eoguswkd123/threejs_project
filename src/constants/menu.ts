@@ -1,6 +1,8 @@
 import { Coffee, Home, FileBox } from 'lucide-react';
-import { ROUTES } from './routes';
+
 import type { MenuItem } from '@/types/menu';
+
+import { ROUTES } from './routes';
 
 export const MENU_ITEMS: MenuItem[] = [
     {

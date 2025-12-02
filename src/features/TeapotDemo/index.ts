@@ -4,15 +4,17 @@
  */
 
 // Components
-export { TeapotScene } from './components/TeapotScene';
-export { TeapotMesh } from './components/TeapotMesh';
-export { TeapotControls } from './components/TeapotControls';
+export { TeapotScene, TeapotMesh, TeapotControls } from './components';
 
 // Hooks
-export { useTeapotMaterial } from './hooks/useTeapotMaterial';
+export { useTeapotMaterial } from './hooks';
 
 // Types
 export type { ShadingMode, TeapotConfig } from './types';
 
 // Constants
-export { DEFAULT_TEAPOT_CONFIG, SHADING_MODE_OPTIONS, TESSELLATION_RANGE } from './constants';
+export {
+    DEFAULT_TEAPOT_CONFIG,
+    SHADING_MODE_OPTIONS,
+    TESSELLATION_RANGE,
+} from './constants';

@@ -2,7 +2,7 @@
 
 CAD Viewer 프로젝트 로드맵 - DevOps 모범사례 적용 버전
 
-> **Last Updated**: 2025-12-01
+> **Last Updated**: 2025-12-02
 > **Version**: 1.0.2
 
 ---
@@ -29,19 +29,19 @@ Three.js 기반 CAD 뷰어에서 시작하여, **건축 도면 → 3D 모델 변
 
 ### 타임라인 개요 (DevOps 최적화)
 
-| Phase    | 이름                            | 기간      | 상태        | 비고                |
-| -------- | ------------------------------- | --------- | ----------- | ------------------- |
-| 1        | Foundation + CI/CD              | -         | ✅ 완료     | CI/CD Day 1 적용    |
-| **1.5**  | **Three.js 학습**               | -         | **✅ 완료** | **Teapot 예제**     |
-| **2A**   | **DXF CAD Viewer**              | 2-3주     | **🔄 80%**  | **프론트엔드 전용** |
-| 3        | Backend + Security + Monitoring | 15주      | 📋 5%       | 보안/모니터링 통합  |
-| **2B**   | **PDF CAD Viewer**              | 1주       | **📋 대기** | **P3.2, P3.3 의존** |
-| 4        | Synchronization                 | 4주       | ⏳ 대기     | P3.4 의존           |
-| 4.5      | Performance                     | 2-3주     | 📋 계획     | P3.3 이후 권장      |
-| 5        | Staging & E2E                   | 3주       | 📋 계획     | E2E 테스트 집중     |
-| 6        | Enhancement                     | 4주       | 📋 계획     | UX/접근성           |
-| 7        | Production & Scale              | 4주       | 📋 계획     | K8s, Blue-Green     |
-| **총계** |                                 | **9개월** |             |                     |
+| Phase    | 이름                            | 예상 기간 | 소요 기간 | 상태        | 비고                |
+| -------- | ------------------------------- | --------- | --------- | ----------- | ------------------- |
+| 1        | Foundation + CI/CD              | 1-2주     | 1주       | ✅ 완료     | CI/CD Day 1 적용    |
+| **1.5**  | **Three.js 학습**               | 1주       | 3일       | **✅ 완료** | **Teapot 예제**     |
+| **2A**   | **DXF CAD Viewer**              | 2-3주     | -         | **🔄 80%**  | **프론트엔드 전용** |
+| 3        | Backend + Security + Monitoring | 15주      | -         | 📋 5%       | 보안/모니터링 통합  |
+| **2B**   | **PDF CAD Viewer**              | 1주       | -         | **📋 대기** | **P3.2, P3.3 의존** |
+| 4        | Synchronization                 | 4주       | -         | ⏳ 대기     | P3.4 의존           |
+| 4.5      | Performance                     | 2-3주     | -         | 📋 계획     | P3.3 이후 권장      |
+| 5        | Staging & E2E                   | 3주       | -         | 📋 계획     | E2E 테스트 집중     |
+| 6        | Enhancement                     | 4주       | -         | 📋 계획     | UX/접근성           |
+| 7        | Production & Scale              | 4주       | -         | 📋 계획     | K8s, Blue-Green     |
+| **총계** |                                 | **9개월** | **~10일** |             |                     |
 
 ---
 
@@ -113,7 +113,7 @@ Three.js와 React Three Fiber를 활용한 3D 렌더링 기초 학습
 
 ### 관련 문서
 
-- [TEAPOT_IMPLEMENTATION.md](./Phase1.5/TEAPOT_IMPLEMENTATION.md)
+- [1.5_TEAPOT_DEMO.md](./phases/01-Foundation/1.5_TEAPOT_DEMO.md)
 
 ---
 
@@ -187,7 +187,7 @@ Phase 2A: DXF CAD Viewer
 
 ### 관련 문서
 
-- [CAD_VIEWER_IMPLEMENTATION.md](./Phase2A/CAD_VIEWER_IMPLEMENTATION.md)
+- [2A_DXF_VIEWER.md](./phases/02-CadFeatures/2A_DXF_VIEWER.md)
 
 ---
 
@@ -573,12 +573,13 @@ UX 개선, 품질 향상, 접근성
 
 ## 관련 문서
 
-| 문서                                       | 역할                      |
-| ------------------------------------------ | ------------------------- |
-| [ARCHITECTURE.md](./ARCHITECTURE.md)       | 시스템 구조, 패키지 설계  |
-| [DEV_GUIDE.md](./DEV_GUIDE.md)             | 개발 가이드, 컨벤션       |
-| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Git 워크플로우, 커밋 규칙 |
-| [GLOSSARY.md](./GLOSSARY.md)               | 용어 및 약어 정의         |
+| 문서                                                     | 역할                      |
+| -------------------------------------------------------- | ------------------------- |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)                     | 시스템 구조, 패키지 설계  |
+| [DEV_GUIDE.md](./DEV_GUIDE.md)                           | 개발 가이드, 컨벤션       |
+| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md)               | Git 워크플로우, 커밋 규칙 |
+| [GLOSSARY.md](./GLOSSARY.md)                             | 용어 및 약어 정의         |
+| [phases/PHASE_NAV_GUIDE.md](./phases/PHASE_NAV_GUIDE.md) | Phase별 구현 문서 가이드  |
 
 ---
 

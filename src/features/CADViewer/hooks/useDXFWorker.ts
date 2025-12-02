@@ -4,13 +4,15 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+
+import { ERROR_MESSAGES, WORKER_THRESHOLD_BYTES } from '../constants';
+
 import type { ParsedCADData, LayerInfo, UploadError } from '../types';
 import type {
     WorkerRequest,
     WorkerResponse,
     WorkerSuccessPayload,
 } from '../workers/dxfParserV2.worker';
-import { ERROR_MESSAGES, WORKER_THRESHOLD_BYTES } from '../constants';
 
 interface UseDXFWorkerReturn {
     /** DXF 파일 파싱 함수 */

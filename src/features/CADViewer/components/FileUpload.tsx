@@ -4,13 +4,16 @@
  */
 
 import { useCallback, useRef, useState, useEffect } from 'react';
+
 import { Upload, FileText, AlertCircle, Loader2 } from 'lucide-react';
+
+import { FILE_LIMITS } from '../constants';
 import {
     validateFile,
     shouldShowSizeWarning,
     formatFileSize,
 } from '../utils/validators';
-import { FILE_LIMITS } from '../constants';
+
 import type { UploadError } from '../types';
 
 interface FileUploadProps {

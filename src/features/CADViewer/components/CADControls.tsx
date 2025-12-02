@@ -4,8 +4,10 @@
  */
 
 import { Info, RotateCcw, Trash2 } from 'lucide-react';
-import type { ParsedCADData, CADViewerConfig } from '../types';
+
 import { formatFileSize } from '../utils/validators';
+
+import type { ParsedCADData, CADViewerConfig } from '../types';
 
 interface CADControlsProps {
     /** 파싱된 CAD 데이터 (메타데이터 표시용) */

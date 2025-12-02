@@ -44,7 +44,7 @@ Three.js 기반 CAD 파일 3D 뷰어 및 키오스크 동기화 프로젝트
 
 | 카테고리   | 기술                     |
 | ---------- | ------------------------ |
-| Linting    | ESLint 8                 |
+| Linting    | ESLint 9                 |
 | Formatting | Prettier                 |
 | Testing    | Vitest + Testing Library |
 | Type Check | TypeScript strict mode   |
@@ -141,14 +141,14 @@ npm run test:coverage
 - **Three.js Teapot 예제**: 와이어프레임/쉐이딩 학습 예제
 - **GUI 컨트롤**: lil-gui 파라미터 조정 패널
 - **카메라 제어**: OrbitControls 기본 컨트롤
-- **CAD Viewer MVP**: DXF 파일 업로드/파싱 (LINE 엔티티)
+- **CAD Viewer MVP**: DXF 파일 업로드/파싱
 - **파일 검증**: 타입/크기 검증 (20MB 제한)
+- **엔티티 확장**: LINE, ARC, CIRCLE, POLYLINE/LWPOLYLINE 지원
+- **레이어 제어**: 레이어별 표시/숨김, DXF 색상 매핑
+- **성능 최적화**: Geometry 머징, WebWorker, LOD
 
 ### 개발 예정
 
-- **엔티티 확장**: ARC, CIRCLE, POLYLINE 지원
-- **레이어 제어**: 레이어별 표시/숨김
-- **성능 최적화**: LOD, Instancing, WebWorker
 - **키오스크 동기화**: WebSocket 기반 실시간 동기화
 - **백엔드 연동**: CAD → glTF 변환 엔진
 

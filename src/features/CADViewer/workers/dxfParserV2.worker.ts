@@ -5,6 +5,7 @@
  */
 
 import DxfParser from 'dxf-parser';
+
 import type {
     ParsedLine,
     ParsedCircle,

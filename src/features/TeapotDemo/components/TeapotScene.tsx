@@ -3,16 +3,20 @@
  * Teapot 데모 최상위 Scene 래퍼
  */
 import { useState, useCallback } from 'react';
-import { Canvas } from '@react-three/fiber';
+
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
-import { TeapotMesh } from './TeapotMesh';
-import { TeapotControls } from './TeapotControls';
+import { Canvas } from '@react-three/fiber';
+
 import {
     DEFAULT_TEAPOT_CONFIG,
     TEAPOT_CAMERA_CONFIG,
     TEAPOT_ORBIT_CONTROLS_CONFIG,
     TEAPOT_GRID_CONFIG,
 } from '../constants';
+
+import { TeapotControls } from './TeapotControls';
+import { TeapotMesh } from './TeapotMesh';
+
 import type { TeapotConfig } from '../types';
 
 export function TeapotScene() {

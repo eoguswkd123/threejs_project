@@ -4,7 +4,12 @@
  */
 
 import { useState, useCallback } from 'react';
+
 import DxfParser from 'dxf-parser';
+
+import { ERROR_MESSAGES, aciToHex, DEFAULT_LAYER_COLOR } from '../constants';
+import { calculateBounds } from '../utils/dxfToGeometry';
+
 import type {
     ParsedCADData,
     ParsedLine,
@@ -18,8 +23,6 @@ import type {
     DXFRawPoint,
     DXFRawLayer,
 } from '../types';
-import { calculateBounds } from '../utils/dxfToGeometry';
-import { ERROR_MESSAGES, aciToHex, DEFAULT_LAYER_COLOR } from '../constants';
 
 interface UseDXFParserReturn {
     /** DXF 파일 파싱 함수 */
