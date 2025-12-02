@@ -17,7 +17,7 @@ export interface ParsedLine {
     /** 끝점 */
     end: Point3D;
     /** 레이어 이름 */
-    layer?: string;
+    layer?: string | undefined;
 }
 
 /** 파싱된 CIRCLE 엔티티 */
@@ -27,7 +27,7 @@ export interface ParsedCircle {
     /** 반지름 */
     radius: number;
     /** 레이어 이름 */
-    layer?: string;
+    layer?: string | undefined;
 }
 
 /** 파싱된 ARC 엔티티 */
@@ -41,7 +41,7 @@ export interface ParsedArc {
     /** 끝 각도 (degree) */
     endAngle: number;
     /** 레이어 이름 */
-    layer?: string;
+    layer?: string | undefined;
 }
 
 /** 파싱된 POLYLINE 엔티티 */
@@ -51,7 +51,7 @@ export interface ParsedPolyline {
     /** 닫힌 폴리라인 여부 */
     closed: boolean;
     /** 레이어 이름 */
-    layer?: string;
+    layer?: string | undefined;
 }
 
 /** 바운딩 박스 */
@@ -119,7 +119,12 @@ export type UploadStatus = 'idle' | 'loading' | 'success' | 'error';
 
 /** 파일 업로드 에러 */
 export interface UploadError {
-    code: 'INVALID_TYPE' | 'FILE_TOO_LARGE' | 'PARSE_ERROR' | 'EMPTY_FILE';
+    code:
+        | 'INVALID_TYPE'
+        | 'FILE_TOO_LARGE'
+        | 'PARSE_ERROR'
+        | 'EMPTY_FILE'
+        | 'WORKER_ERROR';
     message: string;
 }
 
