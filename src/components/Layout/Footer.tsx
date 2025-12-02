@@ -1,4 +1,4 @@
-import { APP_CONFIG } from '@constants/app';
+import { APP_CONFIG } from '@/constants';
 
 const Footer = () => {
   return (

@@ -3,12 +3,12 @@
  * Axios 인스턴스 - 백엔드 API 호출용
  */
 
-import axios from 'axios'
+import axios from 'axios';
+
+import { API_CONFIG } from '@/config/api';
 
 export const apiCaller = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+    baseURL: API_CONFIG.BASE_URL,
+    timeout: API_CONFIG.TIMEOUT,
+    headers: API_CONFIG.HEADERS,
+});

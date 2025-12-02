@@ -14,7 +14,15 @@
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project config --list)",
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project log --oneline -10)",
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project branch -a)",
-      "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project remote:*)"
+      "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project remote:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run type-check:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(npm ls:*)",
+      "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project log --oneline -5 -- src/types/dxf-parser.d.ts)",
+      "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project diff HEAD -- src/types/dxf-parser.d.ts)",
+      "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project status -- src/types/dxf-parser.d.ts)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []

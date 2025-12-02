@@ -10,6 +10,7 @@
   "nav": {
     "home": "Home",
     "cadViewer": "CAD Viewer",
-    "threeDemo": "Three.js Demo"
+    "threeDemo": "Three.js Demo",
+    "teapotDemo": "Teapot Demo"
   }
 }
