@@ -22,7 +22,8 @@
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project log --oneline -5 -- src/types/dxf-parser.d.ts)",
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project diff HEAD -- src/types/dxf-parser.d.ts)",
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project status -- src/types/dxf-parser.d.ts)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
