@@ -1,12 +1,8 @@
 # Phase 2A: DXF CAD Viewer Implementation
 
-> **Version**: 0.0.2
-> **Created**: 2025-12-01
-> **Last Updated**: 2025-12-02
-> **Status**: 🔄 진행 중 (80%)
-> **Dependencies**: Phase 1.5 완료 ✅
->
-> 📚 **작성 규칙**: [PHASE_DEV_DOC_GUIDE.md](../templates/PHASE_DEV_DOC_GUIDE.md) 참조
+> **Version**: 0.0.3
+> **Last Updated**: 2025-12-04
+> **Status**: ✅ 완료 (100%)
 
 ---
 
@@ -17,11 +13,11 @@
 - [3. Implementation Checklist (구현 체크리스트)](#3-implementation-checklist-구현-체크리스트)
 - [4. Key Implementation Details (핵심 구현 상세)](#4-key-implementation-details-핵심-구현-상세)
 - [5. Testing Strategy (테스트 전략)](#5-testing-strategy-테스트-전략)
-- [6. Dependencies & References (의존성 및 참조)](#6-dependencies--references-의존성-및-참조)
-- [7. Routes & Navigation (라우트 및 네비게이션)](#7-routes--navigation-라우트-및-네비게이션)
+- [6. Routes & Navigation (라우트 및 네비게이션)](#6-routes--navigation-라우트-및-네비게이션)
+- [7. Dependencies & References (의존성 및 참조)](#7-dependencies--references-의존성-및-참조)
 - [8. Usage Guide (사용 가이드)](#8-usage-guide-사용-가이드)
-- [9. Changelog (변경 이력)](#9-changelog-변경-이력)
-- [10. Post-Completion Checklist (완료 후 체크리스트)](#10-post-completion-checklist-완료-후-체크리스트)
+- [9. Post-Completion Checklist (완료 후 체크리스트)](#9-post-completion-checklist-완료-후-체크리스트)
+- [10. Changelog (변경 이력)](#10-changelog-변경-이력)
 
 ---
 
@@ -33,7 +29,7 @@
 | 2A.2      | ✅   | CIRCLE, ARC, POLYLINE 엔티티 확장           |
 | 2A.3      | ✅   | 레이어별 색상/가시성 토글                   |
 | 2A.4      | ✅   | 성능 최적화 (Geometry 머징, WebWorker, LOD) |
-| 2A.5      | 📋   | Unit 테스트 (Vitest)                        |
+| 2A.5      | ✅   | Unit 테스트 (Vitest)                        |
 
 ---
 
@@ -186,10 +182,10 @@ File Drop → FileUpload → useDXFParser → ParsedCADData → CADMesh → Thre
 
 ### 3.5 Phase 2A.5: Unit 테스트
 
-- [ ] DXF 파서 유틸리티 테스트
-- [ ] 지오메트리 변환 로직 테스트
-- [ ] 파일 검증 로직 테스트
-- [ ] 테스트 커버리지 70% 달성
+- [✅] DXF 파서 유틸리티 테스트 (useDXFParser.test.ts)
+- [✅] 지오메트리 변환 로직 테스트 (dxfToGeometry.test.ts)
+- [✅] 파일 검증 로직 테스트 (validators.test.ts)
+- [✅] 테스트 커버리지 70% 달성 (utils 98.29%)
 
 ---
 
@@ -466,17 +462,17 @@ export function arcsToGeometry(
 
 **테스트 대상:**
 
-- [ ] `validators.ts` - 파일 타입/크기 검증
-- [ ] `dxfToGeometry.ts` - 각 엔티티 변환 함수
-- [ ] `useDXFParser.ts` - 파싱 로직
+- [✅] `validators.ts` - 파일 타입/크기 검증 (18개 테스트 케이스)
+- [✅] `dxfToGeometry.ts` - 각 엔티티 변환 함수 (25개 테스트 케이스)
+- [✅] `useDXFParser.ts` - 파싱 로직 (10개 테스트 케이스)
 
 **테스트 파일 위치:**
 
 ```
-tests/features/CADViewer/
-├── validators.test.ts
-├── dxfToGeometry.test.ts
-└── useDXFParser.test.ts
+src/features/CADViewer/
+├── utils/__tests__/validators.test.ts
+├── utils/__tests__/dxfToGeometry.test.ts
+└── hooks/__tests__/useDXFParser.test.ts
 ```
 
 **테스트 예시:**
@@ -516,13 +512,21 @@ describe('linesToGeometry', () => {
 | WebWorker (> 2MB)               | 수동 확인            | ✅      |
 | 타입 체크                       | `npm run type-check` | ✅      |
 | 린트                            | `npm run lint`       | ✅      |
-| 단위 테스트                     | `npm run test`       | 📋 TODO |
+| 단위 테스트                     | `npm run test`       | ✅      |
 
 ---
 
-## 6. Dependencies & References (의존성 및 참조)
+## 6. Routes & Navigation (라우트 및 네비게이션)
 
-### 6.1 필수 패키지
+| Path          | Component     | Description          |
+| ------------- | ------------- | -------------------- |
+| `/cad-viewer` | CADViewerPage | CAD 뷰어 메인 페이지 |
+
+---
+
+## 7. Dependencies & References (의존성 및 참조)
+
+### 7.1 필수 패키지
 
 | 패키지               | 버전     | 용도                  |
 | -------------------- | -------- | --------------------- |
@@ -531,29 +535,21 @@ describe('linesToGeometry', () => {
 | `@react-three/fiber` | ^8.x     | React Three.js 통합   |
 | `@react-three/drei`  | ^9.x     | OrbitControls 등      |
 
-### 6.2 참조 문서
+### 7.2 참조 문서
 
 | 문서                                               | 역할               |
 | -------------------------------------------------- | ------------------ |
-| [Phase 1.5 Teapot](../01-foundation/1.5-teapot.md) | 컴포넌트 패턴 참조 |
+| [Phase 1.5 Teapot](../01-Foundation/1.5_TEAPOT_DEMO.md) | 컴포넌트 패턴 참조 |
 | [DEV_GUIDE.md](../../DEV_GUIDE.md)                 | 개발 컨벤션        |
 | [ARCHITECTURE.md](../../ARCHITECTURE.md)           | 시스템 아키텍처    |
 
-### 6.3 관련 Phase
+### 7.3 관련 Phase
 
 | Phase     | 관계 | 설명                     |
 | --------- | ---- | ------------------------ |
 | Phase 1.5 | 의존 | Teapot 패턴 완료 후 시작 |
 | Phase 2B  | 후속 | PDF 뷰어 (백엔드 필요)   |
 | Phase 3   | 연관 | 백엔드 API 연동          |
-
----
-
-## 7. Routes & Navigation (라우트 및 네비게이션)
-
-| Path          | Component     | Description          |
-| ------------- | ------------- | -------------------- |
-| `/cad-viewer` | CADViewerPage | CAD 뷰어 메인 페이지 |
 
 ---
 
@@ -581,21 +577,11 @@ http://localhost:3000/cad-viewer
 
 ---
 
-## 9. Changelog (변경 이력)
-
-| 버전  | 날짜       | 변경 내용                                                                          |
-| ----- | ---------- | ---------------------------------------------------------------------------------- |
-| 0.0.0 | 2025-12-01 | 2A.1~2A.4 구현 완료                                                                |
-| 0.0.1 | 2025-12-02 | 템플릿 적용 (Language Guidelines, TOC, 섹션 제목 영어(한국어) 형식, 체크리스트 ✅) |
-| 0.0.2 | 2025-12-02 | 버전 가이드라인 적용 (0.0.x), Section 10 추가                                      |
-
----
-
-## 10. Post-Completion Checklist (완료 후 체크리스트)
+## 9. Post-Completion Checklist (완료 후 체크리스트)
 
 개발 완료 시 Claude가 아래 문서들의 업데이트를 자동으로 제안합니다.
 
-### 10.1 연관 문서 업데이트 (Claude 자동 제안)
+### 9.1 연관 문서 업데이트 (Claude 자동 제안)
 
 | 문서                             | 업데이트 내용                                     |
 | -------------------------------- | ------------------------------------------------- |
@@ -605,7 +591,7 @@ http://localhost:3000/cad-viewer
 | `docs/ARCHITECTURE.md`           | 패키지 구조, 레이어별 역할, 관련 문서 링크        |
 | `README.md`                      | 현재 상태, 구현 완료 기능, 개발 예정 목록         |
 
-### 10.2 업데이트 프로세스
+### 9.2 업데이트 프로세스
 
 1. **구현 완료** → Claude가 "연관 문서 업데이트할까요?" 제안
 2. **변경 내용 미리보기** → 각 문서별 수정될 내용 표시
@@ -613,4 +599,11 @@ http://localhost:3000/cad-viewer
 
 ---
 
-_Phase 2A Implementation - Created: 2025-12-01_
+## 10. Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                                                                                               |
+| ----- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| 0.0.3 | 2025-12-04 | 템플릿 v0.0.2 기준 섹션 순서 변경 (Routes↔Dependencies)                                                 |
+| 0.0.2 | 2025-12-03 | Phase 2A 완료: 단위 테스트 구현 (58개 통과), 템플릿 기준 메타데이터 간소화, utils 커버리지 98.29% 달성  |
+| 0.0.1 | 2025-12-02 | 템플릿 적용, 버전 가이드라인 적용 (0.0.x), Section 10 추가                                              |
+| 0.0.0 | 2025-12-01 | 초기 문서 작성, 2A.1~2A.4 구현 완료                                                                     |

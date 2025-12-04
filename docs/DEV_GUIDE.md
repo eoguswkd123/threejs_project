@@ -1,5 +1,8 @@
 # 개발자 가이드
 
+> **Version**: 0.1.3
+> **Last Updated**: 2025-12-04
+
 프로젝트 개발 시 참고하는 가이드 문서
 
 ## 목차
@@ -494,6 +497,36 @@ interface DemoCardProps {
 
 ## 테스트 가이드
 
+### 테스트 실행 흐름도
+
+```
+npm run test
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│  vitest.config.ts                           │
+│  ├─ environment: 'jsdom'                    │
+│  ├─ setupFiles: vitest-setup.ts             │
+│  └─ include patterns                        │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│  tests/setup/vitest-setup.ts (글로벌 설정)  │
+│  ├─ @testing-library/jest-dom 로드          │
+│  ├─ Canvas/WebGL 모킹                       │
+│  ├─ ResizeObserver 모킹                     │
+│  └─ requestAnimationFrame 모킹              │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│  테스트 파일들 실행                          │
+│  ├─ src/**/__tests__/**/*.test.{ts,tsx}     │
+│  └─ tests/integration/**/*.test.{ts,tsx}    │
+└─────────────────────────────────────────────┘
+```
+
 ### 테스트 구조 (Co-located 방식)
 
 프로젝트는 **Co-located** 테스트 구조를 사용합니다. 단위 테스트는 소스 파일 옆에 위치하고, 공유 인프라는 `tests/` 폴더에 있습니다.
@@ -520,13 +553,24 @@ tests/                                # 공유 인프라
 └── scripts/                         # 성능 테스트 스크립트
 ```
 
+### 테스트 파일 위치 패턴
+
+| 패턴        | 위치                               | 용도                      |
+| ----------- | ---------------------------------- | ------------------------- |
+| Co-located  | `src/**/__tests__/*.test.ts`       | 단위 테스트 (기능별 배치) |
+| Integration | `tests/integration/*.test.ts`      | 통합 테스트               |
+| E2E         | `tests/e2e/`                       | E2E 테스트 (현재 제외)    |
+
 ### 테스트 실행
 
-| 명령어                  | 설명                 |
-| ----------------------- | -------------------- |
-| `npm run test`          | Vitest 테스트 실행   |
-| `npm run test:ui`       | Vitest UI 모드       |
-| `npm run test:coverage` | 커버리지 리포트 생성 |
+```bash
+npm run test                          # Vitest 테스트 실행
+npm run test:ui                       # Vitest UI 모드
+npm run test:coverage                 # 커버리지 리포트
+npm run test -- validators.test.ts    # 특정 파일
+npm run test -- --grep "validateFile" # 특정 패턴
+npm run test -- --run                 # 1회 실행 (watch 없이)
+```
 
 ### 테스트 유형별 가이드
 
@@ -538,71 +582,24 @@ tests/                                # 공유 인프라
 | **Integration**       | `tests/integration/`       | `*.test.tsx` | `cad-workflow.test.tsx` |
 | **Performance**       | `tests/scripts/`           | `*.cjs`      | `perf-test-dxf.cjs`     |
 
-### 테스트 작성 패턴
-
-#### 기본 단위 테스트
-
-```typescript
-// src/features/CADViewer/utils/__tests__/validators.test.ts
-import { describe, it, expect } from 'vitest';
-import { validateFile } from '../validators';
-
-describe('validateFile', () => {
-    it('올바른 DXF 파일이면 valid: true 반환', () => {
-        const file = new File(['content'], 'test.dxf');
-        const result = validateFile(file);
-        expect(result.valid).toBe(true);
-    });
-});
-```
-
-#### Provider가 필요한 컴포넌트 테스트
-
-```typescript
-// src/features/CADViewer/components/__tests__/FileUpload.test.tsx
-import { render, screen } from '@tests/setup/test-utils';
-import { FileUpload } from '../FileUpload';
-
-it('파일 업로드 버튼이 보인다', () => {
-    render(<FileUpload />);
-    expect(screen.getByText('파일 선택')).toBeInTheDocument();
-});
-```
-
-#### Three.js 컴포넌트 테스트 (모킹 필요)
-
-```typescript
-// src/features/CADViewer/components/__tests__/CADScene.test.tsx
-import { setupR3FMocks } from '@tests/mocks/three';
-import { render, screen } from '@testing-library/react';
-import { CADScene } from '../CADScene';
-
-setupR3FMocks();
-
-it('CADScene이 렌더링된다', () => {
-    render(<CADScene />);
-    expect(screen.getByTestId('r3f-canvas')).toBeInTheDocument();
-});
-```
-
 ### 테스트 유틸리티
 
-#### 커스텀 render (Provider 포함)
+#### `@tests/setup/test-utils.tsx`
 
-`@tests/setup/test-utils.tsx`에서 제공하는 `render` 함수는 QueryClient, BrowserRouter가 자동으로 포함됩니다.
+| 함수                 | 설명                                                |
+| -------------------- | --------------------------------------------------- |
+| `render`             | Provider 포함 커스텀 render (QueryClient + BrowserRouter) |
+| `createTestFile()`   | 테스트용 File 객체 생성                             |
+| `createTestDXFFile()` | DXF 전용 File 객체 생성                             |
 
-```typescript
-import { render, screen } from '@tests/setup/test-utils';
-// 기본 @testing-library/react 대신 사용
-```
+#### `@tests/mocks/three.tsx`
 
-#### 테스트용 File 객체 생성
-
-```typescript
-import { createTestFile, createTestDXFFile } from '@tests/setup/test-utils';
-
-const file = createTestDXFFile('sample.dxf', 1024); // 1KB DXF 파일
-```
+| 함수                 | 설명                        |
+| -------------------- | --------------------------- |
+| `setupR3FMocks()`    | React Three Fiber + Drei 모킹 |
+| `mockThreeCore()`    | Three.js 코어 객체 모킹     |
+| `setupAllThreeMocks()` | 위 두 함수 통합 호출        |
+| `clearThreeMocks()`  | 모킹 초기화                 |
 
 ### 성능 테스트
 
@@ -619,8 +616,8 @@ node tests/scripts/perf-test-dxf.cjs
 | 대상               | 모킹 함수                  | 위치                   |
 | ------------------ | -------------------------- | ---------------------- |
 | Three.js Canvas    | `vitest-setup.ts`에서 자동 | `tests/setup/`         |
-| React Three Fiber  | `setupR3FMocks()`          | `tests/mocks/three.ts` |
-| Three.js 코어 객체 | `mockThreeCore()`          | `tests/mocks/three.ts` |
+| React Three Fiber  | `setupR3FMocks()`          | `tests/mocks/three.tsx` |
+| Three.js 코어 객체 | `mockThreeCore()`          | `tests/mocks/three.tsx` |
 
 > **참고**: `tests/setup/vitest-setup.ts`에서 Canvas, ResizeObserver, requestAnimationFrame이 자동으로 모킹됩니다.
 
@@ -643,15 +640,9 @@ node tests/scripts/perf-test-dxf.cjs
 
 커밋 전에 미리 검사하거나, 전체 프로젝트를 점검할 때 사용합니다.
 
-| 명령어             | 설명                      |
-| ------------------ | ------------------------- |
-| `npm run lint`     | ESLint 검사 (오류만 표시) |
-| `npm run lint:fix` | ESLint 검사 + 자동 수정   |
-
 ```bash
-# 커밋 전 수동 점검 예시
-npm run lint          # 오류 확인
-npm run lint:fix      # 자동 수정 가능한 오류 수정
+npm run lint          # ESLint 검사 (오류만 표시)
+npm run lint:fix      # ESLint 검사 + 자동 수정
 ```
 
 ### ESLint - 코드 품질 검사기
@@ -863,3 +854,15 @@ docs: README 업데이트
 
 - ⏳ 에러 핸들링 규칙
 - ⏳ 코드 리뷰 체크리스트
+
+---
+
+## Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                                            |
+| ----- | ---------- | ---------------------------------------------------- |
+| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거              |
+| 0.1.2 | 2025-12-03 | pre-push lint 적용                                   |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                            |
+| 0.1.0 | 2025-12-01 | 개발자가이드 문서 업데이트, CAD Viewer 기능 추가     |
+| 0.0.0 | 2025-11-28 | 초기 버전                                            |

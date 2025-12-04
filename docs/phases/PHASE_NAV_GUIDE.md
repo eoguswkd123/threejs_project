@@ -1,5 +1,8 @@
 # Phase 문서 가이드
 
+> **Version**: 0.0.2
+> **Last Updated**: 2025-12-03
+>
 > CAD Viewer 프로젝트의 Phase별 구현 문서 네비게이션
 
 ---
@@ -8,11 +11,11 @@
 
 ```
 phases/
-├── 01-foundation/     # 기반 구축 (Phase 1, 1.5)
-├── 02-cad-features/   # CAD 뷰어 기능 (Phase 2A, 2B)
-├── 03-backend/        # 백엔드 & 인프라 (Phase 3)
-├── 04-sync/           # 동기화 & 성능 (Phase 4, 4.5)
-├── 05-production/     # 프로덕션 준비 (Phase 5, 6, 7)
+├── 01-Foundation/     # 기반 구축 (Phase 1, 1.5)
+├── 02-CadFeatures/    # CAD 뷰어 기능 (Phase 2A, 2B)
+├── 03-Backend/        # 백엔드 & 인프라 (Phase 3)
+├── 04-Sync/           # 동기화 & 성능 (Phase 4, 4.5)
+├── 05-Production/     # 프로덕션 준비 (Phase 5, 6, 7)
 └── templates/         # 문서 템플릿
 ```
 
@@ -22,8 +25,8 @@ phases/
 
 | 카테고리         | Phase | 문서                                                    | 상태    |
 | ---------------- | ----- | ------------------------------------------------------- | ------- |
-| **Foundation**   | 1.5   | [Three.js 학습 (Teapot)](./01-foundation/1.5-teapot.md) | ✅ 완료 |
-| **CAD Features** | 2A    | [DXF CAD Viewer](./02-cad-features/2a-dxf-viewer.md)    | 🔄 80%  |
+| **Foundation**   | 1.5   | [Three.js 학습 (Teapot)](./01-Foundation/1.5_TEAPOT_DEMO.md) | ✅ 완료 |
+| **CAD Features** | 2A    | [DXF CAD Viewer](./02-CadFeatures/2A_DXF_VIEWER.md)          | ✅ 완료 |
 | **CAD Features** | 2B    | PDF CAD Viewer                                          | 📋 대기 |
 | **Backend**      | 3     | Backend + Security + Monitoring                         | 📋 계획 |
 | **Sync**         | 4     | Synchronization                                         | 📋 계획 |
@@ -73,15 +76,6 @@ phases/
 
 ---
 
-## 네이밍 규칙
-
-| 대상   | 규칙                  | 예시                                |
-| ------ | --------------------- | ----------------------------------- |
-| 폴더명 | `숫자-kebab-case`     | `01-foundation`, `02-cad-features`  |
-| 파일명 | `Phase번호-기능명.md` | `1.5-teapot.md`, `2a-dxf-viewer.md` |
-
----
-
 ## 관련 문서
 
 | 문서                                                         | 설명                   |
@@ -89,10 +83,14 @@ phases/
 | [ROADMAP.md](../ROADMAP.md)                                  | 전체 프로젝트 로드맵   |
 | [ARCHITECTURE.md](../ARCHITECTURE.md)                        | 시스템 아키텍처        |
 | [PHASE_DEV_TEMPLATE.md](./templates/PHASE_DEV_TEMPLATE.md)   | Phase 문서 템플릿      |
-| [PHASE_DEV_DOC_GUIDE.md](./templates/PHASE_DEV_DOC_GUIDE.md) | 문서 작성 규칙         |
 | [1.5_TEAPOT_DEMO.md](./01-Foundation/1.5_TEAPOT_DEMO.md)     | Three.js 학습 (Teapot) |
 | [2A_DXF_VIEWER.md](./02-CadFeatures/2A_DXF_VIEWER.md)        | DXF CAD Viewer 구현    |
 
 ---
 
-_Phase Documentation Guide - Last Updated: 2025-12-02_
+## Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                                            |
+| ----- | ---------- | ---------------------------------------------------- |
+| 0.0.2 | 2025-12-03 | Phase 2A 완료 상태 반영                              |
+| 0.0.1 | 2025-12-02 | 초기 문서 작성, 버전 메타데이터 및 Changelog 추가    |
