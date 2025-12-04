@@ -52,13 +52,13 @@ Three.js 기반 CAD 파일 3D 뷰어 및 키오스크 동기화 프로젝트
 
 ### Backend (계획)
 
-| 카테고리    | 기술              |
-| ----------- | ----------------- |
-| Framework   | Python FastAPI    |
-| Task Queue  | Celery + Redis    |
-| Database    | PostgreSQL        |
-| Storage     | MinIO (S3 호환)   |
-| CAD Library | ezdxf + pygltflib |
+| 카테고리      | 기술                           | 상태       |
+| ------------- | ------------------------------ | ---------- |
+| API Layer     | NestJS / FastAPI / Spring Boot | 🔍 검토 중 |
+| Message Queue | RabbitMQ                       | ✅ 확정    |
+| Worker        | Python + Celery                | ✅ 확정    |
+| Database      | PostgreSQL                     | ✅ 확정    |
+| Storage       | MinIO (S3 호환)                | ✅ 확정    |
 
 ## 프로젝트 구조
 
@@ -147,7 +147,7 @@ npm run test:coverage
 - **엔티티 확장**: LINE, ARC, CIRCLE, POLYLINE/LWPOLYLINE 지원
 - **레이어 제어**: 레이어별 표시/숨김, DXF 색상 매핑
 - **성능 최적화**: Geometry 머징, WebWorker, LOD
-- **단위 테스트**: Vitest 58개 테스트 (utils 커버리지 98%)
+- **단위 테스트**: Vitest 85개 테스트 (utils 커버리지 98%)
 
 ### 개발 예정
 
@@ -166,7 +166,7 @@ npm run test:coverage
 
 ## 라이선스
 
-Private Project
+Private Project © [개쿠](https://javaoop.tistory.com)
 
 ---
 
