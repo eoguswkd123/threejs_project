@@ -23,7 +23,19 @@
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project diff HEAD -- src/types/dxf-parser.d.ts)",
       "Bash(git -C /mnt/c/workspace/side-project_java/threejs_project status -- src/types/dxf-parser.d.ts)",
       "Bash(npm run lint)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git fetch:*)",
+      "Bash(mv:*)",
+      "Bash(npm run test:*)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:docs.npmjs.com)",
+      "WebFetch(domain:vitest.dev)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(rm:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

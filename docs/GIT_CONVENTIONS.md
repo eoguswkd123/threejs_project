@@ -1,8 +1,9 @@
 # Git 커밋 규칙 (Conventional Commits)
 
-Three.js CAD Viewer 프로젝트의 Git 워크플로우 및 커밋 규칙 가이드입니다.
+> **Version**: 0.1.2
+> **Last Updated**: 2025-12-04
 
-이 프로젝트는 **Conventional Commits** 표준을 따릅니다.
+Three.js CAD Viewer 프로젝트의 Git 워크플로우 및 커밋 규칙 가이드입니다. 이 프로젝트는 **Conventional Commits** 표준을 따릅니다.
 
 ## 목차
 
@@ -180,25 +181,9 @@ git branch -a                    # 모든 브랜치 확인
 git branch -d old-feature_kim    # 브랜치 삭제
 git fetch --prune               # 삭제된 원격 브랜치 정리
 
-# 커밋 관리
-git log --oneline --graph       # 커밋 히스토리 시각화
-git log --oneline --all         # 모든 브랜치 커밋 보기
-git show <commit-hash>          # 특정 커밋 상세 보기
-git revert <commit-hash>        # 커밋 되돌리기 (안전)
-
-# 커밋 메시지 검색
-git log --grep="feat"           # "feat" 포함 커밋 검색
-git log --grep="fix"            # "fix" 포함 커밋 검색
-
-# 변경사항 확인
-git diff develop                # develop과 현재 브랜치 비교
-git diff --staged               # 스테이징된 변경사항 확인
-git status -s                   # 간단한 상태 보기
-
-# 작업 임시 저장
-git stash                       # 현재 작업 임시 저장
-git stash pop                   # 저장한 작업 복원
-git stash list                  # 저장 목록 확인
+# 자격증명 설정
+git remote -v                    # 원격 저장소 경로 확인
+git remote set-url origin https://사용자명@github.com/조직/저장소.git  # 자격증명 포함 URL 설정
 ```
 
 ---
@@ -231,6 +216,11 @@ git stash list                  # 저장 목록 확인
 
 ---
 
-**문서 버전**: 0.1.0
-**최종 업데이트**: 2025-12-02
-**작성자**: Development Team
+## Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                                               |
+| ----- | ---------- | ------------------------------------------------------- |
+| 0.1.2 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                 |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료, Git 자격증명 설정방법 추가   |
+| 0.1.0 | 2025-12-01 | 깃컨벤션 문서 업데이트                                  |
+| 0.0.0 | 2025-11-28 | 초기 버전                                               |

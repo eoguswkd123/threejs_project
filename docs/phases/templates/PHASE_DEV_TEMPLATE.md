@@ -1,12 +1,19 @@
 # Phase X.Y: [기능명] Implementation
 
-> **Version**: X.Y.Z
-> **Created**: YYYY-MM-DD
-> **Last Updated**: YYYY-MM-DD
-> **Status**: ✅ 완료 / 🔄 진행 중 (N%) / 📋 계획됨
-> **Dependencies**: Phase X.X 완료 필요 (없으면 "없음")
->
-> 📚 **작성 규칙**: [PHASE_DEV_DOC_GUIDE.md](../templates/PHASE_DEV_DOC_GUIDE.md) 참조
+> **Version**: 0.0.2
+> **Last Updated**: 2025-12-04
+
+<!-- REFERENCE_ONLY: 문서 생성 시 참고하되 복사하지 마세요 -->
+
+## Naming Conventions (네이밍 규칙)
+
+| 유형 | 규칙 | 예시 |
+|------|------|------|
+| Phase 폴더 | `##-PascalCase` | `01-Foundation/`, `02-CadFeatures/` |
+| Phase 파일 | `[Phase번호]_SCREAMING_SNAKE.md` | `1.5_TEAPOT_DEMO.md`, `2A_DXF_VIEWER.md` |
+| 섹션 제목 | 영어(한국어) | `Overview (개요)`, `Architecture (아키텍처)` |
+
+<!-- REFERENCE_ONLY_END -->
 
 ---
 
@@ -17,10 +24,10 @@
 - [3. Implementation Checklist (구현 체크리스트)](#3-implementation-checklist-구현-체크리스트)
 - [4. Key Implementation Details (핵심 구현 상세)](#4-key-implementation-details-핵심-구현-상세)
 - [5. Testing Strategy (테스트 전략)](#5-testing-strategy-테스트-전략)
-- [6. Dependencies & References (의존성 및 참조)](#6-dependencies--references-의존성-및-참조)
-- [7. Routes & Navigation (라우트 및 네비게이션)](#7-routes--navigation-라우트-및-네비게이션)
-- [8. Changelog (변경 이력)](#8-changelog-변경-이력)
-- [9. Post-Completion Checklist (완료 후 체크리스트)](#9-post-completion-checklist-완료-후-체크리스트)
+- [6. Routes & Navigation (라우트 및 네비게이션)](#6-routes--navigation-라우트-및-네비게이션)
+- [7. Dependencies & References (의존성 및 참조)](#7-dependencies--references-의존성-및-참조)
+- [8. Post-Completion Checklist (완료 후 체크리스트)](#8-post-completion-checklist-완료-후-체크리스트)
+- [9. Changelog (변경 이력)](#9-changelog-변경-이력)
 
 ---
 
@@ -32,7 +39,7 @@
 /sc:design [phase-feature-name] --template @docs/phases/templates/PHASE_DEV_TEMPLATE.md [--think|--think-hard|--ultrathink] && /sc:spec-panel @docs/phases/[Phase폴더]/[생성된파일].md
 
 # 예시
-/sc:design phase-2a5-unit-tests --template @docs/phases/templates/PHASE_DEV_TEMPLATE.md --think-hard && /sc:spec-panel @docs/phases/02-CadFeatures/2A5_UNIT_TESTS.md
+/sc:design phase-2a5-unit-tests --template @docs/phases/templates/PHASE_DEV_TEMPLATE.md --think-hard && /sc:spec-panel @docs/phases/02-CadFeatures/2A_DXF_VIEWER.md
 ```
 
 ### 검증된 문서 기반 구현 시
@@ -41,7 +48,7 @@
 /sc:implement @docs/phases/[Phase폴더]/[THIS_FILE].md --validate
 
 # 예시
-/sc:implement @docs/phases/02-CadFeatures/2A5_UNIT_TESTS.md --validate
+/sc:implement @docs/phases/02-CadFeatures/2A_DXF_VIEWER.md --validate
 ```
 
 ### 개발 완료 후
@@ -53,7 +60,7 @@
 
 ---
 
-## Phase Progress
+## Phase Progress (진행 상황) ✅ 완료 / 🔄 진행 중 (N%)
 
 | Sub-Phase | 상태 | 설명                    |
 | --------- | ---- | ----------------------- |
@@ -302,15 +309,23 @@ describe('utilityFunction', () => {
 
 ---
 
-## 6. Dependencies & References (의존성 및 참조)
+## 6. Routes & Navigation (라우트 및 네비게이션)
 
-### 6.1 필수 패키지
+| Path            | Component   | Description      |
+| --------------- | ----------- | ---------------- |
+| `/feature-path` | FeaturePage | 기능 메인 페이지 |
+
+---
+
+## 7. Dependencies & References (의존성 및 참조)
+
+### 7.1 필수 패키지
 
 | 패키지         | 버전   | 용도        |
 | -------------- | ------ | ----------- |
 | `package-name` | ^X.Y.Z | 패키지 설명 |
 
-### 6.2 참조 문서
+### 7.2 참조 문서
 
 | 문서                                  | 역할            |
 | ------------------------------------- | --------------- |
@@ -318,7 +333,7 @@ describe('utilityFunction', () => {
 | [ARCHITECTURE.md](../ARCHITECTURE.md) | 시스템 아키텍처 |
 | [External Doc](https://example.com)   | 외부 참조       |
 
-### 6.3 관련 Phase
+### 7.3 관련 Phase
 
 | Phase     | 관계 | 설명                       |
 | --------- | ---- | -------------------------- |
@@ -327,27 +342,11 @@ describe('utilityFunction', () => {
 
 ---
 
-## 7. Routes & Navigation (라우트 및 네비게이션)
-
-| Path            | Component   | Description      |
-| --------------- | ----------- | ---------------- |
-| `/feature-path` | FeaturePage | 기능 메인 페이지 |
-
----
-
-## 8. Changelog (변경 이력)
-
-| 버전  | 날짜       | 변경 내용      |
-| ----- | ---------- | -------------- |
-| 0.0.0 | YYYY-MM-DD | 초기 문서 작성 |
-
----
-
-## 9. Post-Completion Checklist (완료 후 체크리스트)
+## 8. Post-Completion Checklist (완료 후 체크리스트)
 
 개발 완료 시 Claude가 아래 문서들의 업데이트를 자동으로 제안합니다.
 
-### 9.1 연관 문서 업데이트 (Claude 자동 제안)
+### 8.1 연관 문서 업데이트 (Claude 자동 제안)
 
 | 문서                             | 업데이트 내용                                     |
 | -------------------------------- | ------------------------------------------------- |
@@ -357,7 +356,7 @@ describe('utilityFunction', () => {
 | `docs/ARCHITECTURE.md`           | 패키지 구조, 레이어별 역할, 관련 문서 링크        |
 | `README.md`                      | 현재 상태, 구현 완료 기능, 개발 예정 목록         |
 
-### 9.2 업데이트 프로세스
+### 8.2 업데이트 프로세스
 
 1. **구현 완료** → Claude가 "연관 문서 업데이트할까요?" 제안
 2. **변경 내용 미리보기** → 각 문서별 수정될 내용 표시
@@ -365,4 +364,21 @@ describe('utilityFunction', () => {
 
 ---
 
-_Phase X.Y Implementation - Created: YYYY-MM-DD_
+## 9. Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용      |
+| ----- | ---------- | -------------- |
+| 0.0.0 | YYYY-MM-DD | 초기 문서 작성 |
+
+<!-- TEMPLATE_ONLY: 이 줄 이하는 완전히 무시하세요 (읽지도 복사하지도 마세요) -->
+
+## Changelog (변경 이력) - 템플릿 자체 이력
+
+> ⚠️ **완전 무시**: 이 섹션은 템플릿 파일 자체의 변경 이력입니다.
+> `/sc:design --template` 사용 시 이 섹션은 읽지도 복사하지도 마세요.
+
+| 버전  | 날짜       | 변경 내용                                                                      |
+| ----- | ---------- | ------------------------------------------------------------------------------ |
+| 0.0.2 | 2025-12-04 | 섹션 순서 재배치, REFERENCE_ONLY 마커 추가, TEMPLATE_ONLY 마커 설명 명확화     |
+| 0.0.1 | 2025-12-03 | 네이밍 규칙 섹션 추가, 상단 메타데이터 간소화, DOC_GUIDE 참조 제거             |
+| 0.0.0 | 2025-12-02 | 초기 템플릿 작성                                                               |

@@ -17,11 +17,12 @@ Three.js 기반 CAD 파일 3D 뷰어 및 키오스크 동기화 프로젝트
 
 ## 현재 상태
 
-| Phase | 이름                 | 상태      |
-| ----- | -------------------- | --------- |
-| 1     | Foundation           | ✅ 완료   |
-| 2A    | CAD Features (FE)    | 🔄 진행중 |
-| 3-7   | Backend ~ Production | 📋 계획   |
+| Phase | 이름                 | 상태    |
+| ----- | -------------------- | ------- |
+| 1     | Foundation           | ✅ 완료 |
+| 1.5   | Three.js 학습        | ✅ 완료 |
+| 2A    | CAD Features (FE)    | ✅ 완료 |
+| 3-7   | Backend ~ Production | 📋 계획 |
 
 > 자세한 로드맵은 [ROADMAP.md](./docs/ROADMAP.md) 참조
 
@@ -146,6 +147,7 @@ npm run test:coverage
 - **엔티티 확장**: LINE, ARC, CIRCLE, POLYLINE/LWPOLYLINE 지원
 - **레이어 제어**: 레이어별 표시/숨김, DXF 색상 매핑
 - **성능 최적화**: Geometry 머징, WebWorker, LOD
+- **단위 테스트**: Vitest 58개 테스트 (utils 커버리지 98%)
 
 ### 개발 예정
 
@@ -168,4 +170,4 @@ Private Project
 
 ---
 
-> **Note**: 이 프로젝트는 활발히 개발 중입니다. Phase 2 완료 후 백엔드 통합이 진행될 예정입니다.
+> **Note**: 이 프로젝트는 활발히 개발 중입니다. Phase 2A 완료 (2025-12-03), Phase 3 백엔드 통합이 진행될 예정입니다.

@@ -1,199 +1,81 @@
-# CAD Viewer Project
+## 문서 네비게이션
 
-Three.js 기반 CAD 파일 3D 뷰어 및 키오스크 동기화 프로젝트
+| 찾는 것 | 읽을 문서 |
+|---------|----------|
+| 폴더 구조, 레이어 역할 | `docs/ARCHITECTURE.md` |
+| 네이밍, import 순서, 패턴 | `docs/DEV_GUIDE.md` |
+| 로드맵, 일정 | `docs/ROADMAP.md` |
 
-## 현재 단계
+### 2. 코드 작성 규칙
 
-**Phase 2A: CAD Features (Frontend)** - 진행 중
+**트리거**: 새 파일 생성, 기존 코드 수정 시
 
-- Phase 1 (Foundation) - 완료
-- Phase 2A (CAD Features) - 진행 중
-- Phase 2B~7 (Backend, Sync, Production) - 계획됨
+1. `docs/DEV_GUIDE.md` 컨벤션 먼저 확인
+2. 기존 패턴 확인 (Read 도구로 유사 파일 읽기)
+3. 새 파일 생성 시 `index.ts` barrel export 추가
+4. TypeScript strict mode 준수
 
-## 기술 스택
+### 5. 문서 관리 (필수 준수)
 
-| 영역      | 기술                                      |
-| --------- | ----------------------------------------- |
-| Framework | React 18.3 + TypeScript 5.6 (strict)      |
-| 3D Engine | Three.js 0.181 + React Three Fiber + Drei |
-| Build     | Vite 6                                    |
-| State     | Zustand 5                                 |
-| Styling   | Tailwind CSS 4 + PostCSS                  |
-| Forms     | React Hook Form + Zod                     |
-| API       | Axios + TanStack Query 5                  |
-| Testing   | Vitest + Testing Library                  |
-| Lint      | ESLint 9 + Prettier 3.6                   |
+**트리거**: `docs/**/*.md` 문서 작성/수정 시
 
-## 아키텍처
+**문서 형식 (필수):**
 
-### Feature-First 구조
+모든 `docs/**/*.md` 문서는 다음 형식을 준수:
 
-```
-src/
-├── features/           # 기능별 독립 모듈
-│   ├── CADViewer/     # DXF 파일 뷰어 (주요 기능)
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── utils/
-│   │   ├── workers/
-│   │   ├── types.ts
-│   │   └── constants.ts
-│   └── TeapotDemo/    # Three.js 학습 예제
-├── components/Layout/  # 공유 레이아웃 컴포넌트
-├── pages/             # 페이지 컴포넌트
-├── config/            # 설정 (API, 환경변수)
-├── constants/         # 상수 (routes, menu, app)
-├── hooks/             # 글로벌 훅
-├── stores/            # Zustand 스토어
-├── types/             # 글로벌 타입
-└── utils/             # 글로벌 유틸리티
+**상단 메타데이터:**
+```markdown
+> **Version**: X.Y.Z
+> **Last Updated**: YYYY-MM-DD
 ```
 
-### Import Alias
+**하단 Changelog:**
+```markdown
+## Changelog (변경 이력)
 
-```typescript
-// vite.config.ts & tsconfig.app.json 정의
-import '@/'; // src/*
-import '@api'; // src/api
-import '@config'; // src/config
-import '@features/*'; // src/features/*
-import '@components/*'; // src/components/*
-import '@hooks/*'; // src/hooks/*
-import '@types/*'; // src/types/*
-import '@constants/*'; // src/constants/*
+| 버전 | 날짜 | 변경 내용 |
+|------|------|----------|
+| X.Y.Z | YYYY-MM-DD | 변경 설명 |
 ```
 
-### Barrel Export 패턴
+**🔴 문서 수정 시 필수 체크리스트:**
 
-```typescript
-// features/CADViewer/index.ts
-export { CADScene, CADMesh, FileUpload } from './components';
-export { useDXFParser } from './hooks';
-export type { ParsedCADData } from './types';
-```
+1. ☐ Changelog 마지막 항목의 **날짜** 확인
+2. ☐ 아래 표에 따라 버전 결정:
 
-## 코드 컨벤션
+| 조건 | 버전 변경 | Changelog 처리 |
+|------|----------|---------------|
+| 같은 날 | ❌ 변경 금지 | 기존 항목에 내용 병합 |
+| 다른 날 (같은 달) | PATCH +1 | 새 항목 추가 |
+| 월 변경 | MINOR +1, PATCH 리셋 | 새 항목 추가 |
+| 연 변경 | MAJOR +1 | 새 항목 추가 |
 
-### 네이밍 규칙
+3. ☐ Version 업데이트
+4. ☐ Last Updated 업데이트
+5. ☐ Changelog 항목 추가/병합 (최신이 위, 최대 10건)
+6. ☐ 구현 상태 업데이트 (체크리스트 ✅ 표시)
 
-| 대상        | 규칙               | 예시               |
-| ----------- | ------------------ | ------------------ |
-| 컴포넌트    | PascalCase.tsx     | `CADScene.tsx`     |
-| 훅          | use + camelCase.ts | `useDXFParser.ts`  |
-| 유틸리티    | camelCase.ts       | `dxfToGeometry.ts` |
-| 상수        | UPPER_SNAKE_CASE   | `FILE_LIMITS`      |
-| 폴더 (기능) | PascalCase         | `CADViewer/`       |
-| URL 경로    | kebab-case         | `/cad-viewer`      |
+### 6. Git 안전 규칙 (중요)
 
-### 변수 네이밍
+**사용자 명시적 요청 없이 절대 금지:**
 
-```typescript
-// Boolean
-(isLoading, hasError, canEdit);
+- ❌ `git commit` - 커밋 금지
+- ❌ `git push` / `git pull` - 원격 저장소 조작 금지
+- ❌ `git checkout` / `git switch` - 브랜치 변경 금지
+- ❌ `git merge` / `git rebase` - 병합 작업 금지
+- ❌ `git reset` / `git revert` - 히스토리 변경 금지
+- ❌ `git stash` - 스태시 조작 금지
 
-// Handlers
-(handleClick, handleFileSelect);
+**허용되는 Git 명령 (읽기 전용):**
 
-// Callbacks (Props)
-(onClick, onSubmit, onChange);
-
-// State setters
-(setIsLoading, setCadData);
-```
-
-### Import 순서
-
-```typescript
-// 1. React
-import { useState, useCallback } from 'react';
-
-// 2. 외부 라이브러리
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-
-// 3. 내부 imports (@/)
-import { calculateBounds } from '@/features/CADViewer/utils';
-
-// 4. 상대 경로
-import { FileUpload } from './FileUpload';
-
-// 5. 타입 (마지막)
-import type { ParsedCADData } from '@/features/CADViewer/types';
-```
-
-## Three.js / R3F 패턴
-
-### Canvas 구조
-
-```tsx
-<Canvas shadows>
-    <PerspectiveCamera makeDefault position={[0, 0, 200]} fov={45} />
-    <OrbitControls enableDamping dampingFactor={0.05} />
-
-    {/* Lighting */}
-    <ambientLight intensity={0.4} />
-    <directionalLight position={[100, 100, 50]} castShadow />
-
-    {/* Meshes */}
-    <CADMesh cadData={data} config={config} />
-</Canvas>
-```
-
-### Geometry 변환
-
-```typescript
-// DXF Entity → Three.js BufferGeometry
-// 지원: LINE, CIRCLE, ARC, POLYLINE
-import { linesToGeometry, cadDataToGeometry } from '@/features/CADViewer/utils';
-```
-
-### 성능 최적화
-
-- **WebWorker**: 대용량 파일 비동기 파싱 (>2MB)
-- **LOD**: 엔티티 수 기반 세그먼트 조절
-- **Instancing**: 동일 지오메트리 재사용
-
-## 개발 명령어
-
-```bash
-# 개발 서버
-npm run dev
-
-# 빌드
-npm run build
-
-# 코드 품질
-npm run lint          # ESLint 검사
-npm run lint:fix      # ESLint 자동 수정
-npm run type-check    # TypeScript 검사
-
-# 테스트
-npm run test          # Vitest 실행
-npm run test:coverage # 커버리지 리포트
-```
-
-## 주요 파일
-
-| 파일                                            | 설명                                |
-| ----------------------------------------------- | ----------------------------------- |
-| `src/main.tsx`                                  | 앱 진입점                           |
-| `src/App.tsx`                                   | 루트 컴포넌트 (Router, QueryClient) |
-| `src/features/CADViewer/`                       | CAD 뷰어 기능 모듈                  |
-| `src/features/CADViewer/hooks/useDXFParser.ts`  | DXF 파싱 훅                         |
-| `src/features/CADViewer/utils/dxfToGeometry.ts` | 지오메트리 변환                     |
-| `vite.config.ts`                                | Vite 설정 (alias, 플러그인)         |
-| `tsconfig.app.json`                             | TypeScript 설정                     |
-
-## 참고 문서
-
-- `docs/ROADMAP.md` - 7단계 개발 로드맵
-- `docs/ARCHITECTURE.md` - 시스템 아키텍처
-- `docs/DEV_GUIDE.md` - 개발 컨벤션 상세
-- `docs/GIT_CONVENTIONS.md` - Git 커밋 규칙
+- ✅ `git status` - 상태 확인
+- ✅ `git diff` - 변경 내용 확인
+- ✅ `git log` - 히스토리 조회
+- ✅ `git branch` - 브랜치 목록 조회
 
 ## 제약사항
 
 - TypeScript strict mode 필수
 - ESLint + Prettier 사전 커밋 훅 적용
+- React Three Fiber 필수 (vanilla Three.js 사용 금지)
 - 백엔드 미연동 (Phase 2B 예정)
-- 테스트 파일 작성 중
