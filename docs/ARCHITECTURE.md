@@ -1,6 +1,9 @@
 # Architecture
 
-> CAD Viewer 프로젝트의 시스템 아키텍처와 패키지 구조를 설명합니다.
+> **Version**: 0.1.3
+> **Last Updated**: 2025-12-04
+
+CAD Viewer 프로젝트의 시스템 아키텍처와 패키지 구조를 설명합니다.
 
 ## 목차
 
@@ -146,10 +149,12 @@ src/
 │   │   ├── constants.ts
 │   │   ├── types.ts
 │   │   └── index.ts
-│   └── CADViewer/         # DXF 파일 3D 뷰어
+│   └── CADViewer/         # DXF 파일 3D 뷰어 (Phase 2A 완료)
 │       ├── components/    # CADScene, CADMesh, FileUpload, LayerPanel
 │       ├── hooks/         # useDXFParser, useDXFWorker
+│       │   └── __tests__/ # useDXFParser.test.ts
 │       ├── utils/         # dxfToGeometry, validators
+│       │   └── __tests__/ # dxfToGeometry.test.ts, validators.test.ts
 │       ├── workers/       # WebWorker (대용량 파일 파싱)
 │       ├── constants.ts
 │       ├── types.ts
@@ -225,3 +230,15 @@ tests/                     # 테스트 관련 파일 (배포 번들 제외)
 | [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md)               | Git 워크플로우 및 커밋 규칙 |
 | [GLOSSARY.md](./GLOSSARY.md)                             | 용어 및 약어 정의           |
 | [phases/PHASE_NAV_GUIDE.md](./phases/PHASE_NAV_GUIDE.md) | Phase별 구현 문서 가이드    |
+
+---
+
+## Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                                                    |
+| ----- | ---------- | ------------------------------------------------------------ |
+| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                      |
+| 0.1.2 | 2025-12-03 | Phase 2A 완료 반영, CADViewer 테스트 디렉토리 추가           |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                    |
+| 0.1.0 | 2025-12-01 | 아키텍처 문서 업데이트, CAD Viewer 기능 추가                 |
+| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리          |

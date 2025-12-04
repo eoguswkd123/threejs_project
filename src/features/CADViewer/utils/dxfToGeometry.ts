@@ -262,10 +262,6 @@ export function cadDataToGeometry(
 function mergeBufferGeometries(
     geometries: THREE.BufferGeometry[]
 ): THREE.BufferGeometry {
-    if (geometries.length === 0) {
-        return new THREE.BufferGeometry();
-    }
-
     if (geometries.length === 1) {
         return geometries[0]!;
     }

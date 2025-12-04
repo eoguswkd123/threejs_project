@@ -1,8 +1,9 @@
 # Git 커밋 규칙 (Conventional Commits)
 
-Three.js CAD Viewer 프로젝트의 Git 워크플로우 및 커밋 규칙 가이드입니다.
+> **Version**: 0.1.2
+> **Last Updated**: 2025-12-04
 
-이 프로젝트는 **Conventional Commits** 표준을 따릅니다.
+Three.js CAD Viewer 프로젝트의 Git 워크플로우 및 커밋 규칙 가이드입니다. 이 프로젝트는 **Conventional Commits** 표준을 따릅니다.
 
 ## 목차
 
@@ -215,6 +216,11 @@ git remote set-url origin https://사용자명@github.com/조직/저장소.git  
 
 ---
 
-**문서 버전**: 0.1.0
-**최종 업데이트**: 2025-12-02
-**작성자**: Development Team
+## Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                                               |
+| ----- | ---------- | ------------------------------------------------------- |
+| 0.1.2 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                 |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료, Git 자격증명 설정방법 추가   |
+| 0.1.0 | 2025-12-01 | 깃컨벤션 문서 업데이트                                  |
+| 0.0.0 | 2025-11-28 | 초기 버전                                               |

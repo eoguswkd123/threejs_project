@@ -1,6 +1,9 @@
 # Claude Code & SuperClaude 프레임워크 종합 분석 가이드
 
-> **명령어 요약본이 필요하신가요?** → [CLAUDE_CODE_GUIDE_SUMMARY.md](./CLAUDE_CODE_GUIDE_SUMMARY.md)
+> **Version**: 0.0.1
+> **Last Updated**: 2025-12-04
+
+명령어 요약본이 필요하신가요? → [CLAUDE_CODE_GUIDE_SUMMARY.md](./CLAUDE_CODE_GUIDE_SUMMARY.md)
 
 ---
 
@@ -661,3 +664,12 @@ Evidence > assumptions | Code > documentation | Efficiency > verbosity
 - 안전 우선: `--safe-mode` > `--validate` > 최적화 플래그
 - 깊이 계층: `--ultrathink` > `--think-hard` > `--think`
 - MCP 제어: `--no-mcp`가 모든 개별 MCP 플래그 오버라이드
+
+---
+
+## Changelog (변경 이력)
+
+| 버전  | 날짜       | 변경 내용                          |
+| ----- | ---------- | ---------------------------------- |
+| 0.0.1 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거 |
+| 0.0.0 | 2025-12-02 | 초기 버전                          |
