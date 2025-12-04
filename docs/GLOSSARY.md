@@ -68,33 +68,52 @@ CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 
 ## 빌드/개발 도구
 
-| 용어                  | 정의                                      |
-| --------------------- | ----------------------------------------- |
-| **ESLint**            | JavaScript/TypeScript 정적 코드 분석 도구 |
-| **typescript-eslint** | ESLint TypeScript 플러그인                |
-| **Prettier**          | 코드 포맷팅 도구                          |
-| **Husky**             | Git 훅 관리 도구                          |
-| **lint-staged**       | 스테이징된 파일에만 린트 적용 도구        |
-| **Vitest**            | Vite 네이티브 단위 테스트 프레임워크      |
-| **Testing Library**   | React 컴포넌트 테스트 라이브러리          |
-| **Autoprefixer**      | CSS 벤더 프리픽스 자동 추가 도구          |
+| 용어                  | 정의                                           |
+| --------------------- | ---------------------------------------------- |
+| **ESLint**            | JavaScript/TypeScript 정적 코드 분석 도구      |
+| **typescript-eslint** | ESLint TypeScript 플러그인                     |
+| **Prettier**          | 코드 포맷팅 도구                               |
+| **Husky**             | Git 훅 관리 도구                               |
+| **lint-staged**       | 스테이징된 파일에만 린트 적용 도구             |
+| **Vitest**            | Vite 네이티브 단위 테스트 프레임워크           |
+| **Testing Library**   | React 컴포넌트 테스트 라이브러리               |
+| **Autoprefixer**      | CSS 벤더 프리픽스 자동 추가 도구               |
+| **mypy**              | Python 정적 타입 검사기                        |
+| **pip-tools**         | requirements.in → requirements.txt 컴파일 도구 |
+| **Ruff**              | Rust 기반 고속 Python linter/formatter         |
 
 ---
 
 ## 백엔드
 
-| 용어           | 정의                                          |
-| -------------- | --------------------------------------------- |
-| **FastAPI**    | Python 고성능 웹 프레임워크                   |
-| **Celery**     | Python 분산 작업 큐                           |
-| **Redis**      | 인메모리 데이터 저장소 (캐시, 메시지 브로커)  |
-| **PostgreSQL** | 오픈소스 관계형 데이터베이스                  |
-| **MinIO**      | S3 호환 오브젝트 스토리지                     |
-| **Alembic**    | SQLAlchemy용 데이터베이스 마이그레이션 도구   |
-| **WebSocket**  | 양방향 실시간 통신 프로토콜                   |
-| **WebRTC**     | Web Real-Time Communication - P2P 실시간 통신 |
-| **Pub/Sub**    | Publish/Subscribe - 메시지 발행/구독 패턴     |
-| **JWT**        | JSON Web Token - 인증 토큰 표준               |
+| 용어                    | 정의                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| **ACK**                 | Acknowledgment - 메시지 처리 완료 확인 신호                  |
+| **Alembic**             | SQLAlchemy용 데이터베이스 마이그레이션 도구                  |
+| **AMQP**                | Advanced Message Queuing Protocol - 메시지 큐 표준 프로토콜  |
+| **Celery**              | Python 분산 작업 큐                                          |
+| **Circuit Breaker**     | 장애 전파 방지 패턴                                          |
+| **Consumer Group**      | 동일 메시지를 여러 Consumer가 분산 처리하는 그룹             |
+| **DLQ**                 | Dead Letter Queue - 처리 실패한 메시지를 모아두는 별도 Queue |
+| **FastAPI**             | Python 고성능 웹 프레임워크                                  |
+| **Fault Isolation**     | 한 컴포넌트 장애가 다른 컴포넌트에 영향을 주지 않는 설계     |
+| **gevent**              | 그린 스레드 기반 Python 동시성 라이브러리                    |
+| **GIL**                 | Global Interpreter Lock - Python 병렬 처리 제한              |
+| **Heartbeat**           | 연결 상태를 확인하기 위한 주기적 신호                        |
+| **Idempotency**         | 동일 작업을 여러 번 수행해도 결과가 같은 특성                |
+| **JWT**                 | JSON Web Token - 인증 토큰 표준                              |
+| **MinIO**               | S3 호환 오브젝트 스토리지                                    |
+| **Outbox Pattern**      | DB 트랜잭션과 메시지 발행의 원자성을 보장하는 패턴           |
+| **PostgreSQL**          | 오픈소스 관계형 데이터베이스                                 |
+| **prefork**             | 프로세스 풀 방식 Worker, GIL 우회                            |
+| **Prefetch Count**      | Consumer가 한 번에 가져올 수 있는 메시지 수                  |
+| **Pub/Sub**             | Publish/Subscribe - 메시지 발행/구독 패턴                    |
+| **Publisher Confirms**  | 메시지가 Broker에 도달했음을 확인하는 RabbitMQ 기능          |
+| **Quorum Queue**        | RabbitMQ 3.8+의 고가용성 큐, Raft 합의 알고리즘 사용         |
+| **Redis**               | 인메모리 데이터 저장소 (캐시, 메시지 브로커)                 |
+| **Temporal Decoupling** | 송신자와 수신자가 동시에 활성화될 필요 없는 설계             |
+| **WebRTC**              | Web Real-Time Communication - P2P 실시간 통신                |
+| **WebSocket**           | 양방향 실시간 통신 프로토콜                                  |
 
 ---
 
@@ -191,8 +210,8 @@ CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                              |
-| ----- | ---------- | -------------------------------------- |
-| 0.0.2 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거 |
-| 0.0.1 | 2025-12-02 | Phase개발 템플릿 개발완료              |
-| 0.0.0 | 2025-12-01 | 초기 버전                              |
+| 버전  | 날짜       | 변경 내용                                                                                              |
+| ----- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| 0.0.2 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거, ADR-002/ADR-003 용어집 통합 (백엔드 16개, 빌드/개발 도구 3개) |
+| 0.0.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                                              |
+| 0.0.0 | 2025-12-01 | 초기 버전                                                                                              |
