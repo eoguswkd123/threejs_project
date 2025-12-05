@@ -1,15 +1,17 @@
 # 파일 업로드 아키텍처
 
-> **Version**: 0.0.1
-> **Last Updated**: 2025-12-04
+> **Version**: 0.0.2
+> **Last Updated**: 2025-12-05
 
-> **관련 문서**
->
-> - [ADR-001: Backend 기술 스택](../adr/001_BACKEND_STACK.md) - Python vs Java 결정
-> - [ADR-002: Queue 대안 비교 분석](../adr/002_QUEUE_ALTERNATIVES_COMPARISON.md) - 아키텍처 선택 이유
-> - [구현 체크리스트](./FILE_UPLOAD_CHECKLIST.md) - 구현 항목 목록
-> - [Phase 2A DXF Viewer](../phases/02-CadFeatures/2A_DXF_VIEWER.md) - 프론트엔드 구현
-> - ROADMAP Phase 3.3 참조
+## 관련 문서
+
+| 문서                                                                                | 설명                   |
+| ----------------------------------------------------------------------------------- | ---------------------- |
+| [001_BACKEND_STACK.md](../adr/001_BACKEND_STACK.md)                                 | Backend 기술 스택 선택 |
+| [002_QUEUE_ALTERNATIVES_COMPARISON.md](../adr/002_QUEUE_ALTERNATIVES_COMPARISON.md) | Queue 대안 비교 분석   |
+| [FILE_UPLOAD_CHECKLIST.md](./FILE_UPLOAD_CHECKLIST.md)                              | 구현 항목 목록         |
+| [2A_DXF_VIEWER.md](../phases/02-CadFeatures/2A_DXF_VIEWER.md)                       | 프론트엔드 구현        |
+| [ROADMAP.md](../ROADMAP.md)                                                         | 전체 프로젝트 로드맵   |
 
 ## 목차
 
@@ -55,29 +57,29 @@
 
 ### 동기/비동기 경계
 
-| 구간 | 처리 방식 | 설명 |
-| ---- | --------- | ---- |
-| Frontend → Backend | **동기** | 업로드 요청, job_id 반환 대기 |
-| Backend → Queue | **동기** | 메시지 발행 후 응답 |
-| Queue → Worker | **비동기** | Frontend 응답과 무관하게 처리 |
-| Frontend → Backend | **폴링** | 2초 간격, 최대 60회 (5분), COMPLETED/FAILED 시 중단 |
+| 구간               | 처리 방식  | 설명                                                |
+| ------------------ | ---------- | --------------------------------------------------- |
+| Frontend → Backend | **동기**   | 업로드 요청, job_id 반환 대기                       |
+| Backend → Queue    | **동기**   | 메시지 발행 후 응답                                 |
+| Queue → Worker     | **비동기** | Frontend 응답과 무관하게 처리                       |
+| Frontend → Backend | **폴링**   | 2초 간격, 최대 60회 (5분), COMPLETED/FAILED 시 중단 |
 
 ### 파일 크기 제한
 
-| 계층 | 제한 | 설명 |
-| ---- | ---- | ---- |
-| Frontend | **500MB** | 빠른 검증, UX 피드백 |
-| Backend | **500MB** | 보안 게이트 (우회 방지) |
-| Worker | **500MB** | 처리 안정성 |
+| 계층     | 제한      | 설명                    |
+| -------- | --------- | ----------------------- |
+| Frontend | **500MB** | 빠른 검증, UX 피드백    |
+| Backend  | **500MB** | 보안 게이트 (우회 방지) |
+| Worker   | **500MB** | 처리 안정성             |
 
 #### 용량 선정 근거
 
-| 용량 | DXF 커버 | PDF 커버 | 업로드 시간 | 권장 |
-|------|----------|----------|-------------|------|
-| 50MB | 95% | 60% | 30초 | MVP |
-| 200MB | 99% | 85% | 2분 | 초기 |
-| **500MB** | 99.5% | **95%** | 5분 | **프로덕션** |
-| 1GB | 99.9% | 98% | 10분 | Enterprise |
+| 용량      | DXF 커버 | PDF 커버 | 업로드 시간 | 권장         |
+| --------- | -------- | -------- | ----------- | ------------ |
+| 50MB      | 95%      | 60%      | 30초        | MVP          |
+| 200MB     | 99%      | 85%      | 2분         | 초기         |
+| **500MB** | 99.5%    | **95%**  | 5분         | **프로덕션** |
+| 1GB       | 99.9%    | 98%      | 10분        | Enterprise   |
 
 #### 대용량 파일 처리 요구사항
 
@@ -168,37 +170,37 @@ Frontend         Java Backend         Temp Storage        DB             Queue  
 
 ### 단계별 설명
 
-| 구간 | 단계 | 담당 | 설명 |
-|------|------|------|------|
-| **동기** | 1 | Frontend | PDF/DXF 파일을 POST 요청으로 전송 |
-| | 2 | Java Backend | 파일 검증 후 MinIO/S3에 임시 저장 |
-| | 3 | Java Backend | PostgreSQL에 job_id와 상태(PENDING) 저장 |
-| | 4 | Java Backend | RabbitMQ에 작업 메시지 발행 (Enqueue) |
-| | 5 | Java Backend | job_id 응답 반환 |
-| **비동기** | 6 | Python Worker | Queue에서 작업 메시지 수신 (Dequeue) |
-| | 7 | Python Worker | S3에서 파일 다운로드 (Read file) |
-| | 8 | Python Worker | DB 상태 업데이트 (PROCESSING) |
-| | 9 | Python Worker | DXF/PDF → glTF 변환 처리 |
-| | 10 | Python Worker | 결과 glTF 파일 S3 저장 |
-| | 11 | Python Worker | DB 상태 업데이트 (COMPLETED) |
-| **폴링** | 12 | Frontend | 2초 간격으로 상태 폴링 (최대 60회) |
-| *(5 이후 병렬)* | 13 | Java Backend | DB에서 상태 조회 후 응답 |
-| | 14 | Frontend | COMPLETED 시 S3에서 glTF 로드 → 3D 렌더링 |
+| 구간            | 단계 | 담당          | 설명                                      |
+| --------------- | ---- | ------------- | ----------------------------------------- |
+| **동기**        | 1    | Frontend      | PDF/DXF 파일을 POST 요청으로 전송         |
+|                 | 2    | Java Backend  | 파일 검증 후 MinIO/S3에 임시 저장         |
+|                 | 3    | Java Backend  | PostgreSQL에 job_id와 상태(PENDING) 저장  |
+|                 | 4    | Java Backend  | RabbitMQ에 작업 메시지 발행 (Enqueue)     |
+|                 | 5    | Java Backend  | job_id 응답 반환                          |
+| **비동기**      | 6    | Python Worker | Queue에서 작업 메시지 수신 (Dequeue)      |
+|                 | 7    | Python Worker | S3에서 파일 다운로드 (Read file)          |
+|                 | 8    | Python Worker | DB 상태 업데이트 (PROCESSING)             |
+|                 | 9    | Python Worker | DXF/PDF → glTF 변환 처리                  |
+|                 | 10   | Python Worker | 결과 glTF 파일 S3 저장                    |
+|                 | 11   | Python Worker | DB 상태 업데이트 (COMPLETED)              |
+| **폴링**        | 12   | Frontend      | 2초 간격으로 상태 폴링 (최대 60회)        |
+| _(5 이후 병렬)_ | 13   | Java Backend  | DB에서 상태 조회 후 응답                  |
+|                 | 14   | Frontend      | COMPLETED 시 S3에서 glTF 로드 → 3D 렌더링 |
 
 ### 컴포넌트별 역할
 
-| 레이어 | 기술 | 컴포넌트 | 역할 |
-|--------|------|----------|------|
-| **Java Backend** | Spring Boot | Controller | 파일 업로드 API 제공 |
-| | | Service | 비즈니스 로직, 검증 |
-| | | Repository | JPA/JDBC DB 상태 관리 |
-| | | MessagePublisher | Spring AMQP 메시지 발행 |
-| | | StorageClient | MinIO Client 파일 저장 |
-| **Python Worker** | Python 3.11+ | Consumer | RabbitMQ 메시지 수신 |
-| | | DXFPipeline | ezdxf 파싱, 2D→3D 변환 |
-| | | PDFPipeline | PyMuPDF, OpenCV, YOLO |
-| | | GLTFGenerator | pygltflib glTF 생성 |
-| | | S3Client | boto3 결과 저장 |
+| 레이어            | 기술         | 컴포넌트         | 역할                    |
+| ----------------- | ------------ | ---------------- | ----------------------- |
+| **Java Backend**  | Spring Boot  | Controller       | 파일 업로드 API 제공    |
+|                   |              | Service          | 비즈니스 로직, 검증     |
+|                   |              | Repository       | JPA/JDBC DB 상태 관리   |
+|                   |              | MessagePublisher | Spring AMQP 메시지 발행 |
+|                   |              | StorageClient    | MinIO Client 파일 저장  |
+| **Python Worker** | Python 3.11+ | Consumer         | RabbitMQ 메시지 수신    |
+|                   |              | DXFPipeline      | ezdxf 파싱, 2D→3D 변환  |
+|                   |              | PDFPipeline      | PyMuPDF, OpenCV, YOLO   |
+|                   |              | GLTFGenerator    | pygltflib glTF 생성     |
+|                   |              | S3Client         | boto3 결과 저장         |
 
 ---
 
@@ -261,10 +263,10 @@ Message Queue ────────▶│  Dequeue    │                    
 
 ### 처리 경로 비교
 
-| 파일 타입 | 처리 경로 | 기술 스택 | 출력 | 예상 시간 |
-| --------- | --------- | --------- | ---- | --------- |
-| **DXF** | 벡터 파싱 | ezdxf → pygltflib | glTF/glb | ~2초 |
-| **PDF** | ML 분석 | PyMuPDF → OpenCV → YOLO → pygltflib | glTF/glb | ~18초 |
+| 파일 타입 | 처리 경로 | 기술 스택                           | 출력     | 예상 시간 |
+| --------- | --------- | ----------------------------------- | -------- | --------- |
+| **DXF**   | 벡터 파싱 | ezdxf → pygltflib                   | glTF/glb | ~2초      |
+| **PDF**   | ML 분석   | PyMuPDF → OpenCV → YOLO → pygltflib | glTF/glb | ~18초     |
 
 ---
 
@@ -338,22 +340,22 @@ DXF → 엔티티 파싱 → 2D→3D 변환 → glTF 출력
 
 ### 단계별 설명
 
-| Stage | 이름 | 입력 | 출력 | 예상 시간 |
-| ----- | ---- | ---- | ---- | --------- |
-| 1 | DXF 파싱 | DXF 바이너리 | 엔티티 목록 | ~0.5초 |
-| 2 | 엔티티 변환 | 엔티티 목록 | 2D 좌표 배열 | ~0.3초 |
-| 3 | 2D→3D 압출 | 2D 좌표 배열 | 3D Geometry | ~0.5초 |
-| 4 | glTF 생성 | 3D Geometry | glb 파일 | ~0.7초 |
-| **Total** | | | | **~2초** |
+| Stage     | 이름        | 입력         | 출력         | 예상 시간 |
+| --------- | ----------- | ------------ | ------------ | --------- |
+| 1         | DXF 파싱    | DXF 바이너리 | 엔티티 목록  | ~0.5초    |
+| 2         | 엔티티 변환 | 엔티티 목록  | 2D 좌표 배열 | ~0.3초    |
+| 3         | 2D→3D 압출  | 2D 좌표 배열 | 3D Geometry  | ~0.5초    |
+| 4         | glTF 생성   | 3D Geometry  | glb 파일     | ~0.7초    |
+| **Total** |             |              |              | **~2초**  |
 
 ### 지원 엔티티
 
-| DXF 엔티티 | 변환 결과 | 설명 |
-| ---------- | --------- | ---- |
-| **LINE** | 박스 (벽체) | 시작점→끝점을 두께와 높이로 압출 |
-| **ARC** | 곡선 벽체 | 호를 세그먼트로 분할하여 압출 |
-| **CIRCLE** | 실린더 | 원을 높이로 압출 (기둥 등) |
-| **LWPOLYLINE** | 연속 벽체 | 연결된 선분/호 처리 (bulge 포함) |
+| DXF 엔티티     | 변환 결과   | 설명                             |
+| -------------- | ----------- | -------------------------------- |
+| **LINE**       | 박스 (벽체) | 시작점→끝점을 두께와 높이로 압출 |
+| **ARC**        | 곡선 벽체   | 호를 세그먼트로 분할하여 압출    |
+| **CIRCLE**     | 실린더      | 원을 높이로 압출 (기둥 등)       |
+| **LWPOLYLINE** | 연속 벽체   | 연결된 선분/호 처리 (bulge 포함) |
 
 ### Bulge 처리
 
@@ -381,13 +383,13 @@ PDF → 이미지 추출 → 전처리 → ML 추론 → Geometry 생성 → glT
 
 ### DXF vs PDF 비교
 
-| 항목 | DXF | PDF |
-| ---- | --- | --- |
-| **데이터 형식** | 벡터 좌표 | 래스터 이미지 |
-| **처리 방식** | 직접 파싱 | ML 객체 탐지 |
-| **정확도** | 높음 (원본 좌표) | 중간 (추론 기반) |
-| **처리 속도** | 빠름 (~2초) | 느림 (~18초) |
-| **ML 필요** | 불필요 | 필요 |
+| 항목            | DXF              | PDF              |
+| --------------- | ---------------- | ---------------- |
+| **데이터 형식** | 벡터 좌표        | 래스터 이미지    |
+| **처리 방식**   | 직접 파싱        | ML 객체 탐지     |
+| **정확도**      | 높음 (원본 좌표) | 중간 (추론 기반) |
+| **처리 속도**   | 빠름 (~2초)      | 느림 (~18초)     |
+| **ML 필요**     | 불필요           | 필요             |
 
 ### 파이프라인 다이어그램
 
@@ -458,24 +460,24 @@ PDF → 이미지 추출 → 전처리 → ML 추론 → Geometry 생성 → glT
 
 ### 단계별 설명
 
-| Stage | 이름 | 입력 | 출력 | 예상 시간 |
-| ----- | ---- | ---- | ---- | --------- |
-| 1 | PDF 파싱 | PDF 바이너리 | 이미지 배열 | ~2초 |
-| 2 | 전처리 | 이미지 배열 | 전처리된 이미지 | ~3초 |
-| 3 | ML 추론 | 전처리된 이미지 | Detection 결과 | ~10초 |
-| 4 | 후처리 | Detection 결과 | Geometry 데이터 | ~1초 |
-| 5 | glTF 생성 | Geometry 데이터 | glb 파일 | ~2초 |
-| **Total** | | | | **~18초** |
+| Stage     | 이름      | 입력            | 출력            | 예상 시간 |
+| --------- | --------- | --------------- | --------------- | --------- |
+| 1         | PDF 파싱  | PDF 바이너리    | 이미지 배열     | ~2초      |
+| 2         | 전처리    | 이미지 배열     | 전처리된 이미지 | ~3초      |
+| 3         | ML 추론   | 전처리된 이미지 | Detection 결과  | ~10초     |
+| 4         | 후처리    | Detection 결과  | Geometry 데이터 | ~1초      |
+| 5         | glTF 생성 | Geometry 데이터 | glb 파일        | ~2초      |
+| **Total** |           |                 |                 | **~18초** |
 
 ### 탐지 클래스
 
 | 클래스 | 설명 | 기본 높이 |
 | ------ | ---- | --------- |
-| wall | 벽 | 2.7m |
-| door | 문 | 2.1m |
-| window | 창문 | 1.2m |
-| column | 기둥 | 3.0m |
-| stair | 계단 | 0.2m |
+| wall   | 벽   | 2.7m      |
+| door   | 문   | 2.1m      |
+| window | 창문 | 1.2m      |
+| column | 기둥 | 3.0m      |
+| stair  | 계단 | 0.2m      |
 
 ### Detection → Geometry 변환
 
@@ -498,10 +500,10 @@ Detection 결과                    3D Geometry
 
 ### 데이터 분리
 
-| 저장소 | 저장 내용 | 이유 |
-| ------ | --------- | ---- |
-| **MinIO/S3** | glTF/glb 파일 (3D 모델) | Three.js 네이티브 지원, CDN 캐싱 |
-| **PostgreSQL** | 메타데이터 (job_id, status, result_url) | 상태 관리, 빠른 조회 |
+| 저장소         | 저장 내용                               | 이유                             |
+| -------------- | --------------------------------------- | -------------------------------- |
+| **MinIO/S3**   | glTF/glb 파일 (3D 모델)                 | Three.js 네이티브 지원, CDN 캐싱 |
+| **PostgreSQL** | 메타데이터 (job_id, status, result_url) | 상태 관리, 빠른 조회             |
 
 ### 왜 Geometry를 DB에 저장하지 않는가?
 
@@ -546,17 +548,18 @@ upload_sessions
 
 ## 관련 Phase
 
-| Phase | 내용 | 상태 |
-| ----- | ---- | ---- |
-| Phase 2A | DXF CAD Viewer (프론트엔드) | ✅ 완료 |
-| Phase 3.3 | CAD 변환 엔진 (백엔드) | 📋 계획 |
-| Phase 2B | PDF CAD Viewer | 📋 대기 |
+| Phase     | 내용                        | 상태    |
+| --------- | --------------------------- | ------- |
+| Phase 2A  | DXF CAD Viewer (프론트엔드) | ✅ 완료 |
+| Phase 3.3 | CAD 변환 엔진 (백엔드)      | 📋 계획 |
+| Phase 2B  | PDF CAD Viewer              | 📋 대기 |
 
 ---
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                                                        |
-| ----- | ---------- | ------------------------------------------------------------------------------------------------ |
-| 0.0.1 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                                                           |
-| 0.0.0 | 2025-12-03 | 초기 버전 - 파일 업로드 아키텍처 문서화, ADR 폴더 구조화, 관련 문서 참조 경로 업데이트            |
+| 버전  | 날짜       | 변경 내용                                                                              |
+| ----- | ---------- | -------------------------------------------------------------------------------------- |
+| 0.0.2 | 2025-12-05 | 관련 문서 테이블 형식 변환, 문서명을 파일명으로 변경                                   |
+| 0.0.1 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                                                |
+| 0.0.0 | 2025-12-03 | 초기 버전 - 파일 업로드 아키텍처 문서화, ADR 폴더 구조화, 관련 문서 참조 경로 업데이트 |
