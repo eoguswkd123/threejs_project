@@ -1,14 +1,16 @@
 # 구현 체크리스트
 
-> **Version**: 0.0.1
-> **Last Updated**: 2025-12-04
+> **Version**: 0.0.2
+> **Last Updated**: 2025-12-05
 
-> **관련 문서**
->
-> - [파일 업로드 아키텍처](./FILE_UPLOAD_ARCHITECTURE.md) - 시스템 다이어그램
-> - [Queue vs Direct Call 분석](./FILE_UPLOAD_QUEUE_DECISION.md) - 아키텍처 선택 이유
-> - [Phase 2A DXF Viewer](../phases/02-CadFeatures/2A_DXF_VIEWER.md) - 프론트엔드 구현
-> - ROADMAP Phase 3.3 참조
+## 관련 문서
+
+| 문서                                                                                | 설명                 |
+| ----------------------------------------------------------------------------------- | -------------------- |
+| [FILE_UPLOAD_ARCHITECTURE.md](./FILE_UPLOAD_ARCHITECTURE.md)                        | 시스템 다이어그램    |
+| [002_QUEUE_ALTERNATIVES_COMPARISON.md](../adr/002_QUEUE_ALTERNATIVES_COMPARISON.md) | Queue 대안 비교 분석 |
+| [2A_DXF_VIEWER.md](../phases/02-CadFeatures/2A_DXF_VIEWER.md)                       | 프론트엔드 구현      |
+| [ROADMAP.md](../ROADMAP.md)                                                         | 전체 프로젝트 로드맵 |
 
 ## 목차
 
@@ -28,9 +30,9 @@
 - [ ] POST `/api/upload` - 파일 업로드 엔드포인트
 - [ ] GET `/api/status/{job_id}` - 상태 조회 엔드포인트
 - [ ] 파일 검증
-  - [ ] 파일 크기 제한 (max 500MB)
-  - [ ] MIME 타입 검증 (application/pdf, application/dxf)
-  - [ ] 악성코드 스캔 (ClamAV)
+    - [ ] 파일 크기 제한 (max 500MB)
+    - [ ] MIME 타입 검증 (application/pdf, application/dxf)
+    - [ ] 악성코드 스캔 (ClamAV)
 - [ ] Temp Storage 저장 (MinIO/S3)
 - [ ] DB 상태 관리 (PostgreSQL)
 - [ ] Queue 메시지 발행 (SQS/RabbitMQ)
@@ -53,11 +55,11 @@
 - [ ] 헤더 정보 추출 (단위, 스케일)
 - [ ] 레이어 정보 추출 (색상, 라인타입)
 - [ ] 엔티티 파싱
-  - [ ] LINE 엔티티
-  - [ ] ARC 엔티티
-  - [ ] CIRCLE 엔티티
-  - [ ] LWPOLYLINE 엔티티
-  - [ ] POLYLINE 엔티티
+    - [ ] LINE 엔티티
+    - [ ] ARC 엔티티
+    - [ ] CIRCLE 엔티티
+    - [ ] LWPOLYLINE 엔티티
+    - [ ] POLYLINE 엔티티
 
 ### Stage 2: 엔티티 변환
 
@@ -115,11 +117,11 @@
 - [ ] YOLO/Detectron2 모델 설정
 - [ ] ONNX Runtime / TensorRT 가속
 - [ ] 도면 요소 탐지
-  - [ ] wall (벽)
-  - [ ] door (문)
-  - [ ] window (창문)
-  - [ ] column (기둥)
-  - [ ] stair (계단)
+    - [ ] wall (벽)
+    - [ ] door (문)
+    - [ ] window (창문)
+    - [ ] column (기둥)
+    - [ ] stair (계단)
 - [ ] Bounding Box + Confidence 추출
 
 ### Stage 4: 후처리
@@ -164,10 +166,10 @@
 - [ ] 2초 간격 폴링
 - [ ] 완료/실패 시 폴링 중단
 - [ ] 상태별 UI 표시
-  - [ ] PENDING: 대기 중
-  - [ ] PROCESSING: 변환 중
-  - [ ] COMPLETED: 완료
-  - [ ] FAILED: 실패
+    - [ ] PENDING: 대기 중
+    - [ ] PROCESSING: 변환 중
+    - [ ] COMPLETED: 완료
+    - [ ] FAILED: 실패
 
 ### 3D 뷰어
 
@@ -186,8 +188,8 @@
 ### 스토리지
 
 - [ ] S3/MinIO 버킷 생성
-  - [ ] temp/ 폴더 (24h TTL 정책)
-  - [ ] results/ 폴더
+    - [ ] temp/ 폴더 (24h TTL 정책)
+    - [ ] results/ 폴더
 - [ ] CORS 정책 설정
 - [ ] CDN 설정 (CloudFront)
 
@@ -200,9 +202,9 @@
 ### 데이터베이스
 
 - [ ] PostgreSQL 스키마 생성
-  - [ ] upload_sessions 테이블
-  - [ ] dxf_analysis_results 테이블 (옵션)
-  - [ ] ml_analysis_results 테이블 (옵션)
+    - [ ] upload_sessions 테이블
+    - [ ] dxf_analysis_results 테이블 (옵션)
+    - [ ] ml_analysis_results 테이블 (옵션)
 - [ ] 인덱스 설정 (job_id, status)
 
 ### Worker 배포
@@ -224,17 +226,18 @@
 
 ## 관련 Phase
 
-| Phase | 내용 | 상태 |
-| ----- | ---- | ---- |
-| Phase 2A | DXF CAD Viewer (프론트엔드) | ✅ 완료 |
-| Phase 3.3 | CAD 변환 엔진 (백엔드) | 📋 계획 |
-| Phase 2B | PDF CAD Viewer | 📋 대기 |
+| Phase     | 내용                        | 상태    |
+| --------- | --------------------------- | ------- |
+| Phase 2A  | DXF CAD Viewer (프론트엔드) | ✅ 완료 |
+| Phase 3.3 | CAD 변환 엔진 (백엔드)      | 📋 계획 |
+| Phase 2B  | PDF CAD Viewer              | 📋 대기 |
 
 ---
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                    |
-| ----- | ---------- | ------------------------------------------------------------ |
-| 0.0.1 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                       |
-| 0.0.0 | 2025-12-03 | 초기 버전, 구현 체크리스트 문서화                             |
+| 버전  | 날짜       | 변경 내용                                                                                                                                   |
+| ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.2 | 2025-12-05 | 관련 문서 테이블 형식 변환, 깨진 링크 수정 (FILE_UPLOAD_QUEUE_DECISION.md → 002_QUEUE_ALTERNATIVES_COMPARISON.md), 문서명을 파일명으로 변경 |
+| 0.0.1 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                                                                                                     |
+| 0.0.0 | 2025-12-03 | 초기 버전, 구현 체크리스트 문서화                                                                                                           |

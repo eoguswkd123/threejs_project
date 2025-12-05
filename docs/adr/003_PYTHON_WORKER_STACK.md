@@ -1,42 +1,50 @@
 # ADR-003: Python Worker 기술 스택
 
-> **Version**: 0.0.0
-> **Created**: 2025-12-04
-> **Last Updated**: 2025-12-04
-> **Author**: Claude Code (AI Assistant)
+> **Version**: 0.0.1
+> **Last Updated**: 2025-12-05
 
-## 상태
+## 상태 및 의사결정 정보
 
-**초안 (Draft)** | 날짜: 2025-12-04
+**상태**: 초안 (Draft) | **작성일**: 2025-12-04
 
-> **관련 문서**
->
-> - [ADR-001: Backend 기술 스택](./001_BACKEND_STACK.md)
-> - [ADR-002: Queue 대안 비교 (RabbitMQ 확정)](./002_QUEUE_ALTERNATIVES_COMPARISON.md)
-> - [파일 업로드 아키텍처](../fileUpload/FILE_UPLOAD_ARCHITECTURE.md)
-> - [ROADMAP Phase 3](../ROADMAP.md)
-> - [용어집](../GLOSSARY.md)
+| 역할       | 담당자      |
+| ---------- | ----------- |
+| **작성자** | Claude      |
+| **검토자** | -           |
+| **승인자** | -           |
+| **결정일** | - (승인 시) |
+
+### 의사결정 동인 (Decision Drivers)
+
+| 유형         | 내용                                                       |
+| ------------ | ---------------------------------------------------------- |
+| **기술적**   | GIL 우회 필요, CPU-bound 작업 최적화, ML 라이브러리 호환성 |
+| **비즈니스** | 키오스크 서비스 99.5% 가용성, DXF < 5초 / PDF < 30초 SLA   |
+| **팀/조직**  | 2-3명 소규모 팀, 운영 복잡도 최소화 필요                   |
+
+> **상태 정의**: Draft → In Review → Approved / Superseded / Deprecated
 
 ---
 
 ## 목차
 
 1. [핵심 질문](#1-핵심-질문)
-2. [프로젝트 컨텍스트](#2-프로젝트-컨텍스트)
-3. [결정 영역별 분석](#3-결정-영역별-분석)
-    - 3.1 Python 버전 선택
-    - 3.2 Task Queue Framework
-    - 3.3 핵심 라이브러리
-    - 3.4 개발 환경 도구
-    - 3.5 Worker 실행 모델
-    - 3.6 Docker 컨테이너화
-4. [권장 기술 스택 종합](#4-권장-기술-스택-종합)
-5. [프로젝트 구조](#5-프로젝트-구조)
-6. [설정 예시](#6-설정-예시)
-7. [에러 처리 및 복원력](#7-에러-처리-및-복원력)
-8. [모니터링 전략](#8-모니터링-전략)
-9. [Consequences (결과)](#9-consequences-결과)
-10. [Review Triggers (재검토 조건)](#10-review-triggers-재검토-조건)
+2. [문서 범위](#2-문서-범위)
+3. [프로젝트 컨텍스트](#3-프로젝트-컨텍스트)
+4. [평가 기준](#4-평가-기준)
+5. [결정 영역별 분석](#5-결정-영역별-분석)
+    - 5.1 Python 버전 선택
+    - 5.2 Task Queue Framework
+    - 5.3 핵심 라이브러리
+    - 5.4 개발 환경 도구
+    - 5.5 Worker 실행 모델
+    - 5.6 Docker 컨테이너화
+    - 5.7 모니터링 도구
+6. [전문가 분석 종합](#6-전문가-분석-종합)
+7. [권장 기술 스택 종합](#7-권장-기술-스택-종합)
+8. [Consequences (결과)](#8-consequences-결과)
+9. [Review Triggers (재검토 조건)](#9-review-triggers-재검토-조건)
+10. [참조](#10-참조)
 
 ---
 
@@ -53,21 +61,42 @@
 | **핵심 근거**    | 성능 (3.11 최대 60% 향상), 안정성 (prefork GIL 우회), 확장성 (독립 스케일링) |
 | **트레이드오프** | 복잡도 증가 (2개 Worker 관리) vs 리소스 효율성 확보                          |
 
-### 권장 기술 스택 (확정)
+### 권장 기술 스택
 
-| 컴포넌트         | 선택    | 버전   | 선정 근거                                |
-| ---------------- | ------- | ------ | ---------------------------------------- |
-| **Python**       | 3.11    | 3.11.x | 10-60% 성능 향상, 안정적 ML 지원         |
-| **Task Queue**   | Celery  | ^5.3.0 | 업계 표준, RabbitMQ 네이티브 지원        |
-| **Worker Pool**  | prefork | -      | CPU-bound 작업, GIL 우회 필수            |
-| **패키지 관리**  | uv      | latest | 10-100x 빠름, pip/poetry/pyenv 통합 대체 |
-| **코드 품질**    | Ruff    | ^0.1.0 | 10-100x 빠름, 올인원 (linter+formatter)  |
-| **Type Checker** | mypy    | ^1.8.0 | 프로덕션 안정성, 엄격한 타입 검사        |
-| **테스트**       | pytest  | ^7.4.0 | 사실상 표준, pytest-celery 통합          |
+| 컴포넌트          | 선택                 | 버전   | 선정 근거                                |
+| ----------------- | -------------------- | ------ | ---------------------------------------- |
+| **Python**        | 3.11                 | 3.11.x | 10-60% 성능 향상, 안정적 ML 지원         |
+| **Task Queue**    | Celery               | ^5.3.0 | 업계 표준, RabbitMQ 네이티브 지원        |
+| **Worker Pool**   | prefork              | -      | CPU-bound 작업, GIL 우회 필수            |
+| **패키지 관리**   | uv                   | ^0.5.0 | 10-100x 빠름, pip/poetry/pyenv 통합 대체 |
+| **코드 품질**     | Ruff                 | ^0.8.0 | 10-100x 빠름, 올인원 (linter+formatter)  |
+| **Type Checker**  | mypy                 | ^1.8.0 | 프로덕션 안정성, 엄격한 타입 검사        |
+| **테스트**        | pytest               | ^7.4.0 | 사실상 표준, pytest-celery 통합          |
+| **모니터링**      | Prometheus + Grafana | latest | 메트릭 수집 + 시각화, Celery 통합        |
+| **Task 모니터링** | Flower               | ^2.0   | Celery 전용 실시간 대시보드              |
 
 ---
 
-## 2. 프로젝트 컨텍스트
+## 2. 문서 범위
+
+**이 문서가 다루는 내용:**
+
+- Python Worker 기술 스택 선택 (Python 버전, Task Queue, 라이브러리)
+- 모니터링 도구 선택 (Prometheus, Grafana, Flower)
+- Worker 실행 모델 및 Docker 컨테이너화 전략
+
+**이 문서가 다루지 않는 내용:**
+| 항목 | 다루는 위치 |
+|------|------------|
+| 설정 예시 및 구현 코드 | `cad-worker/README.md` (Phase 3B 구현 시) |
+| 보안 설정 (시크릿, 인증, 네트워크) | `cad-worker/README.md` (Phase 3B 구현 시) |
+| 테스트 전략 및 실행 방법 | `cad-worker/README.md` (Phase 3B 구현 시) |
+| 배포 운영 가이드 | `cad-worker/docs/DEPLOYMENT.md` (Phase 3C 이후) |
+| Backend ↔ Worker 인터페이스 | ADR-001 확정 후 별도 문서 |
+
+---
+
+## 3. 프로젝트 컨텍스트
 
 ### 시스템 아키텍처
 
@@ -115,17 +144,34 @@
 
 ---
 
-## 3. 결정 영역별 분석
+## 4. 평가 기준
 
-### 3.1 Python 버전 선택
+### 가중치 기반 평가 프레임워크
 
-**평가 점수 해석**:
+| 기준          | 가중치 | 설명                                          |
+| ------------- | ------ | --------------------------------------------- |
+| **성능**      | 25%    | 처리 속도, 리소스 효율성, GIL 우회 능력       |
+| **안정성**    | 25%    | 프로덕션 검증, 에러 처리, 장애 격리, LTS 지원 |
+| **생태계**    | 20%    | 커뮤니티 활성도, 문서화 수준, 유지보수 상태   |
+| **통합성**    | 15%    | RabbitMQ/Spring Boot 호환, 기존 스택 연계     |
+| **팀 적합성** | 15%    | 학습 곡선, 운영 복잡도, 2-3명 팀 규모 적합성  |
+| **합계**      | 100%   |                                               |
 
-- ⭐⭐⭐⭐⭐ (5점): 매우 우수
-- ⭐⭐⭐⭐ (4점): 우수
-- ⭐⭐⭐ (3점): 보통
-- ⭐⭐ (2점): 부족
-- ⭐ (1점): 매우 부족
+### 평가 척도
+
+| 점수             | 의미      |
+| ---------------- | --------- |
+| ⭐⭐⭐⭐⭐ (5점) | 매우 우수 |
+| ⭐⭐⭐⭐ (4점)   | 우수      |
+| ⭐⭐⭐ (3점)     | 보통      |
+| ⭐⭐ (2점)       | 미흡      |
+| ⭐ (1점)         | 매우 미흡 |
+
+---
+
+## 5. 결정 영역별 분석
+
+### 5.1 Python 버전 선택
 
 | 기준                  | Python 3.10                  | Python 3.11                  | Python 3.12                |
 | --------------------- | ---------------------------- | ---------------------------- | -------------------------- |
@@ -137,14 +183,14 @@
 | **LTS 지원**          | 2026-10                      | 2027-10                      | 2028-10                    |
 | **종합**              | 78점                         | **92점**                     | 85점                       |
 
-> **📌 Python LTS 정책 참고**
->
-> Python은 공식 "LTS" 용어를 사용하지 않지만, **모든 minor 버전이 동일하게 5년간 지원**됩니다.
->
-> - **Full Support**: 1.5년 (3.13부터 2년) - 버그 수정 + 보안 패치
-> - **Security Only**: 3.5년 (3.13부터 3년) - 보안 패치만
-> - Spring Boot와 달리 LTS/non-LTS 구분 없이 **모든 버전 동일 대우**
-> - 참고: [Python 버전 지원 정책](https://devguide.python.org/versions/)
+**📌 Python LTS 정책 참고**
+
+Python은 공식 "LTS" 용어를 사용하지 않지만, **모든 minor 버전이 동일하게 5년간 지원**됩니다.
+
+- **Full Support**: 1.5년 (3.13부터 2년) - 버그 수정 + 보안 패치
+- **Security Only**: 3.5년 (3.13부터 3년) - 보안 패치만
+- Spring Boot와 달리 LTS/non-LTS 구분 없이 **모든 버전 동일 대우**
+- 참고: [Python 버전 지원 정책](https://devguide.python.org/versions/)
 
 #### 권장: Python 3.11
 
@@ -181,7 +227,7 @@
 
 ---
 
-### 3.2 Task Queue Framework
+### 5.2 Task Queue Framework
 
 | 기준              | Celery                             | Dramatiq                  | RQ (Redis Queue)     |
 | ----------------- | ---------------------------------- | ------------------------- | -------------------- |
@@ -214,7 +260,7 @@
 
 ---
 
-### 3.3 핵심 라이브러리
+### 5.3 핵심 라이브러리
 
 #### DXF 처리 라이브러리
 
@@ -269,7 +315,7 @@
 
 ---
 
-### 3.4 개발 환경 도구
+### 5.4 개발 환경 도구
 
 #### IDE / 코드 에디터
 
@@ -299,7 +345,7 @@
 
 | 도구                   | 속도               | 재현성     | Docker 호환 | 학습 곡선  | 선택                |
 | ---------------------- | ------------------ | ---------- | ----------- | ---------- | ------------------- |
-| **uv**                 | ⭐⭐⭐⭐⭐ 10-100x | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐   | ✅ **권장**         |
+| **uv**                 | ⭐⭐⭐⭐⭐ 10-100x | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐   | ✅ 권장             |
 | pip-tools              | ⭐⭐⭐⭐⭐         | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | 안정성 중시 시 대안 |
 | Poetry                 | ⭐⭐⭐             | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐    | ⭐⭐⭐     | 대안                |
 | pip + requirements.txt | ⭐⭐⭐⭐⭐         | ⭐⭐⭐     | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | ❌                  |
@@ -394,7 +440,7 @@ quote-style = "double"
 
 ---
 
-### 3.5 Worker 실행 모델
+### 5.5 Worker 실행 모델
 
 #### Worker Pool 선택
 
@@ -433,7 +479,7 @@ quote-style = "double"
 
 ---
 
-### 3.6 Docker 컨테이너화
+### 5.6 Docker 컨테이너화
 
 #### Base 이미지 선택
 
@@ -487,9 +533,101 @@ CMD ["celery", "-A", "worker", "worker", "-l", "info"]
 - 빌드 도구 제외로 60% 이미지 크기 감소
 - 보안: 빌드 시크릿 런타임에 포함 안 됨
 
+### 5.7 모니터링 도구
+
+#### 메트릭 수집/시각화
+
+| 기준              | Prometheus + Grafana       | Datadog           | ELK Stack           |
+| ----------------- | -------------------------- | ----------------- | ------------------- |
+| **비용**          | ⭐⭐⭐⭐⭐ 무료 (OSS)      | ⭐⭐ SaaS 비용    | ⭐⭐⭐⭐ 무료 (OSS) |
+| **Celery 통합**   | ⭐⭐⭐⭐⭐ celery-exporter | ⭐⭐⭐⭐ 에이전트 | ⭐⭐⭐ 커스텀 필요  |
+| **대시보드**      | ⭐⭐⭐⭐⭐ 풍부 (커스텀)   | ⭐⭐⭐⭐⭐ 풍부   | ⭐⭐⭐⭐ Kibana     |
+| **알림**          | ⭐⭐⭐⭐ Alertmanager      | ⭐⭐⭐⭐⭐ 내장   | ⭐⭐⭐ Watcher      |
+| **운영 복잡도**   | ⭐⭐⭐⭐ 중간              | ⭐⭐⭐⭐⭐ 낮음   | ⭐⭐⭐ 높음         |
+| **2-3명 팀 적합** | ⭐⭐⭐⭐⭐ 높음            | ⭐⭐⭐ 비용 부담  | ⭐⭐⭐ 복잡도       |
+| **종합**          | **90점**                   | 75점              | 70점                |
+
+**Prometheus + Grafana 점수 계산**:
+
+- 비용 (20%): 5 × 0.2 = 1.0
+- Celery 통합 (25%): 5 × 0.25 = 1.25
+- 대시보드 (15%): 5 × 0.15 = 0.75
+- 알림 (15%): 4 × 0.15 = 0.6
+- 운영 복잡도 (15%): 4 × 0.15 = 0.6
+- 팀 적합성 (10%): 5 × 0.1 = 0.5
+- **합계**: 4.7 × 20 = **94점** → 보수적으로 **90점**
+
+#### Celery 전용 모니터링
+
+| 기준            | Flower     | celery-events | 자체 구현 |
+| --------------- | ---------- | ------------- | --------- |
+| **실시간 UI**   | ⭐⭐⭐⭐⭐ | ❌            | ⭐⭐⭐    |
+| **작업 상태**   | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐      | ⭐⭐⭐    |
+| **Worker 관리** | ⭐⭐⭐⭐⭐ | ❌            | ⭐⭐      |
+| **설치 용이성** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐    | ⭐⭐      |
+| **종합**        | **95점**   | 60점          | 50점      |
+
+**Flower 점수 계산**:
+
+- 실시간 UI (30%): 5 × 0.3 = 1.5
+- 작업 상태 (30%): 5 × 0.3 = 1.5
+- Worker 관리 (20%): 5 × 0.2 = 1.0
+- 설치 용이성 (20%): 5 × 0.2 = 1.0
+- **합계**: 5.0 × 20 = **100점** → 보수적으로 **95점**
+
+#### 권장: Prometheus + Grafana + Flower
+
+**선정 근거**:
+
+1. **비용 효율**: 모두 오픈소스, SaaS 비용 없음
+2. **Celery 완벽 통합**: celery-exporter로 Prometheus 메트릭 수집 + Flower 실시간 UI
+3. **커스터마이징**: Grafana 대시보드 자유롭게 구성 가능
+4. **2-3명 팀 적합**: 운영 복잡도 낮음, 학습 곡선 완만
+
+**아키텍처**:
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
+│   Celery    │────▶│ celery-exporter  │────▶│ Prometheus  │
+│   Workers   │     │   (메트릭 수집)   │     │  (저장소)   │
+└─────────────┘     └──────────────────┘     └──────┬──────┘
+       │                                           │
+       │            ┌──────────────────┐           │
+       └───────────▶│     Flower       │           │
+                    │ (실시간 Task UI)  │           ▼
+                    └──────────────────┘     ┌─────────────┐
+                                             │   Grafana   │
+                                             │ (시각화/알림)│
+                                             └─────────────┘
+```
+
 ---
 
-## 4. 권장 기술 스택 종합
+## 6. 전문가 분석 종합
+
+### 핵심 결정 평가 매트릭스
+
+| 기준 (가중치)   | Python 3.11 | Celery     | prefork    | uv         |
+| --------------- | ----------- | ---------- | ---------- | ---------- |
+| 성능 (25%)      | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐   | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 안정성 (25%)    | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐   |
+| 생태계 (20%)    | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐   |
+| 통합성 (15%)    | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 팀 적합성 (15%) | ⭐⭐⭐⭐    | ⭐⭐⭐     | ⭐⭐⭐⭐   | ⭐⭐⭐⭐   |
+| **가중 총점**   | **95점**    | **89점**   | **97점**   | **87점**   |
+
+### 분석 요약
+
+**주요 인사이트**:
+
+1. **Python 3.11**: 성능 10-60% 향상과 ML 생태계 완벽 호환으로 최적 선택
+2. **Celery + prefork**: GIL 우회와 RabbitMQ 네이티브 지원으로 CPU-bound 작업에 최적
+3. **Worker 분리 전략**: DXF/PDF 독립 스케일링으로 리소스 효율성과 장애 격리 확보
+4. **uv 패키지 관리**: 10-100x 빠른 속도로 Docker 빌드 시간 대폭 단축
+
+---
+
+## 7. 권장 기술 스택 종합
 
 ### requirements.in
 
@@ -525,12 +663,15 @@ boto3>=1.34.0
 
 # Monitoring
 prometheus-client>=0.19.0
-celery-exporter>=1.4.0
+celery-exporter>=1.3.0
 
 # Utilities
 pydantic>=2.5.0
 python-dotenv>=1.0.0
 structlog>=24.1.0
+
+# Resilience
+pybreaker>=1.0.0
 ```
 
 ### pyproject.toml
@@ -551,6 +692,7 @@ ignore = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"
+indent-style = "space"
 
 [tool.mypy]
 python_version = "3.11"
@@ -568,415 +710,23 @@ asyncio_mode = "auto"
 addopts = "-v --cov=src --cov-report=term-missing"
 ```
 
----
-
-## 5. 프로젝트 구조
+### 마이그레이션 경로
 
 ```
-cad-worker/
-├── src/
-│   ├── __init__.py
-│   ├── celery_app.py           # Celery 인스턴스 설정
-│   ├── config.py               # 환경 변수 관리
-│   │
-│   ├── tasks/                  # Celery Tasks
-│   │   ├── __init__.py
-│   │   ├── dxf_tasks.py        # DXF 변환 태스크
-│   │   └── pdf_tasks.py        # PDF ML 분석 태스크
-│   │
-│   ├── pipelines/              # 처리 파이프라인
-│   │   ├── __init__.py
-│   │   ├── dxf/
-│   │   │   ├── __init__.py
-│   │   │   ├── parser.py       # ezdxf 파싱
-│   │   │   ├── transformer.py  # 2D → 3D 변환
-│   │   │   └── exporter.py     # glTF 출력
-│   │   └── pdf/
-│   │       ├── __init__.py
-│   │       ├── extractor.py    # PyMuPDF 추출
-│   │       ├── preprocessor.py # OpenCV 전처리
-│   │       ├── detector.py     # YOLO 추론
-│   │       └── exporter.py     # glTF 출력
-│   │
-│   ├── models/                 # 데이터 모델
-│   │   ├── __init__.py
-│   │   ├── job.py              # Job 상태 모델
-│   │   └── geometry.py         # 3D Geometry 모델
-│   │
-│   ├── storage/                # 스토리지 클라이언트
-│   │   ├── __init__.py
-│   │   ├── minio_client.py     # MinIO/S3 클라이언트
-│   │   └── db_client.py        # PostgreSQL 클라이언트
-│   │
-│   └── utils/                  # 유틸리티
-│       ├── __init__.py
-│       ├── logging.py          # 구조화 로깅
-│       └── metrics.py          # Prometheus 메트릭
-│
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py             # pytest fixtures
-│   ├── unit/
-│   │   ├── test_dxf_parser.py
-│   │   └── test_pdf_extractor.py
-│   └── integration/
-│       ├── test_dxf_pipeline.py
-│       └── test_pdf_pipeline.py
-│
-├── docker/
-│   ├── Dockerfile.cpu          # CPU Worker
-│   ├── Dockerfile.gpu          # GPU Worker
-│   └── docker-compose.yml
-│
-├── requirements.in
-├── requirements.txt            # pip-compile 출력
-├── pyproject.toml
-├── .env.example
-└── README.md
+Phase 1          Phase 2          Phase 3
+Python 3.11  ──▶ Python 3.12  ──▶ Python 3.13
+Celery 5.3   ──▶ Celery 5.4+  ──▶ Celery 6.x
+(현재)           (2026 검토)       (2027 검토)
 ```
+
+**마이그레이션 고려사항:**
+
+- Python 업그레이드: ML 라이브러리 호환성 확인 필수 (PyTorch, ultralytics)
+- Celery 업그레이드: Worker pool 설정 호환성 검증, 설정 파일 마이그레이션
 
 ---
 
-## 6. 설정 예시
-
-### celery_app.py
-
-```python
-"""Celery 애플리케이션 설정"""
-from celery import Celery
-from kombu import Exchange, Queue
-
-from src.config import settings
-
-app = Celery("cad-worker")
-
-# Broker 설정 (RabbitMQ)
-app.conf.broker_url = settings.RABBITMQ_URL
-app.conf.result_backend = settings.REDIS_URL
-
-# Worker 설정
-app.conf.worker_pool = "prefork"
-app.conf.worker_concurrency = settings.WORKER_CONCURRENCY
-app.conf.worker_prefetch_multiplier = 1  # 긴 태스크 부하 분산
-app.conf.worker_max_tasks_per_child = 100  # 메모리 누수 방지
-
-# Task 설정
-app.conf.task_acks_late = True  # 처리 완료 후 ACK
-app.conf.task_reject_on_worker_lost = True
-app.conf.task_time_limit = 600  # 10분 (hard limit)
-app.conf.task_soft_time_limit = 540  # 9분 (soft limit)
-
-# 직렬화
-app.conf.task_serializer = "json"
-app.conf.result_serializer = "json"
-app.conf.accept_content = ["json"]
-
-# Queue 설정
-default_exchange = Exchange("tasks", type="direct")
-
-app.conf.task_queues = (
-    Queue("dxf_queue", default_exchange, routing_key="dxf"),
-    Queue("pdf_queue", default_exchange, routing_key="pdf"),
-    Queue("dxf_dlq", default_exchange, routing_key="dxf.dlq"),
-    Queue("pdf_dlq", default_exchange, routing_key="pdf.dlq"),
-)
-
-app.conf.task_routes = {
-    "src.tasks.dxf_tasks.*": {"queue": "dxf_queue", "routing_key": "dxf"},
-    "src.tasks.pdf_tasks.*": {"queue": "pdf_queue", "routing_key": "pdf"},
-}
-
-# Retry 설정
-app.conf.task_default_retry_delay = 60  # 60초
-app.conf.task_max_retries = 3
-
-# Task 자동 탐색
-app.autodiscover_tasks(["src.tasks"])
-```
-
-### config.py
-
-```python
-"""환경 변수 설정"""
-from pydantic_settings import BaseSettings
-
-
-class Settings(BaseSettings):
-    """Worker 설정"""
-
-    # RabbitMQ
-    RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672//"
-
-    # Redis (Result Backend)
-    REDIS_URL: str = "redis://localhost:6379/0"
-
-    # PostgreSQL
-    DATABASE_URL: str = "postgresql://user:pass@localhost:5432/cadviewer"
-
-    # MinIO/S3
-    MINIO_ENDPOINT: str = "localhost:9000"
-    MINIO_ACCESS_KEY: str = "minioadmin"
-    MINIO_SECRET_KEY: str = "minioadmin"
-    MINIO_BUCKET: str = "cad-files"
-
-    # Worker
-    WORKER_CONCURRENCY: int = 4
-    WORKER_TYPE: str = "dxf"  # "dxf" | "pdf"
-
-    # ML (PDF Worker only)
-    YOLO_MODEL_PATH: str = "/models/yolov8n.pt"
-    USE_GPU: bool = False
-
-    class Config:
-        env_file = ".env"
-
-
-settings = Settings()
-```
-
-### docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-    # DXF Worker (CPU)
-    worker-dxf:
-        build:
-            context: .
-            dockerfile: docker/Dockerfile.cpu
-        environment:
-            - WORKER_TYPE=dxf
-            - WORKER_CONCURRENCY=4
-            - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
-            - DATABASE_URL=postgresql://user:pass@postgres:5432/cadviewer
-            - MINIO_ENDPOINT=minio:9000
-        depends_on:
-            - rabbitmq
-            - postgres
-            - minio
-        command: celery -A src.celery_app worker -Q dxf_queue -l info
-        deploy:
-            resources:
-                limits:
-                    cpus: '4'
-                    memory: 8G
-        healthcheck:
-            test: ['CMD', 'celery', '-A', 'src.celery_app', 'inspect', 'ping']
-            interval: 30s
-            timeout: 10s
-            retries: 3
-
-    # PDF Worker (GPU)
-    worker-pdf:
-        build:
-            context: .
-            dockerfile: docker/Dockerfile.gpu
-        environment:
-            - WORKER_TYPE=pdf
-            - WORKER_CONCURRENCY=2
-            - USE_GPU=true
-            - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672//
-            - DATABASE_URL=postgresql://user:pass@postgres:5432/cadviewer
-            - MINIO_ENDPOINT=minio:9000
-        depends_on:
-            - rabbitmq
-            - postgres
-            - minio
-        command: celery -A src.celery_app worker -Q pdf_queue -l info
-        deploy:
-            resources:
-                limits:
-                    cpus: '4'
-                    memory: 16G
-                reservations:
-                    devices:
-                        - driver: nvidia
-                          count: 1
-                          capabilities: [gpu]
-        healthcheck:
-            test: ['CMD', 'celery', '-A', 'src.celery_app', 'inspect', 'ping']
-            interval: 30s
-            timeout: 10s
-            retries: 3
-
-    # Flower (모니터링)
-    flower:
-        image: mher/flower:2.0
-        environment:
-            - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-        ports:
-            - '5555:5555'
-        depends_on:
-            - rabbitmq
-
-    # 인프라 서비스 (개발용)
-    rabbitmq:
-        image: rabbitmq:3.12-management
-        ports:
-            - '5672:5672'
-            - '15672:15672'
-        healthcheck:
-            test: rabbitmq-diagnostics -q ping
-            interval: 30s
-            timeout: 10s
-            retries: 5
-
-    postgres:
-        image: postgres:15
-        environment:
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: pass
-            POSTGRES_DB: cadviewer
-        ports:
-            - '5432:5432'
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
-
-    minio:
-        image: minio/minio
-        command: server /data --console-address ":9001"
-        ports:
-            - '9000:9000'
-            - '9001:9001'
-        volumes:
-            - minio_data:/data
-
-volumes:
-    postgres_data:
-    minio_data:
-```
-
----
-
-## 7. 에러 처리 및 복원력
-
-### Retry 정책
-
-```python
-"""DXF 태스크 예시 - Retry 정책 적용"""
-from celery import shared_task
-from celery.exceptions import MaxRetriesExceededError
-
-from src.celery_app import app
-
-
-@app.task(
-    bind=True,
-    autoretry_for=(IOError, ConnectionError),
-    retry_backoff=True,  # Exponential backoff
-    retry_backoff_max=600,  # 최대 10분
-    retry_kwargs={"max_retries": 3},
-)
-def process_dxf(self, job_id: str, file_path: str) -> dict:
-    """DXF 파일 처리 태스크"""
-    try:
-        # 처리 로직
-        result = dxf_pipeline.process(file_path)
-        return {"status": "completed", "result_path": result}
-
-    except MaxRetriesExceededError:
-        # DLQ로 이동
-        self.apply_async(
-            args=[job_id, file_path],
-            queue="dxf_dlq",
-            retry=False,
-        )
-        raise
-```
-
-### Dead Letter Queue (DLQ) 전략
-
-| 단계 | 동작         | 조건                               |
-| ---- | ------------ | ---------------------------------- |
-| 1    | 최초 처리    | dxf_queue / pdf_queue              |
-| 2    | 재시도 (3회) | Exponential Backoff (60→180→360초) |
-| 3    | DLQ 이동     | max_retries 초과                   |
-| 4    | 알림 발송    | DLQ 메시지 발생 시 Slack/Email     |
-| 5    | 수동 재처리  | 관리자 확인 후 재큐잉              |
-
-### Circuit Breaker (외부 서비스)
-
-```python
-"""MinIO Circuit Breaker 예시"""
-from pybreaker import CircuitBreaker
-
-minio_breaker = CircuitBreaker(
-    fail_max=5,
-    reset_timeout=60,
-    exclude=[FileNotFoundError],  # 파일 없음은 장애 아님
-)
-
-@minio_breaker
-def upload_to_minio(file_path: str, bucket: str, key: str) -> str:
-    """MinIO 업로드 (Circuit Breaker 적용)"""
-    return minio_client.fput_object(bucket, key, file_path)
-```
-
----
-
-## 8. 모니터링 전략
-
-### Prometheus 메트릭
-
-```python
-"""커스텀 메트릭 정의"""
-from prometheus_client import Counter, Histogram, Gauge
-
-# 작업 카운터
-tasks_total = Counter(
-    "worker_tasks_total",
-    "Total tasks processed",
-    ["task_name", "status"],  # completed, failed
-)
-
-# 처리 시간
-task_duration = Histogram(
-    "worker_task_duration_seconds",
-    "Task processing duration",
-    ["task_name"],
-    buckets=[0.5, 1, 2, 5, 10, 30, 60, 120],
-)
-
-# 현재 처리 중인 작업
-tasks_in_progress = Gauge(
-    "worker_tasks_in_progress",
-    "Tasks currently being processed",
-    ["task_name"],
-)
-
-# 메모리 사용량
-memory_usage = Gauge(
-    "worker_memory_bytes",
-    "Worker memory usage in bytes",
-)
-```
-
-### 알림 규칙
-
-| 심각도       | 조건                  | 알림 채널         |
-| ------------ | --------------------- | ----------------- |
-| **Critical** | Worker 다운 (5분+)    | Slack + PagerDuty |
-| **Critical** | 실패율 > 10% (5분)    | Slack + PagerDuty |
-| **Warning**  | 처리 시간 > SLA의 2배 | Slack             |
-| **Warning**  | 메모리 > 80%          | Slack             |
-| **Info**     | DLQ 메시지 발생       | Slack             |
-
-### Grafana 대시보드
-
-**주요 패널**:
-
-1. 작업 처리율 (tasks/sec)
-2. 평균/P95/P99 처리 시간
-3. 큐 깊이 (백로그)
-4. 실패율
-5. Worker 인스턴스 상태
-6. 메모리/CPU 사용량
-7. GPU 사용률 (PDF Worker)
-
----
-
-## 9. Consequences (결과)
+## 8. Consequences (결과)
 
 ### 긍정적 결과
 
@@ -997,31 +747,68 @@ memory_usage = Gauge(
 | **GPU 비용**    | PDF Worker GPU 필요      | 수요 기반 스케일링         |
 | **학습 곡선**   | Celery 설정 복잡도       | 문서화 및 템플릿 제공      |
 
+### 리스크
+
+| 리스크                               | 확률 | 영향 | 대응                                         |
+| ------------------------------------ | ---- | ---- | -------------------------------------------- |
+| Celery 복잡성으로 인한 디버깅 어려움 | 중간 | 중간 | 상세 로깅, Flower 모니터링 활용              |
+| Python 3.13 조기 전환 압박           | 낮음 | 낮음 | 3.11 LTS 2027-10까지 유지, 점진 전환         |
+| GPU Worker 비용 증가                 | 중간 | 높음 | 수요 기반 오토스케일링, 스팟 인스턴스 활용   |
+| uv 도구 성숙도 리스크                | 낮음 | 낮음 | pip-tools 대안 준비, Astral 팀 지속 모니터링 |
+
 ---
 
-## 10. Review Triggers (재검토 조건)
+## 9. Review Triggers (재검토 조건)
+
+다음 조건 발생 시 이 ADR을 재검토합니다:
 
 ### 기술적 트리거
 
-| 조건                 | 재검토 영역              |
-| -------------------- | ------------------------ |
-| Python 3.12 LTS 출시 | Python 버전 업그레이드   |
-| PyTorch 3.x 출시     | ML 라이브러리 업그레이드 |
-| Dramatiq 2.0 안정화  | Celery 대안 재평가       |
-| 처리량 100배 증가    | Worker 아키텍처 재설계   |
+- [ ] Python 3.13 정식 출시 및 생태계 성숙 → Python 버전 업그레이드 검토
+- [ ] PyTorch 3.x 출시 → ML 라이브러리 업그레이드 검토
+- [ ] Dramatiq 2.0 안정화 → Celery 대안 재평가
+- [ ] 처리량 100배 증가 → Worker 아키텍처 재설계
 
 ### 비즈니스 트리거
 
-| 조건                  | 재검토 영역            |
-| --------------------- | ---------------------- |
-| 키오스크 30대 초과    | Kubernetes 전환 검토   |
-| 새로운 파일 형식 추가 | 파이프라인 확장        |
-| 실시간 처리 요구      | 스트리밍 아키텍처 검토 |
+- [ ] 키오스크 30대 초과 → Kubernetes 전환 검토
+- [ ] 새로운 파일 형식 추가 → 파이프라인 확장
+- [ ] 실시간 처리 요구 → 스트리밍 아키텍처 검토
+
+### 정기 검토
+
+- [ ] 6개월 정기 검토 (다음 검토: 2026-06-05)
+
+---
+
+## 10. 참조
+
+### 관련 문서
+
+| 문서                                                                           | 설명                   |
+| ------------------------------------------------------------------------------ | ---------------------- |
+| [001_BACKEND_STACK.md](./001_BACKEND_STACK.md)                                 | Backend 기술 스택 선택 |
+| [002_QUEUE_ALTERNATIVES_COMPARISON.md](./002_QUEUE_ALTERNATIVES_COMPARISON.md) | RabbitMQ 선택 근거     |
+| [FILE_UPLOAD_ARCHITECTURE.md](../fileUpload/FILE_UPLOAD_ARCHITECTURE.md)       | 시스템 다이어그램      |
+| [ROADMAP.md](../ROADMAP.md)                                                    | 전체 프로젝트 로드맵   |
+| [GLOSSARY.md](../GLOSSARY.md)                                                  | 용어 및 약어 정의      |
+
+### 외부 참조
+
+- [Python 버전 지원 정책](https://devguide.python.org/versions/)
+- [Celery 공식 문서](https://docs.celeryq.dev/)
+- [uv 패키지 관리자](https://github.com/astral-sh/uv)
+- [Ruff Linter](https://github.com/astral-sh/ruff)
+- [Flower Celery 모니터링](https://flower.readthedocs.io/)
+- [PyTorch 공식 문서](https://pytorch.org/docs/stable/)
+- [Docker Python 이미지 가이드](https://hub.docker.com/_/python)
+- [Prometheus 공식 문서](https://prometheus.io/docs/)
 
 ---
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                                                                                                                 |
-| ----- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.0.0 | 2025-12-04 | 초기 버전 - Python Worker 기술 스택 정의, 전문가 검토 결과 반영, 용어집 GLOSSARY.md 통합, Python LTS 정책 명시, IDE 도구 비교 추가, uv 패키지 관리자 추가 |
+| 버전  | 날짜       | 변경 내용                                                                                                                                                                                                                                    |
+| ----- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.1 | 2025-12-05 | 템플릿 구조 정렬 및 품질 개선: 상태/평가기준/전문가분석/리스크/외부참조 섹션 추가, 모니터링 도구 비교 추가, Review Triggers 체크박스 형식 변환, 마이그레이션 경로 추가, Python 3.13 참조 업데이트, 외부 참조 보강, 리스크 테이블 일관성 수정 |
+| 0.0.0 | 2025-12-04 | 초기 버전 - Python Worker 기술 스택 정의, 전문가 검토 결과 반영, 용어집 GLOSSARY.md 통합, Python LTS 정책 명시, IDE 도구 비교 추가, uv 패키지 관리자 추가                                                                                    |
