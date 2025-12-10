@@ -1,7 +1,7 @@
 # Architecture
 
-> **Version**: 0.1.3
-> **Last Updated**: 2025-12-04
+> **Version**: 0.1.5
+> **Last Updated**: 2025-12-10
 
 CAD Viewer 프로젝트의 시스템 아키텍처와 패키지 구조를 설명합니다.
 
@@ -106,6 +106,78 @@ Teapot Demo는 CAD Viewer의 핵심 패턴을 학습하기 위한 예제입니�
 | React Three Fiber    | 동일                        | 렌더링 프레임워크  |
 
 > **참고**: Teapot Demo 상세 구현은 [1.5_TEAPOT_DEMO.md](./phases/01-Foundation/1.5_TEAPOT_DEMO.md) 참조
+
+---
+
+## 메시지 큐 아키텍처
+
+> **결정**: RabbitMQ 선택 ([ADR-002](./adr/002_QUEUE_ALTERNATIVES_COMPARISON.md) 승인 완료)
+
+### 선택 근거
+
+| 평가 항목   | RabbitMQ 점수 | 주요 이점                           |
+| ----------- | ------------- | ----------------------------------- |
+| 메시지 보장 | 9/10          | Publisher Confirms + Outbox Pattern |
+| 운영 복잡도 | 8/10          | Spring AMQP 성숙도, 풍부한 문서     |
+| DLQ 지원    | 9/10          | 네이티브 Dead Letter Exchange       |
+| 확장성      | 7/10          | 프로젝트 규모에 적합                |
+
+### 메시지 플로우
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Backend   │────▶│  RabbitMQ   │────▶│   Worker    │
+│   (API)     │     │   Broker    │     │  (Celery)   │
+└─────────────┘     └─────────────┘     └─────────────┘
+      │                   │                    │
+      │  1. Publish       │  2. Route          │  3. Process
+      │  (Confirms)       │  (Exchange)        │  (ACK/NACK)
+      v                   v                    v
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Outbox    │     │    DLQ      │     │   Result    │
+│   Table     │     │  (Retry)    │     │   Queue     │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### 주요 컴포넌트
+
+| 컴포넌트 | 역할             | 설정                                   |
+| -------- | ---------------- | -------------------------------------- |
+| Exchange | 메시지 라우팅    | `cad.direct` (Direct), `cad.dlx` (DLX) |
+| Queue    | 작업 대기열      | `cad.conversion`, `cad.notification`   |
+| DLQ      | 실패 메시지 관리 | `cad.dlq` (max-retries: 3)             |
+
+### 신뢰성 패턴
+
+1. **Publisher Confirms**: 메시지 발행 확인
+2. **Outbox Pattern**: 트랜잭션 원자성 보장
+3. **Dead Letter Queue**: 실패 메시지 격리 및 재처리
+
+> **상세 문서**: [ADR-002](./adr/002_QUEUE_ALTERNATIVES_COMPARISON.md)
+
+---
+
+## Python Worker 아키텍처
+
+> **결정**: Python 3.12 + Celery + prefork pool ([ADR-003](./adr/003_PYTHON_WORKER_STACK.md) 승인 완료)
+
+### Worker 분리 구조
+
+| Worker         | 역할                            | 리소스 | 처리 시간 SLA |
+| -------------- | ------------------------------- | ------ | ------------- |
+| **DXF Worker** | 벡터 도면 변환 (ezdxf → glTF)   | CPU    | < 5초         |
+| **PDF Worker** | ML 기반 도면 분석 (YOLO → glTF) | GPU    | < 30초        |
+
+### 주요 컴포넌트
+
+| 컴포넌트    | 선택    | 버전     |
+| ----------- | ------- | -------- |
+| Python      | 3.12    | 3.12.x   |
+| Task Queue  | Celery  | >=5.5.0  |
+| Worker Pool | prefork | GIL 우회 |
+| 모니터링    | Flower  | >=2.0    |
+
+> **상세 문서**: [ADR-003](./adr/003_PYTHON_WORKER_STACK.md)
 
 ---
 
@@ -235,10 +307,12 @@ tests/                     # 테스트 관련 파일 (배포 번들 제외)
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                           |
-| ----- | ---------- | --------------------------------------------------- |
-| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거             |
-| 0.1.2 | 2025-12-03 | Phase 2A 완료 반영, CADViewer 테스트 디렉토리 추가  |
-| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                           |
-| 0.1.0 | 2025-12-01 | 아키텍처 문서 업데이트, CAD Viewer 기능 추가        |
-| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리 |
+| 버전  | 날짜       | 변경 내용                                            |
+| ----- | ---------- | ---------------------------------------------------- |
+| 0.1.5 | 2025-12-10 | Python Worker 아키텍처 섹션 추가 (ADR-003 승인 반영) |
+| 0.1.4 | 2025-12-08 | 메시지 큐 아키텍처 섹션 추가 (ADR-002 승인 반영)     |
+| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거              |
+| 0.1.2 | 2025-12-03 | Phase 2A 완료 반영, CADViewer 테스트 디렉토리 추가   |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                            |
+| 0.1.0 | 2025-12-01 | 아키텍처 문서 업데이트, CAD Viewer 기능 추가         |
+| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리  |

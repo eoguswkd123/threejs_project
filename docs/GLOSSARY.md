@@ -1,7 +1,7 @@
 # Glossary
 
-> **Version**: 0.0.2
-> **Last Updated**: 2025-12-04
+> **Version**: 0.0.3
+> **Last Updated**: 2025-12-10
 
 CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 
@@ -68,19 +68,20 @@ CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 
 ## 빌드/개발 도구
 
-| 용어                  | 정의                                           |
-| --------------------- | ---------------------------------------------- |
-| **ESLint**            | JavaScript/TypeScript 정적 코드 분석 도구      |
-| **typescript-eslint** | ESLint TypeScript 플러그인                     |
-| **Prettier**          | 코드 포맷팅 도구                               |
-| **Husky**             | Git 훅 관리 도구                               |
-| **lint-staged**       | 스테이징된 파일에만 린트 적용 도구             |
-| **Vitest**            | Vite 네이티브 단위 테스트 프레임워크           |
-| **Testing Library**   | React 컴포넌트 테스트 라이브러리               |
-| **Autoprefixer**      | CSS 벤더 프리픽스 자동 추가 도구               |
-| **mypy**              | Python 정적 타입 검사기                        |
-| **pip-tools**         | requirements.in → requirements.txt 컴파일 도구 |
-| **Ruff**              | Rust 기반 고속 Python linter/formatter         |
+| 용어                  | 정의                                                                      |
+| --------------------- | ------------------------------------------------------------------------- |
+| **ESLint**            | JavaScript/TypeScript 정적 코드 분석 도구                                 |
+| **typescript-eslint** | ESLint TypeScript 플러그인                                                |
+| **Prettier**          | 코드 포맷팅 도구                                                          |
+| **Husky**             | Git 훅 관리 도구                                                          |
+| **lint-staged**       | 스테이징된 파일에만 린트 적용 도구                                        |
+| **Vitest**            | Vite 네이티브 단위 테스트 프레임워크                                      |
+| **Testing Library**   | React 컴포넌트 테스트 라이브러리                                          |
+| **Autoprefixer**      | CSS 벤더 프리픽스 자동 추가 도구                                          |
+| **mypy**              | Python 정적 타입 검사기                                                   |
+| **pip-tools**         | requirements.in → requirements.txt 컴파일 도구                            |
+| **Ruff**              | Rust 기반 고속 Python linter/formatter                                    |
+| **uv**                | Rust 기반 Python 패키지 관리자 (pip/poetry/pyenv 통합 대체, 10-100x 빠름) |
 
 ---
 
@@ -97,6 +98,7 @@ CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 | **DLQ**                 | Dead Letter Queue - 처리 실패한 메시지를 모아두는 별도 Queue |
 | **FastAPI**             | Python 고성능 웹 프레임워크                                  |
 | **Fault Isolation**     | 한 컴포넌트 장애가 다른 컴포넌트에 영향을 주지 않는 설계     |
+| **Flower**              | Celery 실시간 모니터링 웹 대시보드                           |
 | **gevent**              | 그린 스레드 기반 Python 동시성 라이브러리                    |
 | **GIL**                 | Global Interpreter Lock - Python 병렬 처리 제한              |
 | **Heartbeat**           | 연결 상태를 확인하기 위한 주기적 신호                        |
@@ -111,6 +113,7 @@ CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 | **Publisher Confirms**  | 메시지가 Broker에 도달했음을 확인하는 RabbitMQ 기능          |
 | **Quorum Queue**        | RabbitMQ 3.8+의 고가용성 큐, Raft 합의 알고리즘 사용         |
 | **Redis**               | 인메모리 데이터 저장소 (캐시, 메시지 브로커)                 |
+| **structlog**           | Python 구조화 로깅 라이브러리 (JSON 로그, 컨텍스트 바인딩)   |
 | **Temporal Decoupling** | 송신자와 수신자가 동시에 활성화될 필요 없는 설계             |
 | **WebRTC**              | Web Real-Time Communication - P2P 실시간 통신                |
 | **WebSocket**           | 양방향 실시간 통신 프로토콜                                  |
@@ -212,6 +215,7 @@ CAD Viewer 프로젝트에서 사용되는 용어 및 약어 정의
 
 | 버전  | 날짜       | 변경 내용                                                                                              |
 | ----- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| 0.0.3 | 2025-12-10 | ADR-003 승인 반영 - 신규 용어 추가 (uv, Flower, structlog)                                             |
 | 0.0.2 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거, ADR-002/ADR-003 용어집 통합 (백엔드 16개, 빌드/개발 도구 3개) |
 | 0.0.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                                              |
 | 0.0.0 | 2025-12-01 | 초기 버전                                                                                              |

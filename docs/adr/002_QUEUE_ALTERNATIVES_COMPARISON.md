@@ -1,20 +1,20 @@
 # ADR-002: Queue 대안 비교 분석
 
-> **Version**: 0.0.3
-> **Last Updated**: 2025-12-05
+> **Version**: 0.0.4
+> **Last Updated**: 2025-12-10
 
 ## 상태 및 의사결정 정보
 
-**상태**: 초안 (Draft) | **작성일**: 2025-12-04
+**상태**: 승인 (Approved) | **작성일**: 2025-12-04
 
 ### 역할
 
-| 역할       | 담당자      |
-| ---------- | ----------- |
-| **작성자** | Claude AI   |
-| **검토자** | -           |
-| **승인자** | -           |
-| **결정일** | - (승인 시) |
+| 역할       | 담당자                                                |
+| ---------- | ----------------------------------------------------- |
+| **작성자** | Claude Code (Opus 4.5)                                |
+| **검토자** | System Architect, Backend Architect, DevOps Architect |
+| **승인자** | 프로젝트 Owner                                        |
+| **결정일** | 2025-12-08                                            |
 
 ### 의사결정 동인 (Decision Drivers)
 
@@ -23,6 +23,18 @@
 | **기술적**   | Long-running task (DXF ~2초, PDF ~18초), 메시지 유실 방지 필요, 수평 확장성 |
 | **비즈니스** | 키오스크 다수 배포, 동시 요청 처리 필요, 서비스 신뢰성 요구                 |
 | **팀/조직**  | 2-3명 소규모 팀, 운영 복잡도 제한, Spring Boot + Python Worker 환경         |
+
+> **상태 정의**: Draft → In Review → Approved / Superseded / Deprecated
+
+### 전문가 검토 결과 (2025-12-08, v0.0.4 1차 검토)
+
+| 전문가            | 점수   | 판정    | 주요 피드백                                 |
+| ----------------- | ------ | ------- | ------------------------------------------- |
+| System Architect  | 90/100 | ✅ 승인 | 장애 격리, 확장성 설계 적합                 |
+| Backend Architect | 92/100 | ✅ 승인 | Publisher Confirms, Outbox Pattern 완비     |
+| DevOps Architect  | 88/100 | ✅ 승인 | Docker Compose, 모니터링 메트릭 가이드 충실 |
+
+**종합 점수**: **90/100** (1차 검토에서 승인 완료)
 
 ---
 
@@ -56,17 +68,15 @@
 | **핵심 근거**    | 시간적 분리, 장애 격리, 수평 확장성                          |
 | **트레이드오프** | 비용 증가 ($30-150/월) vs 신뢰성 확보                        |
 
-### 권장안 (검토 중)
+### 최종 결정 (승인됨)
 
-**RabbitMQ 기반 Message Queue 권장** (단계적 접근: MVP는 DB Polling → 프로덕션은 RabbitMQ)
-
-| 방식              | 적합한 상황                  | 부적합한 상황               |
-| ----------------- | ---------------------------- | --------------------------- |
-| **Direct HTTP**   | < 1초 작업, 단일 Worker      | PDF 18초 처리, 동시 요청 多 |
-| **DB Polling**    | MVP, 일일 작업 <100개        | 확장 필요, 실시간 처리      |
-| **Redis Pub/Sub** | 알림, 로깅 (손실 허용)       | 파일 처리 (유실 불가)       |
-| **RabbitMQ**      | Long-running, 확장 필요      | 단순 MVP                    |
-| **Kafka**         | 10,000+ msg/sec, 이벤트 소싱 | 소규모 팀, 단순 작업 큐     |
+| 항목          | 내용                                              |
+| ------------- | ------------------------------------------------- |
+| **결정**      | RabbitMQ 기반 Message Queue                       |
+| **접근법**    | 단계적: MVP는 DB Polling → 프로덕션은 RabbitMQ    |
+| **핵심 근거** | 시간적 분리, 장애 격리, 수평 확장성               |
+| **비용**      | $30-150/월                                        |
+| **상세**      | [섹션 6.5 RabbitMQ 상세](#65-rabbitmq--권장) 참조 |
 
 ---
 
@@ -448,6 +458,41 @@ public class RabbitMQConfig {
 }
 ```
 
+**Publisher Confirms 설정** (메시지 발행 확인):
+
+```java
+@Configuration
+public class RabbitTemplateConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(RabbitTemplateConfig.class);
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+
+        // Publisher Confirms 콜백 설정
+        template.setConfirmCallback((correlationData, ack, cause) -> {
+            if (ack) {
+                logger.info("Message delivered: {}", correlationData.getId());
+            } else {
+                logger.error("Message failed: {} - {}", correlationData.getId(), cause);
+                // 재발행 또는 DB에 실패 기록
+            }
+        });
+
+        // Publisher Returns 콜백 (라우팅 실패)
+        template.setReturnsCallback(returned -> {
+            logger.error("Message returned: {} - {}",
+                returned.getMessage(), returned.getReplyText());
+        });
+
+        return template;
+    }
+}
+```
+
+> **설정 근거**: `publisher-confirm-type: correlated` 설정만으로는 불충분. 실제 콜백 로직이 없으면 발행 실패 시 감지 불가능.
+
 #### Python Worker 호환성 ✅
 
 **Pika 라이브러리** (공식 RabbitMQ Python 클라이언트)
@@ -584,6 +629,66 @@ if __name__ == '__main__':
 
 **권장**: Long-running 처리(18초)이므로 **Pika + BlockingConnection** (간단, 안정적, 디버깅 용이)
 
+#### 로컬 개발 환경 (Docker Compose)
+
+```yaml
+# docker-compose.yml - RabbitMQ 로컬 개발 환경
+version: '3.8'
+
+services:
+    rabbitmq:
+        image: rabbitmq:3.12-management
+        container_name: rabbitmq
+        ports:
+            - '5672:5672' # AMQP
+            - '15672:15672' # Management UI
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin123}
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        healthcheck:
+            test: ['CMD', 'rabbitmq-diagnostics', 'check_running']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+    worker:
+        build:
+            context: ./worker
+            dockerfile: Dockerfile
+        depends_on:
+            rabbitmq:
+                condition: service_healthy
+        environment:
+            RABBITMQ_HOST: rabbitmq
+            RABBITMQ_PORT: 5672
+            RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+            RABBITMQ_PASS: ${RABBITMQ_PASS:-admin123}
+            QUEUE_NAME: file_queue
+        volumes:
+            - ./uploads:/app/uploads
+
+volumes:
+    rabbitmq_data:
+```
+
+**실행 명령**:
+
+```bash
+# 시작
+docker-compose up -d
+
+# Management UI 접속
+open http://localhost:15672  # admin/admin123
+
+# 로그 확인
+docker-compose logs -f worker
+
+# 종료
+docker-compose down
+```
+
 ---
 
 ### 6.6 Kafka ⚠️ 과잉
@@ -633,6 +738,47 @@ Backend → Kafka (3+ Brokers + ZooKeeper) → Worker
 | **Google Cloud Pub/Sub** | 글로벌 분산, exactly-once 보장     | 학습 곡선                      | $40/TiB          |
 
 **현재 프로젝트 권장**: 온프레미스 배포 우선이므로 RabbitMQ 유지. 클라우드 마이그레이션 시 AWS SQS 검토.
+
+#### CloudAMQP (관리형 RabbitMQ)
+
+Self-hosted RabbitMQ 대신 관리형 서비스를 선택할 경우:
+
+| 항목          | Self-hosted RabbitMQ                 | CloudAMQP (관리형)                  |
+| ------------- | ------------------------------------ | ----------------------------------- |
+| **초기 설정** | Docker/K8s 직접 구성                 | 웹 콘솔에서 5분 내 생성             |
+| **운영 부담** | 모니터링, 백업, 패치 직접 관리       | 자동화 (SLA 99.95%)                 |
+| **비용**      | $30-150/월 (인프라)                  | $19-99/월 (Little Lemur~Big Bunny)  |
+| **확장성**    | 수동 클러스터 구성                   | 원클릭 스케일업                     |
+| **HA 구성**   | 직접 Quorum Queue 설정               | 플랜별 자동 HA                      |
+| **권장 상황** | 온프레미스, 비용 최적화, 데이터 주권 | 클라우드, 운영 인력 부족, 빠른 시작 |
+
+**CloudAMQP 플랜 비교**:
+
+| 플랜                | 메시지/월 | 동시 연결 | 비용/월 | 적합 상황       |
+| ------------------- | --------- | --------- | ------- | --------------- |
+| Little Lemur (Free) | 1M        | 20        | $0      | 개발/테스트     |
+| Tough Tiger         | 10M       | 100       | $19     | MVP             |
+| Big Bunny           | 50M       | 500       | $99     | 프로덕션 소규모 |
+
+**Spring Boot 연결 설정**:
+
+```yaml
+spring:
+    rabbitmq:
+        # CloudAMQP 연결 URL (대시보드에서 복사)
+        addresses: amqps://user:pass@server.cloudamqp.com/vhost
+        ssl:
+            enabled: true
+        # 기존 설정 동일하게 적용
+        publisher-confirm-type: correlated
+        publisher-returns: true
+        listener:
+            simple:
+                acknowledge-mode: manual
+                prefetch: 1
+```
+
+> **전환 전략**: MVP 단계에서 CloudAMQP Little Lemur(무료)로 시작 → 트래픽 증가 시 유료 플랜 또는 Self-hosted로 전환
 
 ---
 
@@ -835,6 +981,50 @@ Queue 기반:
 
 > **결론**: Direct HTTP는 비용과 단순함에서 최고점이지만, **신뢰성(2점)과 확장성(3점)이 치명적으로 낮아** 500MB 파일 처리에는 **부적합**.
 
+**RabbitMQ 점수 근거**:
+| 기준 | 점수 | 이유 |
+|------|------|------|
+| 신뢰성 | 9 | 디스크 영구 저장, ACK 메커니즘, DLQ 자동 처리, Publisher Confirms |
+| 확장성 | 9 | Worker 추가만으로 수평 확장, Round-Robin 내장, Quorum Queue 지원 |
+| 운영 복잡도 | 6 | Docker 컨테이너화 가능하나 클러스터 운영 시 복잡도 증가 |
+| 비용 | 7 | $30-150/월 (t3.small~medium), 관리형(CloudAMQP) 시 비용 증가 |
+| Spring 통합 | 10 | Spring AMQP 공식 지원, @RabbitListener로 간단한 Consumer 구현 |
+
+> **결론**: 신뢰성과 확장성이 우수하고 Spring 생태계 통합이 완벽하여 **프로덕션 권장**.
+
+**DB Polling 점수 근거**:
+| 기준 | 점수 | 이유 |
+|------|------|------|
+| 신뢰성 | 7 | DB 트랜잭션으로 원자성 보장, 단 폴링 중 장애 시 지연 발생 |
+| 확장성 | 4 | Worker 증가 시 SELECT FOR UPDATE 락 경합, DB 부하 비선형 증가 |
+| 운영 복잡도 | 8 | 추가 인프라 없음, 기존 PostgreSQL 활용, SQL로 디버깅 용이 |
+| 비용 | 10 | $0 (추가 비용 없음, 기존 DB 활용) |
+| Spring 통합 | 10 | Spring Data JPA로 간단 구현, 별도 의존성 불필요 |
+
+> **결론**: MVP 단계에서 가장 빠르게 구현 가능하나, **일일 작업 100개 초과 시 확장성 한계**.
+
+**Kafka 점수 근거**:
+| 기준 | 점수 | 이유 |
+|------|------|------|
+| 신뢰성 | 10 | 복제 기반 내구성, exactly-once 지원, 메시지 리플레이 가능 |
+| 확장성 | 10 | 파티션 기반 무제한 확장, 초당 수백만 메시지 처리 |
+| 운영 복잡도 | 3 | ZooKeeper/KRaft 필요, 3노드 클러스터, 파티션 리밸런싱 복잡 |
+| 비용 | 4 | $200-400/월 (m5.large 3노드 + ZooKeeper), RabbitMQ 대비 2-10배 |
+| Spring 통합 | 9 | Spring Kafka 공식 지원, 약간의 설정 복잡도 존재 |
+
+> **결론**: 기술적으로 최강이나, **2-3명 팀에는 운영 복잡도와 비용이 과잉**.
+
+**Redis 점수 근거** (Pub/Sub + Streams 종합):
+| 기준 | 점수 | 이유 |
+|------|------|------|
+| 신뢰성 | 6 | Streams는 지속성 있으나 Pub/Sub은 휘발성, DLQ 직접 구현 필요 |
+| 확장성 | 8 | Consumer Groups 지원, 높은 처리 성능, 메모리 제약 존재 |
+| 운영 복잡도 | 7 | 기존 Redis 활용 시 추가 인프라 없음, 단 Spring 지원 미흡 |
+| 비용 | 8 | $20-40/월 (ElastiCache t3.micro~small), 기존 Redis 있으면 $0 |
+| Spring 통합 | 7 | Spring Data Redis 지원, 단 @StreamListener 없어 수동 구현 필요 |
+
+> **결론**: 기존 Redis 있으면 고려 가능하나, **DLQ 미지원과 Spring 통합 미흡으로 RabbitMQ 권장**.
+
 ### 8.3 단계적 접근법 (권장)
 
 ```
@@ -910,6 +1100,48 @@ Queue 기반:
 | **운영 가시성** | RabbitMQ Management UI로 Queue 상태 모니터링 | 실시간 처리량/지연 추적      |
 | **재처리 용이** | DLQ로 실패 메시지 격리 후 재처리 가능        | 수동 개입 최소화             |
 
+#### 9.1.1 모니터링 메트릭 가이드
+
+**핵심 메트릭 (Prometheus/Grafana)**:
+
+| 메트릭                            | 설명              | 알림 임계값      | 대응                 |
+| --------------------------------- | ----------------- | ---------------- | -------------------- |
+| `rabbitmq_queue_messages`         | 대기 중 메시지 수 | > 1000 (Warning) | Worker 추가 검토     |
+| `rabbitmq_queue_consumers`        | 활성 Consumer 수  | < 1 (Critical)   | Worker 상태 확인     |
+| `rabbitmq_queue_messages_unacked` | 처리 중 메시지    | > 100 (Warning)  | 처리 속도 점검       |
+| `rabbitmq_connections`            | 총 연결 수        | > 100 (Warning)  | Connection Pool 확인 |
+| `rabbitmq_channels`               | 총 채널 수        | > 500 (Warning)  | 채널 누수 점검       |
+
+**RabbitMQ Prometheus Plugin 활성화**:
+
+```bash
+# RabbitMQ 서버에서 실행
+rabbitmq-plugins enable rabbitmq_prometheus
+
+# Prometheus 메트릭 엔드포인트
+curl http://localhost:15692/metrics
+```
+
+**Grafana 대시보드**:
+
+- **추천 대시보드 ID**: `10991` (RabbitMQ Overview)
+- **Import 방법**: Grafana → Dashboards → Import → ID 입력
+
+**알림 설정 예시 (Prometheus Alertmanager)**:
+
+```yaml
+groups:
+    - name: rabbitmq
+      rules:
+          - alert: RabbitMQNoConsumers
+            expr: rabbitmq_queue_consumers{queue="file_queue"} < 1
+            for: 5m
+            labels:
+                severity: critical
+            annotations:
+                summary: 'No consumers for file_queue'
+```
+
 ### 9.2 부정적 결과
 
 | 결과                   | 영향                                 | 완화 방안                                |
@@ -919,6 +1151,94 @@ Queue 기반:
 | **팀 학습 비용**       | AMQP 프로토콜, Spring AMQP 학습 필요 | 공식 튜토리얼 2-3일 학습 권장            |
 | **디버깅 난이도**      | 비동기 메시지 추적 어려움            | Correlation ID + 중앙 로깅 (ELK)         |
 | **트랜잭션 경계**      | DB-Queue 원자성 보장 복잡            | Outbox Pattern 또는 Saga 적용            |
+
+#### 9.2.1 DB-Queue 트랜잭션 원자성 구현 (Outbox Pattern)
+
+DB 저장과 메시지 발행의 원자성을 보장하기 위한 구현 패턴:
+
+**방법 1: Outbox 테이블 사용**
+
+```java
+// Outbox 엔티티
+@Entity
+@Table(name = "outbox_events")
+public class OutboxEvent {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String aggregateId;
+    private String eventType;
+
+    @Column(columnDefinition = "TEXT")
+    private String payload;
+
+    private LocalDateTime createdAt;
+    private boolean processed;
+}
+
+// 서비스 구현
+@Service
+public class FileProcessingService {
+
+    @Transactional
+    public void createJob(FileUploadRequest request) {
+        // 1. DB에 작업 저장
+        Job job = jobRepository.save(new Job(request));
+
+        // 2. Outbox 테이블에 이벤트 저장 (동일 트랜잭션)
+        OutboxEvent event = new OutboxEvent(
+            job.getId().toString(),
+            "FILE_PROCESS",
+            objectMapper.writeValueAsString(job.toMessage())
+        );
+        outboxRepository.save(event);
+
+        // 3. 별도 스케줄러가 Outbox → RabbitMQ 발행
+    }
+}
+
+// Outbox 폴링 스케줄러
+@Scheduled(fixedDelay = 1000)
+@Transactional
+public void publishPendingEvents() {
+    List<OutboxEvent> events = outboxRepository.findByProcessedFalse();
+    for (OutboxEvent event : events) {
+        rabbitTemplate.convertAndSend("file_queue", event.getPayload());
+        event.setProcessed(true);
+    }
+}
+```
+
+**방법 2: Spring TransactionalEventListener 방식**
+
+```java
+@Service
+public class FileProcessingService {
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Transactional
+    public void createJob(FileUploadRequest request) {
+        // 1. DB에 작업 저장
+        Job job = jobRepository.save(new Job(request));
+
+        // 2. 도메인 이벤트 발행 (트랜잭션 커밋 후 처리)
+        eventPublisher.publishEvent(new JobCreatedEvent(job));
+    }
+}
+
+@Component
+public class JobEventHandler {
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleJobCreated(JobCreatedEvent event) {
+        // 트랜잭션 커밋 성공 후에만 메시지 발행
+        rabbitTemplate.convertAndSend("file_queue", event.getPayload());
+    }
+}
+```
+
+> **권장**: 초기에는 방법 2 (TransactionalEventListener)로 시작하고, 메시지 유실 추적이 필요해지면 방법 1 (Outbox 테이블)로 전환
 
 ### 9.3 리스크
 
@@ -1017,7 +1337,9 @@ Queue 기반:
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.0.3 | 2025-12-05 | [0.0.2] 문서 구조 개선 - 관련 문서 섹션 하단 이동 및 테이블 형식 변환, 상태 목록 추가, 8.1 평가 결과에 Redis 열 추가, 문서 범위 섹션 추가; [0.0.3] ADR 템플릿 구조에 맞춘 전면 재편 - 상태 섹션 확장(역할/Decision Drivers), 섹션 순서 재정렬, 3장 제약사항 섹션 추가, 9장 리스크 테이블 추가, 5장 영역별 대안 테이블에 Redis Streams/Cloud-Native 추가, 테이블 헤더 한글화(HA→고가용성, RTO/RPO→복구시간/손실허용) |
-| 0.0.1 | 2025-12-04 | 초기 버전: 6가지 대안 비교 분석, 전문가 검수 기반 개선, Direct HTTP Async 비교 추가, 용어집 GLOSSARY.md 통합                                                                                                                                                                                                                                                                                                        |
+| 버전  | 날짜       | 변경 내용                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.4 | 2025-12-10 | 상태 불일치 수정: "권장안 (검토 중)" → "최종 결정 (승인됨)"으로 변경, 대안 비교 테이블 삭제 및 RabbitMQ 결정 테이블로 교체, 승인 상태와 일관성 확보                                                                                                                                                                                                                                                 |
+| 0.0.3 | 2025-12-08 | 문서 승인 완료(Approved): 점수 근거 추가(8.2절), 전문가 검토(System/Backend/DevOps Architect), Publisher Confirms 콜백 및 Outbox Pattern 구현 예시(6.5절, 9.2.1절), Docker Compose/CloudAMQP/모니터링 메트릭 가이드 추가(6.5절, 6.8절, 9.1.1절), 전문가 검토 결과 테이블 추가 (System 90점, Backend 92점, DevOps 88점, 종합 90점)                                                                   |
+| 0.0.2 | 2025-12-05 | 문서 구조 개선 - 관련 문서 섹션 하단 이동 및 테이블 형식 변환, 상태 목록 추가, 8.1 평가 결과에 Redis 열 추가, 문서 범위 섹션 추가; ADR 템플릿 구조에 맞춘 전면 재편 - 상태 섹션 확장(역할/Decision Drivers), 섹션 순서 재정렬, 3장 제약사항 섹션 추가, 9장 리스크 테이블 추가, 5장 영역별 대안 테이블에 Redis Streams/Cloud-Native 추가, 테이블 헤더 한글화(HA→고가용성, RTO/RPO→복구시간/손실허용) |
+| 0.0.1 | 2025-12-04 | 초기 버전: 6가지 대안 비교 분석, 전문가 검수 기반 개선, Direct HTTP Async 비교 추가, 용어집 GLOSSARY.md 통합                                                                                                                                                                                                                                                                                        |

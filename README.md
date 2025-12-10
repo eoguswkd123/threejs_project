@@ -56,7 +56,7 @@ Three.js 기반 CAD 파일 3D 뷰어 및 키오스크 동기화 프로젝트
 | ------------- | ------------------------------ | ---------- |
 | API Layer     | NestJS / FastAPI / Spring Boot | 🔍 검토 중 |
 | Message Queue | RabbitMQ                       | ✅ 확정    |
-| Worker        | Python + Celery                | ✅ 확정    |
+| Worker        | Python 3.12 + Celery           | ✅ 확정    |
 | Database      | PostgreSQL                     | ✅ 확정    |
 | Storage       | MinIO (S3 호환)                | ✅ 확정    |
 
@@ -170,4 +170,4 @@ Private Project © [개쿠](https://javaoop.tistory.com)
 
 ---
 
-> **Note**: 이 프로젝트는 활발히 개발 중입니다. Phase 2A 완료 (2025-12-03), Phase 3 백엔드 통합이 진행될 예정입니다.
+> **Note**: 이 프로젝트는 활발히 개발 중입니다. Phase 2A 완료 (2025-12-03), ADR-002/003 승인 완료 (2025-12-10). Phase 3 백엔드 통합이 진행될 예정입니다.

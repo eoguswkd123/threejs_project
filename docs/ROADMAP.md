@@ -1,7 +1,7 @@
 # Roadmap
 
-> **Version**: 0.1.5
-> **Last Updated**: 2025-12-05
+> **Version**: 0.1.6
+> **Last Updated**: 2025-12-10
 
 CAD Viewer 프로젝트 로드맵 - DevOps 모범사례 적용 버전
 
@@ -240,22 +240,22 @@ Phase 2B: PDF CAD Viewer (백엔드 필요)
 
 ### Phase 3 전체 기술 스택
 
-| 컴포넌트             | 선택                                        | 근거                                  |
-| -------------------- | ------------------------------------------- | ------------------------------------- |
-| **API Layer**        | NestJS / FastAPI / Spring Boot (검토 중)    | ADR-001 참조                          |
-| **Message Queue**    | RabbitMQ                                    | 메시지 영속성, DLQ (ADR-002)          |
-| **Worker Engine**    | Python + Celery                             | CAD 라이브러리 필수 (ezdxf, PyMuPDF)  |
-| **Database**         | PostgreSQL                                  | 메타데이터, ACID 트랜잭션             |
-| **Storage**          | MinIO (S3 호환)                             | 파일 저장, 클라우드 마이그레이션 용이 |
-| **CAD Parser**       | ezdxf                                       | DXF 파싱, Python 생태계               |
-| **3D Export**        | pygltflib                                   | glTF/glb 생성                         |
-| **ML Framework**     | PyTorch                                     | YOLOv8/Detectron2 기반                |
-| **Inference**        | ONNX RT / TensorRT                          | 추론 가속                             |
-| **Image Processing** | OpenCV                                      | 전처리, 컨투어 추출                   |
-| **PDF Parser**       | PyMuPDF                                     | PDF 벡터/이미지 추출                  |
-| **OCR**              | PaddleOCR                                   | 텍스트 인식 (옵션)                    |
-| **Monitoring**       | Prometheus + Grafana                        | 메트릭 수집 + 대시보드                |
-| **IaC**              | Docker Compose (MVP) → Terraform (Phase 5+) | MVP 단순화, Phase 5부터 환경 분리     |
+| 컴포넌트             | 선택                                        | 근거                                                                            |
+| -------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| **API Layer**        | NestJS / FastAPI / Spring Boot (검토 중)    | ADR-001 참조                                                                    |
+| **Message Queue**    | RabbitMQ                                    | 메시지 영속성, DLQ ([ADR-002](./adr/002_QUEUE_ALTERNATIVES_COMPARISON.md) 승인) |
+| **Worker Engine**    | Python 3.12 + Celery                        | [ADR-003](./adr/003_PYTHON_WORKER_STACK.md) 승인 (ezdxf, PyMuPDF)               |
+| **Database**         | PostgreSQL                                  | 메타데이터, ACID 트랜잭션                                                       |
+| **Storage**          | MinIO (S3 호환)                             | 파일 저장, 클라우드 마이그레이션 용이                                           |
+| **CAD Parser**       | ezdxf                                       | DXF 파싱, Python 생태계                                                         |
+| **3D Export**        | pygltflib                                   | glTF/glb 생성                                                                   |
+| **ML Framework**     | PyTorch                                     | YOLOv8/Detectron2 기반                                                          |
+| **Inference**        | ONNX RT / TensorRT                          | 추론 가속                                                                       |
+| **Image Processing** | OpenCV                                      | 전처리, 컨투어 추출                                                             |
+| **PDF Parser**       | PyMuPDF                                     | PDF 벡터/이미지 추출                                                            |
+| **OCR**              | PaddleOCR                                   | 텍스트 인식 (옵션)                                                              |
+| **Monitoring**       | Prometheus + Grafana                        | 메트릭 수집 + 대시보드                                                          |
+| **IaC**              | Docker Compose (MVP) → Terraform (Phase 5+) | MVP 단순화, Phase 5부터 환경 분리                                               |
 
 ### Phase 3A Milestones
 
@@ -589,21 +589,21 @@ UX 개선, 품질 향상, 접근성
 
 ## 기술적 의사결정 요약
 
-| 항목            | 결정                                        | 근거                              |
-| --------------- | ------------------------------------------- | --------------------------------- |
-| 프론트엔드      | React + R3F + Zustand                       | 이미 구축됨, 선언적 3D            |
-| API Layer       | NestJS / FastAPI / Spring Boot (검토 중)    | ADR-001 참조                      |
-| 메시지 큐       | RabbitMQ                                    | ADR-002 확정                      |
-| 워커 엔진       | Python + Celery                             | CAD 라이브러리 필수               |
-| 데이터베이스    | PostgreSQL                                  | 메타데이터, ACID 트랜잭션         |
-| 스토리지        | MinIO (S3 호환)                             | 클라우드 마이그레이션 용이        |
-| Cache/Session   | RabbitMQ RPC (MVP)                          | Redis 제거, 인프라 단순화         |
-| 실시간 통신     | WebSocket (우선)                            | 안정성, 디버깅 용이               |
-| 키오스크 동기화 | Master-Wins → WebRTC                        | 단계적 고도화                     |
-| 오케스트레이션  | Docker Compose → K8s                        | 15대 기준 전환                    |
-| 테스트          | Vitest + Playwright                         | 단위 + E2E                        |
-| 모니터링        | Prometheus + Grafana                        | 업계 표준, 풍부한 생태계          |
-| IaC             | Docker Compose (MVP) → Terraform (Phase 5+) | MVP 단순화, Phase 5부터 환경 분리 |
+| 항목            | 결정                                        | 근거                                                            |
+| --------------- | ------------------------------------------- | --------------------------------------------------------------- |
+| 프론트엔드      | React + R3F + Zustand                       | 이미 구축됨, 선언적 3D                                          |
+| API Layer       | NestJS / FastAPI / Spring Boot (검토 중)    | ADR-001 참조                                                    |
+| 메시지 큐       | RabbitMQ                                    | [ADR-002](./adr/002_QUEUE_ALTERNATIVES_COMPARISON.md) 승인 완료 |
+| 워커 엔진       | Python 3.12 + Celery                        | [ADR-003](./adr/003_PYTHON_WORKER_STACK.md) 승인 완료           |
+| 데이터베이스    | PostgreSQL                                  | 메타데이터, ACID 트랜잭션                                       |
+| 스토리지        | MinIO (S3 호환)                             | 클라우드 마이그레이션 용이                                      |
+| Cache/Session   | RabbitMQ RPC (MVP)                          | Redis 제거, 인프라 단순화                                       |
+| 실시간 통신     | WebSocket (우선)                            | 안정성, 디버깅 용이                                             |
+| 키오스크 동기화 | Master-Wins → WebRTC                        | 단계적 고도화                                                   |
+| 오케스트레이션  | Docker Compose → K8s                        | 15대 기준 전환                                                  |
+| 테스트          | Vitest + Playwright                         | 단위 + E2E                                                      |
+| 모니터링        | Prometheus + Grafana                        | 업계 표준, 풍부한 생태계                                        |
+| IaC             | Docker Compose (MVP) → Terraform (Phase 5+) | MVP 단순화, Phase 5부터 환경 분리                               |
 
 ---
 
@@ -621,12 +621,13 @@ UX 개선, 품질 향상, 접근성
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                                                                        |
-| ----- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| 0.1.5 | 2025-12-05 | Redis 제거 (RabbitMQ RPC로 대체), Terraform → Docker Compose (MVP), 기술 스택 단순화, 관련 문서 테이블 헤더 수정 |
-| 0.1.4 | 2025-12-05 | Phase 3A 번호 재정렬 (3A.1↔3A.2 교체: 인프라 우선), 3B 병렬 개발 가능성 명시                                     |
-| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거, Phase 3 분할 (3A/3B/3C), 테스트 수 85개 수정, 기술 스택 동기화          |
-| 0.1.2 | 2025-12-03 | Phase 2A 완료 (100%), 단위 테스트 58개 통과, utils 커버리지 98.29%                                               |
-| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                                                        |
-| 0.1.0 | 2025-12-01 | Phase 구조 개편 (1.5 Three.js 학습 추가, 2A/2B 분리), CAD Viewer 기능 추가, Phase 2A 진행률 업데이트             |
-| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리                                                              |
+| 버전  | 날짜       | 변경 내용                                                                                                                                                          |
+| ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.1.6 | 2025-12-10 | ADR-003 승인 반영 (Python 3.12 + Celery Worker 기술 스택 확정)                                                                                                     |
+| 0.1.5 | 2025-12-08 | ADR-002 승인 완료 반영 (RabbitMQ 선택)                                                                                                                             |
+| 0.1.4 | 2025-12-05 | Redis 제거 (RabbitMQ RPC로 대체), Terraform → Docker Compose (MVP), 기술 스택 단순화, Phase 3A 번호 재정렬 (3A.1↔3A.2 교체: 인프라 우선), 3B 병렬 개발 가능성 명시 |
+| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거, Phase 3 분할 (3A/3B/3C), 테스트 수 85개 수정, 기술 스택 동기화                                                            |
+| 0.1.2 | 2025-12-03 | Phase 2A 완료 (100%), 단위 테스트 58개 통과, utils 커버리지 98.29%                                                                                                 |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                                                                                                          |
+| 0.1.0 | 2025-12-01 | Phase 구조 개편 (1.5 Three.js 학습 추가, 2A/2B 분리), CAD Viewer 기능 추가, Phase 2A 진행률 업데이트                                                               |
+| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리                                                                                                                |
