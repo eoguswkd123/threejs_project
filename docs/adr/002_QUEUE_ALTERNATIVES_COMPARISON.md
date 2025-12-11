@@ -1,7 +1,7 @@
 # ADR-002: Queue 대안 비교 분석
 
-> **Version**: 0.0.4
-> **Last Updated**: 2025-12-10
+> **Version**: 0.0.5
+> **Last Updated**: 2025-12-11
 
 ## 상태 및 의사결정 정보
 
@@ -70,13 +70,13 @@
 
 ### 최종 결정 (승인됨)
 
-| 항목          | 내용                                              |
-| ------------- | ------------------------------------------------- |
-| **결정**      | RabbitMQ 기반 Message Queue                       |
-| **접근법**    | 단계적: MVP는 DB Polling → 프로덕션은 RabbitMQ    |
-| **핵심 근거** | 시간적 분리, 장애 격리, 수평 확장성               |
-| **비용**      | $30-150/월                                        |
-| **상세**      | [섹션 6.5 RabbitMQ 상세](#65-rabbitmq--권장) 참조 |
+| 항목          | 내용                                             |
+| ------------- | ------------------------------------------------ |
+| **결정**      | RabbitMQ 기반 Message Queue                      |
+| **접근법**    | 단계적: MVP는 DB Polling → 프로덕션은 RabbitMQ   |
+| **핵심 근거** | 시간적 분리, 장애 격리, 수평 확장성              |
+| **비용**      | $30-150/월                                       |
+| **상세**      | [섹션 6.5 RabbitMQ 상세](#65-rabbitmq-권장) 참조 |
 
 ---
 
@@ -189,7 +189,7 @@
 
 ## 6. 대안별 상세 분석
 
-### 6.1 Direct HTTP ❌ 부적합
+### 6.1 Direct HTTP (부적합)
 
 #### 6.1.1 동기 방식 (Sync) - 응답 대기
 
@@ -270,7 +270,7 @@ Backend → RabbitMQ (저장) → Worker (다운됨)
 
 ---
 
-### 6.2 Database Polling ⚠️ MVP용
+### 6.2 Database Polling (MVP용)
 
 ```
 사용자 → Backend → DB (INSERT job)
@@ -300,7 +300,7 @@ Worker ← (SELECT ... FOR UPDATE) ← 폴링
 
 ---
 
-### 6.3 Redis Pub/Sub ❌ 메시지 손실 위험
+### 6.3 Redis Pub/Sub (메시지 손실 위험)
 
 ```
 Backend → Redis (PUBLISH) → Worker (SUBSCRIBE)
@@ -324,7 +324,7 @@ Backend → Redis (PUBLISH) → Worker (SUBSCRIBE)
 
 ---
 
-### 6.4 Redis Streams ⚠️ 조건부 적합
+### 6.4 Redis Streams (조건부 적합)
 
 ```
 Backend → Redis (XADD) → Worker (XREADGROUP)
@@ -368,7 +368,7 @@ Backend → Redis (XADD) → Worker (XREADGROUP)
 
 ---
 
-### 6.5 RabbitMQ ✅ 권장
+### 6.5 RabbitMQ (권장)
 
 ```
 Backend → RabbitMQ → Worker
@@ -691,7 +691,7 @@ docker-compose down
 
 ---
 
-### 6.6 Kafka ⚠️ 과잉
+### 6.6 Kafka (과잉)
 
 ```
 Backend → Kafka (3+ Brokers + ZooKeeper) → Worker
@@ -714,7 +714,7 @@ Backend → Kafka (3+ Brokers + ZooKeeper) → Worker
 
 ---
 
-### 6.7 gRPC Streaming ❌ 큐 이점 없음
+### 6.7 gRPC Streaming (큐 이점 없음)
 
 **문제점**:
 
@@ -1339,6 +1339,7 @@ public class JobEventHandler {
 
 | 버전  | 날짜       | 변경 내용                                                                                                                                                                                                                                                                                                                                                                                           |
 | ----- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.5 | 2025-12-11 | 섹션 헤딩 이모지를 괄호 텍스트로 변환하여 마크다운 앵커 링크 호환성 개선 (6.1~6.7 섹션), 내부 링크 수정                                                                                                                                                                                                                                                                                             |
 | 0.0.4 | 2025-12-10 | 상태 불일치 수정: "권장안 (검토 중)" → "최종 결정 (승인됨)"으로 변경, 대안 비교 테이블 삭제 및 RabbitMQ 결정 테이블로 교체, 승인 상태와 일관성 확보                                                                                                                                                                                                                                                 |
 | 0.0.3 | 2025-12-08 | 문서 승인 완료(Approved): 점수 근거 추가(8.2절), 전문가 검토(System/Backend/DevOps Architect), Publisher Confirms 콜백 및 Outbox Pattern 구현 예시(6.5절, 9.2.1절), Docker Compose/CloudAMQP/모니터링 메트릭 가이드 추가(6.5절, 6.8절, 9.1.1절), 전문가 검토 결과 테이블 추가 (System 90점, Backend 92점, DevOps 88점, 종합 90점)                                                                   |
 | 0.0.2 | 2025-12-05 | 문서 구조 개선 - 관련 문서 섹션 하단 이동 및 테이블 형식 변환, 상태 목록 추가, 8.1 평가 결과에 Redis 열 추가, 문서 범위 섹션 추가; ADR 템플릿 구조에 맞춘 전면 재편 - 상태 섹션 확장(역할/Decision Drivers), 섹션 순서 재정렬, 3장 제약사항 섹션 추가, 9장 리스크 테이블 추가, 5장 영역별 대안 테이블에 Redis Streams/Cloud-Native 추가, 테이블 헤더 한글화(HA→고가용성, RTO/RPO→복구시간/손실허용) |
