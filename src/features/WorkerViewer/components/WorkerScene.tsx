@@ -3,8 +3,8 @@
  *
  * 3D 캔버스, 파일 업로드, 컨트롤을 오케스트레이션하는 메인 컨테이너
  *
- * @see {@link WorkerMesh} - 3D 렌더링
- * @see {@link SceneCanvas} - 공통 3D 캔버스
+ * @see {@link ModelMesh} - 3D 모델 렌더링
+ * @see {@link SceneCanvasViewer} - 공통 3D 캔버스 Viewer
  */
 
 import { Suspense, useCallback, useRef, useEffect, lazy } from 'react';
@@ -15,14 +15,8 @@ import { LoadingSpinner, PanelErrorBoundary } from '@/components/Common';
 import { ControlPanelViewer } from '@/components/ControlPanelViewer';
 import { formatFileSize, type SampleInfo } from '@/components/FilePanel';
 import { FilePanelViewer } from '@/components/FilePanelViewer';
+import { ModelMesh } from '@/components/ModelMesh';
 import { useSceneControls } from '@/hooks/useSceneControls';
-
-// React.lazy - SceneCanvas만 적용 (Three.js 무거운 의존성)
-const SceneCanvas = lazy(() =>
-    import('@/components/SceneCanvasViewer').then((m) => ({
-        default: m.SceneCanvas,
-    }))
-);
 
 import {
     DEFAULT_WORKER_CONFIG,
@@ -35,9 +29,14 @@ import {
 import { useGltfLoader } from '../hooks';
 import { GLTF_SAMPLES } from '../utils/gltfSamples';
 
-import { WorkerMesh } from './WorkerMesh';
-
 import type { WorkerViewerConfig, ModelInfo } from '../types';
+
+// React.lazy - SceneCanvasViewer (Three.js 무거운 의존성)
+const SceneCanvasViewer = lazy(() =>
+    import('@/components/SceneCanvasViewer').then((m) => ({
+        default: m.SceneCanvasViewer,
+    }))
+);
 
 /** 로딩 폴백 컴포넌트 */
 function LoadingFallback() {
@@ -112,24 +111,34 @@ export function WorkerScene() {
         <div className="relative h-full w-full overflow-hidden">
             {/* 3D Canvas - 공통 컴포넌트 사용 */}
             <Suspense fallback={<LoadingSpinner size="lg" />}>
-                <SceneCanvas
-                    cameraPosition={[...WORKER_CAMERA_CONFIG.defaultPosition]}
-                    cameraFov={WORKER_CAMERA_CONFIG.fov}
-                    cameraNear={WORKER_CAMERA_CONFIG.near}
-                    cameraFar={WORKER_CAMERA_CONFIG.far}
-                    controlsRef={controlsRef}
-                    enableDamping={WORKER_ORBIT_CONTROLS_CONFIG.enableDamping}
-                    dampingFactor={WORKER_ORBIT_CONTROLS_CONFIG.dampingFactor}
-                    minDistance={WORKER_ORBIT_CONTROLS_CONFIG.minDistance}
-                    maxDistance={WORKER_ORBIT_CONTROLS_CONFIG.maxDistance}
-                    autoRotate={config.autoRotate}
-                    rotateSpeed={config.rotateSpeed}
-                    ambientIntensity={0.5}
-                    showGrid={config.showGrid}
-                    gridSize={WORKER_GRID_CONFIG.size}
-                    gridDivisions={WORKER_GRID_CONFIG.divisions}
-                    gridColorCenterLine={WORKER_GRID_CONFIG.colorCenterLine}
-                    gridColorGrid={WORKER_GRID_CONFIG.colorGrid}
+                <SceneCanvasViewer
+                    camera={{
+                        position: [...WORKER_CAMERA_CONFIG.defaultPosition],
+                        fov: WORKER_CAMERA_CONFIG.fov,
+                        near: WORKER_CAMERA_CONFIG.near,
+                        far: WORKER_CAMERA_CONFIG.far,
+                    }}
+                    controls={{
+                        ref: controlsRef,
+                        enableDamping:
+                            WORKER_ORBIT_CONTROLS_CONFIG.enableDamping,
+                        dampingFactor:
+                            WORKER_ORBIT_CONTROLS_CONFIG.dampingFactor,
+                        minDistance: WORKER_ORBIT_CONTROLS_CONFIG.minDistance,
+                        maxDistance: WORKER_ORBIT_CONTROLS_CONFIG.maxDistance,
+                        autoRotate: config.autoRotate,
+                        rotateSpeed: config.rotateSpeed,
+                    }}
+                    lighting={{
+                        ambientIntensity: 0.5,
+                    }}
+                    grid={{
+                        show: config.showGrid,
+                        size: WORKER_GRID_CONFIG.size,
+                        divisions: WORKER_GRID_CONFIG.divisions,
+                        colorCenterLine: WORKER_GRID_CONFIG.colorCenterLine,
+                        colorGrid: WORKER_GRID_CONFIG.colorGrid,
+                    }}
                 >
                     {/* WorkerScene 전용 조명 */}
                     <directionalLight position={[10, 10, 5]} intensity={1} />
@@ -141,15 +150,16 @@ export function WorkerScene() {
                     {/* glTF 모델 */}
                     {selectedModel && (
                         <Suspense fallback={<LoadingFallback />}>
-                            <WorkerMesh
+                            <ModelMesh
                                 url={selectedModel.url}
                                 center={true}
                                 autoRotate={config.autoRotate}
                                 rotateSpeed={config.rotateSpeed}
+                                shadingMode={config.shadingMode}
                             />
                         </Suspense>
                     )}
-                </SceneCanvas>
+                </SceneCanvasViewer>
             </Suspense>
 
             {/* HTML Overlay - 파일 패널 */}
@@ -182,43 +192,45 @@ export function WorkerScene() {
                     onResetView={handleResetView}
                     onClear={handleClearModel}
                     showShadingSelect={true}
-                    metadata={selectedModel}
-                    renderMetadata={(data: ModelInfo) => (
-                        <>
-                            {/* 헤더: 이름 + 포맷 뱃지 */}
-                            <div className="mb-2 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Box className="h-4 w-4 text-blue-400" />
-                                    <span
-                                        className="max-w-[120px] truncate text-sm font-medium text-gray-200"
-                                        title={data.name}
-                                    >
-                                        {data.name}
-                                    </span>
+                    metadata={{
+                        data: selectedModel,
+                        render: (data: ModelInfo) => (
+                            <>
+                                {/* 헤더: 이름 + 포맷 뱃지 */}
+                                <div className="mb-2 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Box className="h-4 w-4 text-blue-400" />
+                                        <span
+                                            className="max-w-[120px] truncate text-sm font-medium text-gray-200"
+                                            title={data.name}
+                                        >
+                                            {data.name}
+                                        </span>
+                                    </div>
+                                    {data.format && (
+                                        <span className="rounded bg-blue-900/50 px-1.5 py-0.5 text-[10px] text-blue-400">
+                                            {data.format.toUpperCase()}
+                                        </span>
+                                    )}
                                 </div>
-                                {data.format && (
-                                    <span className="rounded bg-blue-900/50 px-1.5 py-0.5 text-[10px] text-blue-400">
-                                        {data.format.toUpperCase()}
-                                    </span>
+
+                                {/* P0: 핵심 정보 */}
+                                {data.fileSize && (
+                                    <p className="mb-2 text-xs text-gray-400">
+                                        {formatFileSize(data.fileSize)}
+                                    </p>
                                 )}
-                            </div>
 
-                            {/* P0: 핵심 정보 */}
-                            {data.fileSize && (
-                                <p className="mb-2 text-xs text-gray-400">
-                                    {formatFileSize(data.fileSize)}
-                                </p>
-                            )}
-
-                            {/* P2: 설명 (작게) */}
-                            {data.description && (
-                                <p className="line-clamp-2 text-[10px] text-gray-500">
-                                    {data.description}
-                                </p>
-                            )}
-                        </>
-                    )}
-                    accentColor="blue"
+                                {/* P2: 설명 (작게) */}
+                                {data.description && (
+                                    <p className="line-clamp-2 text-[10px] text-gray-500">
+                                        {data.description}
+                                    </p>
+                                )}
+                            </>
+                        ),
+                    }}
+                    ui={{ accentColor: 'blue' }}
                 />
             </PanelErrorBoundary>
         </div>

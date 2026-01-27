@@ -5,7 +5,6 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { DEFAULT_BOUNDS } from '../../constants';
 import {
     linesToGeometry,
     circlesToGeometry,
@@ -17,7 +16,9 @@ import {
     cadDataToGeometry,
     calculateBounds,
     calculateCameraDistance,
-} from '../dxfToGeometry';
+} from '@/utils/cad';
+
+import { DEFAULT_BOUNDS } from '../../constants';
 
 import type {
     ParsedLine,
@@ -37,6 +38,12 @@ function createEmptyCADData(): ParsedCADData {
         arcs: [],
         polylines: [],
         hatches: [],
+        // Phase 2.1.4: 추가 엔티티
+        texts: [],
+        mtexts: [],
+        ellipses: [],
+        splines: [],
+        dimensions: [],
         bounds: DEFAULT_BOUNDS,
         metadata: {
             fileName: 'test.dxf',
@@ -44,7 +51,7 @@ function createEmptyCADData(): ParsedCADData {
             entityCount: 0,
             parseTime: 10,
         },
-        layers: new Map(),
+        layers: {},
     };
 }
 

@@ -1,7 +1,7 @@
 # CAD Viewer - Component Hierarchy & Execution Flow
 
-> **Version**: 0.0.0
-> **Last Updated**: 2025-12-15
+> **Version**: 0.0.1
+> **Last Updated**: 2025-12-30
 
 ## Component Hierarchy
 
@@ -41,24 +41,24 @@ CadViewerPage (src/pages/CADViewer/index.tsx)
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │                 3. 샘플 파일 Fetch                               │
-│  fetch('/samples/simple-room.dxf') → File 객체 생성             │
+│  fetch('/samples/dxf/*.dxf') → File 객체 생성                   │
 │  src/features/CADViewer/components/CADScene.tsx:114-128         │
-│  샘플 파일: public/samples/simple-room.dxf                      │
+│  샘플 파일: public/samples/dxf/*.dxf (자동 스캔)                │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                 4. useDXFWorker 호출                             │
+│                 4. useDxfWorker 호출                             │
 │  handleFileSelect() → parse(file)                               │
 │  src/features/CADViewer/components/CADScene.tsx:71-95           │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │                 5. WebWorker 생성 & 파싱                         │
-│  useDXFWorker.parse():                                          │
+│  useDxfWorker.parse():                                          │
 │  - file.text() → DXF 텍스트 추출                                │
-│  - WebWorker 생성 (dxfParserV2.worker.ts)                       │
+│  - WebWorker 생성 (dxfParser.worker.ts)                         │
 │  - Worker에 parse 메시지 전송                                   │
-│  src/features/CADViewer/hooks/useDXFWorker.ts:71-178            │
+│  src/features/CadViewer/hooks/useDxfWorker.ts:71-178            │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -141,8 +141,9 @@ THREE.LineSegments (per layer)
 
 | Hook         | 파일 위치             | 역할                        |
 | ------------ | --------------------- | --------------------------- |
-| useDXFWorker | hooks/useDXFWorker.ts | WebWorker로 DXF 비동기 파싱 |
-| useDXFParser | hooks/useDXFParser.ts | 메인 스레드 파싱 (fallback) |
+| useDxfWorker | hooks/useDxfWorker.ts | WebWorker로 DXF 비동기 파싱 |
+| useDxfParser | hooks/useDxfParser.ts | 메인 스레드 파싱 (fallback) |
+| useDxfLoader | hooks/useDxfLoader.ts | 파일 로딩 및 상태 관리      |
 
 ---
 
@@ -161,22 +162,23 @@ THREE.LineSegments (per layer)
 
 ## 핵심 파일 경로 요약
 
-| 역할            | 파일 경로                                            |
-| --------------- | ---------------------------------------------------- |
-| 페이지 엔트리   | src/pages/CADViewer/index.tsx                        |
-| 메인 씬         | src/features/CADViewer/components/CADScene.tsx       |
-| 파일 업로드 UI  | src/features/CADViewer/components/FileUpload.tsx     |
-| 3D 메시 렌더링  | src/features/CADViewer/components/CADMesh.tsx        |
-| Worker 훅       | src/features/CADViewer/hooks/useDXFWorker.ts         |
-| DXF 파싱 Worker | src/features/CADViewer/workers/dxfParserV2.worker.ts |
-| Geometry 변환   | src/features/CADViewer/utils/dxfToGeometry.ts        |
-| 샘플 파일       | public/samples/simple-room.dxf                       |
-| 상수/설정       | src/features/CADViewer/constants.ts                  |
+| 역할            | 파일 경로                                           |
+| --------------- | --------------------------------------------------- |
+| 페이지 엔트리   | src/pages/CADViewer/index.tsx                       |
+| 메인 씬         | src/features/CADViewer/components/CADScene.tsx      |
+| 파일 업로드 UI  | src/features/CADViewer/components/FileUpload.tsx    |
+| 3D 메시 렌더링  | src/features/CADViewer/components/CADMesh.tsx       |
+| Worker 훅       | src/features/CadViewer/hooks/useDxfWorker.ts        |
+| DXF 파싱 Worker | src/features/CadViewer/services/dxfParser.worker.ts |
+| Geometry 변환   | src/utils/cad/dxfToGeometry.ts                      |
+| 샘플 파일       | public/samples/dxf/\*.dxf (자동 스캔)               |
+| 상수/설정       | src/features/CADViewer/constants.ts                 |
 
 ---
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                     |
-| ----- | ---------- | --------------------------------------------- |
-| 0.0.0 | 2025-12-15 | 초기 문서 생성 - 컴포넌트 계층 및 실행 흐름도 |
+| 버전  | 날짜       | 변경 내용                                                     |
+| ----- | ---------- | ------------------------------------------------------------- |
+| 0.0.1 | 2025-12-30 | 훅 네이밍 표준화 반영 (useDxfWorker, useDxfParser), 경로 수정 |
+| 0.0.0 | 2025-12-15 | 초기 문서 생성 - 컴포넌트 계층 및 실행 흐름도                 |

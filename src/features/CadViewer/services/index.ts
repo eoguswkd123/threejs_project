@@ -1,5 +1,6 @@
 /**
  * CadViewer Services - Barrel Export
+ * 외부 공개 API만 export (내부 전용 함수는 직접 import 사용)
  */
 
 export type {
@@ -11,20 +12,11 @@ export type {
     WorkerSuccessPayload,
 } from '../types';
 
-export { aciToHex, getArcBounds, isAngleInArc } from './entityMath';
+export { parseAllEntities, getTotalEntityCount } from './parsers';
+export type { ParsedEntities } from './parsers';
 
-// 공유 엔티티 파서
-export {
-    parseAllEntities,
-    parseArc,
-    parseCircle,
-    parseHatch,
-    parseHatchBoundary,
-    parseLine,
-    parsePolyline,
-    getTotalEntityCount,
-    toPoint3D,
-    toPoint3DArray,
-} from './entityParsers';
+export { aciToHex, isAngleInArc, getArcBounds } from './entityMath';
 
-export type { ParsedEntities } from './entityParsers';
+// Worker Pool
+export { DxfWorkerPool } from './workerPool';
+export type { PoolConfig, ParseTask, PoolStatus } from './workerPool';

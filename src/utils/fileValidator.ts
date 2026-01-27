@@ -292,3 +292,25 @@ export function validateExtension(
 
     return { valid: true };
 }
+
+// ============================================================================
+// GLTF/GLB 파일 형식 감지
+// ============================================================================
+
+/** GLTF 허용 확장자 */
+export const GLTF_ALLOWED_EXTENSIONS = ['.glb', '.gltf'] as const;
+
+/**
+ * GLTF/GLB 파일 형식 추출
+ *
+ * @param filenameOrUrl 파일명 또는 URL
+ * @returns 'gltf' | 'glb'
+ *
+ * @example
+ * detectGltfFormat('model.gltf');              // 'gltf'
+ * detectGltfFormat('/path/to/model.glb');      // 'glb'
+ * detectGltfFormat('https://x.com/a.GLTF');    // 'gltf' (대소문자 무관)
+ */
+export function detectGltfFormat(filenameOrUrl: string): 'gltf' | 'glb' {
+    return filenameOrUrl.toLowerCase().endsWith('.gltf') ? 'gltf' : 'glb';
+}

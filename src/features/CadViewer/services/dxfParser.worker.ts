@@ -8,28 +8,41 @@
 
 import DxfParser from 'dxf-parser';
 
-import { DEFAULT_BOUNDS, DEFAULT_LAYER_COLOR } from '../constants';
-
-import { aciToHex, getArcBounds } from './entityMath';
-import {
-    parseArc,
-    parseCircle,
-    parseHatch,
-    parseLine,
-    parsePolyline,
-    getTotalEntityCount,
-} from './entityParsers';
-
 import type {
     BoundingBox,
-    DXFLibEntity,
-    DXFLibLayer,
     LayerInfo,
     ParsedArc,
     ParsedCircle,
     ParsedHatch,
     ParsedLine,
     ParsedPolyline,
+    ParsedText,
+    ParsedMText,
+    ParsedEllipse,
+    ParsedSpline,
+    ParsedDimension,
+} from '@/types/cad';
+
+import { DEFAULT_BOUNDS, DEFAULT_LAYER_COLOR } from '../constants';
+
+import { aciToHex, getArcBounds } from './entityMath';
+import { parseHatchesFromDxf } from './hatchParser';
+import {
+    parseArc,
+    parseCircle,
+    parseLine,
+    parsePolyline,
+    parseText,
+    parseMText,
+    parseEllipse,
+    parseSpline,
+    parseDimension,
+    getTotalEntityCount,
+} from './parsers';
+
+import type {
+    DXFLibEntity,
+    DXFLibLayer,
     WorkerErrorCode,
     WorkerRequest,
     WorkerResponse,
@@ -282,7 +295,22 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
         const circles: ParsedCircle[] = [];
         const arcs: ParsedArc[] = [];
         const polylines: ParsedPolyline[] = [];
-        const hatches: ParsedHatch[] = [];
+        // Phase 2.1.4: 추가 엔티티 배열
+        const texts: ParsedText[] = [];
+        const mtexts: ParsedMText[] = [];
+        const ellipses: ParsedEllipse[] = [];
+        const splines: ParsedSpline[] = [];
+        const dimensions: ParsedDimension[] = [];
+
+        // HATCH: 커스텀 파서 사용 (dxf-parser가 HATCH를 지원하지 않음)
+        const hatches = parseHatchesFromDxf(text);
+
+        // HATCH 레이어 카운트 추가
+        for (const hatch of hatches) {
+            if (hatch.layer) {
+                countLayer(layers, hatch.layer);
+            }
+        }
 
         const entities = dxf.entities as DXFLibEntity[];
         const totalEntities = entities.length;
@@ -331,10 +359,44 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
                     }
                     break;
                 }
-                case 'HATCH': {
-                    const hatch = parseHatch(entity);
-                    if (hatch) {
-                        hatches.push(hatch);
+                // HATCH: dxf-parser가 지원하지 않음 - parseHatchesFromDxf()로 별도 처리됨
+                // Phase 2.1.4: 추가 엔티티 타입
+                case 'TEXT': {
+                    const text = parseText(entity);
+                    if (text) {
+                        texts.push(text);
+                        countLayer(layers, entity.layer);
+                    }
+                    break;
+                }
+                case 'MTEXT': {
+                    const mtext = parseMText(entity);
+                    if (mtext) {
+                        mtexts.push(mtext);
+                        countLayer(layers, entity.layer);
+                    }
+                    break;
+                }
+                case 'ELLIPSE': {
+                    const ellipse = parseEllipse(entity);
+                    if (ellipse) {
+                        ellipses.push(ellipse);
+                        countLayer(layers, entity.layer);
+                    }
+                    break;
+                }
+                case 'SPLINE': {
+                    const spline = parseSpline(entity);
+                    if (spline) {
+                        splines.push(spline);
+                        countLayer(layers, entity.layer);
+                    }
+                    break;
+                }
+                case 'DIMENSION': {
+                    const dimension = parseDimension(entity);
+                    if (dimension) {
+                        dimensions.push(dimension);
                         countLayer(layers, entity.layer);
                     }
                     break;
@@ -349,6 +411,12 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
             arcs,
             polylines,
             hatches,
+            // Phase 2.1.4: 추가 엔티티
+            texts,
+            mtexts,
+            ellipses,
+            splines,
+            dimensions,
         });
 
         if (totalEntityCount === 0) {
@@ -359,8 +427,9 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
 
         const endTime = performance.now();
 
-        // Map을 배열로 변환 (직렬화 가능)
-        const layersArray: [string, LayerInfo][] = Array.from(layers.entries());
+        // Map을 Record로 변환 (JSON 직렬화 호환)
+        const layersRecord: Record<string, LayerInfo> =
+            Object.fromEntries(layers);
 
         self.postMessage({
             type: 'success',
@@ -370,6 +439,12 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
                 arcs,
                 polylines,
                 hatches,
+                // Phase 2.1.4: 추가 엔티티
+                texts,
+                mtexts,
+                ellipses,
+                splines,
+                dimensions,
                 bounds: calculateBounds(
                     lines,
                     circles,
@@ -377,7 +452,7 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
                     polylines,
                     hatches
                 ),
-                layers: layersArray,
+                layers: layersRecord,
                 metadata: {
                     fileName,
                     fileSize,

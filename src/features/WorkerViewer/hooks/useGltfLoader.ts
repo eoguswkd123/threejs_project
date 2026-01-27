@@ -6,7 +6,13 @@
 import { useState, useCallback } from 'react';
 
 import { MESSAGES } from '@/locales';
-import { classifyError, validateSecureUrl, validateExtension } from '@/utils';
+import {
+    classifyError,
+    validateSecureUrl,
+    validateExtension,
+    isInternalResource,
+    GLTF_ALLOWED_EXTENSIONS,
+} from '@/utils';
 
 import { URL_SECURITY_CONFIG } from '../constants';
 import { workerService } from '../services';
@@ -85,14 +91,10 @@ export function useGltfLoader(): UseGltfLoaderReturn {
 
     /** URL로 모델 로드 (SSRF 방지 적용) */
     const loadModelFromUrl = useCallback((url: string) => {
-        // blob: URL은 로컬 파일이므로 검증 스킵
-        // 샘플 파일 경로(/samples/)도 내부 리소스이므로 스킵
-        if (!url.startsWith('blob:') && !url.startsWith('/')) {
+        // 내부 리소스가 아닌 경우에만 검증
+        if (!isInternalResource(url)) {
             // 1. SSRF 방지: 프로토콜 + 호스트 화이트리스트 검증
-            const urlValidation = validateSecureUrl(url, {
-                allowedProtocols: URL_SECURITY_CONFIG.allowedProtocols,
-                allowedHosts: URL_SECURITY_CONFIG.allowedHosts,
-            });
+            const urlValidation = validateSecureUrl(url, URL_SECURITY_CONFIG);
             if (!urlValidation.valid && urlValidation.error) {
                 setError({
                     code: 'INVALID_URL',
@@ -104,10 +106,10 @@ export function useGltfLoader(): UseGltfLoaderReturn {
 
             // 2. 확장자 검증
             const pathname = new URL(url).pathname;
-            const extValidation = validateExtension(pathname, [
-                '.glb',
-                '.gltf',
-            ]);
+            const extValidation = validateExtension(
+                pathname,
+                GLTF_ALLOWED_EXTENSIONS
+            );
             if (!extValidation.valid && extValidation.error) {
                 setError({
                     code: 'INVALID_EXTENSION',

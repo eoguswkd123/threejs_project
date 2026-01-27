@@ -5,8 +5,10 @@
  * 주요 테스트:
  * - 자식 컴포넌트 렌더링 (GridToggle, RotateToggle, SpeedSlider, ViewerActionButtons)
  * - 설정 변경 콜백 전파
- * - 메타데이터 조건부 렌더링
+ * - 메타데이터 조건부 렌더링 (그룹화된 Props)
  * - 도움말 표시 조건
+ *
+ * Props 그룹화 리팩토링 반영 (16개 → 8개 props)
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -72,11 +74,14 @@ describe('ControlPanelViewer', () => {
             expect(screen.queryByText('Rotate Speed')).not.toBeInTheDocument();
         });
 
-        it('metadata 있을 때 Clear 버튼 표시', () => {
+        it('metadata.data 있을 때 Clear 버튼 표시', () => {
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    metadata={{ name: 'test' }}
+                    metadata={{
+                        data: { name: 'test' },
+                        render: (data) => <span>{data.name}</span>,
+                    }}
                     onClear={vi.fn()}
                 />
             );
@@ -94,11 +99,11 @@ describe('ControlPanelViewer', () => {
             ).not.toBeInTheDocument();
         });
 
-        it('metadata 없고 helpText 있을 때 도움말 표시', () => {
+        it('metadata 없고 ui.helpText 있을 때 도움말 표시', () => {
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    helpText="파일을 업로드하세요"
+                    ui={{ helpText: '파일을 업로드하세요' }}
                 />
             );
 
@@ -109,8 +114,11 @@ describe('ControlPanelViewer', () => {
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    metadata={{ name: 'test' }}
-                    helpText="파일을 업로드하세요"
+                    metadata={{
+                        data: { name: 'test' },
+                        render: (data) => <span>{data.name}</span>,
+                    }}
+                    ui={{ helpText: '파일을 업로드하세요' }}
                 />
             );
 
@@ -120,19 +128,21 @@ describe('ControlPanelViewer', () => {
         });
     });
 
-    describe('render props 패턴', () => {
-        it('renderMetadata로 메타데이터 커스텀 렌더링', () => {
+    describe('render props 패턴 (MetadataConfig)', () => {
+        it('metadata.render로 메타데이터 커스텀 렌더링', () => {
             const metadata = { fileName: 'test.dxf', size: 1024 };
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    metadata={metadata}
-                    renderMetadata={(data) => (
-                        <div data-testid="custom-metadata">
-                            <span>{data.fileName}</span>
-                            <span>{data.size} bytes</span>
-                        </div>
-                    )}
+                    metadata={{
+                        data: metadata,
+                        render: (data) => (
+                            <div data-testid="custom-metadata">
+                                <span>{data.fileName}</span>
+                                <span>{data.size} bytes</span>
+                            </div>
+                        ),
+                    }}
                 />
             );
 
@@ -141,15 +151,17 @@ describe('ControlPanelViewer', () => {
             expect(screen.getByText('1024 bytes')).toBeInTheDocument();
         });
 
-        it('metadata만 있고 renderMetadata 없으면 메타데이터 섹션 미표시', () => {
+        it('metadata.data가 null이면 메타데이터 섹션 미표시', () => {
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    metadata={{ name: 'test' }}
+                    metadata={{
+                        data: null,
+                        render: () => <div data-testid="custom-metadata" />,
+                    }}
                 />
             );
 
-            // metadata 섹션이 없어야 함 (renderMetadata 필요)
             expect(
                 screen.queryByTestId('custom-metadata')
             ).not.toBeInTheDocument();
@@ -206,7 +218,10 @@ describe('ControlPanelViewer', () => {
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    metadata={{ name: 'test' }}
+                    metadata={{
+                        data: { name: 'test' },
+                        render: (data) => <span>{data.name}</span>,
+                    }}
                     onClear={onClear}
                 />
             );
@@ -217,7 +232,7 @@ describe('ControlPanelViewer', () => {
         });
     });
 
-    describe('테마 및 스타일', () => {
+    describe('테마 및 스타일 (UIConfig)', () => {
         it('기본 accentColor는 green', () => {
             render(<ControlPanelViewer {...defaultProps} />);
 
@@ -226,18 +241,26 @@ describe('ControlPanelViewer', () => {
             expect(checkbox).toHaveClass('text-green-500');
         });
 
-        it('accentColor=blue 적용', () => {
-            render(<ControlPanelViewer {...defaultProps} accentColor="blue" />);
+        it('ui.accentColor=blue 적용', () => {
+            render(
+                <ControlPanelViewer
+                    {...defaultProps}
+                    ui={{ accentColor: 'blue' }}
+                />
+            );
 
             const checkbox = screen.getByRole('checkbox', { name: 'Grid' });
             expect(checkbox).toHaveClass('text-blue-500');
         });
     });
 
-    describe('커스텀 라벨', () => {
+    describe('커스텀 라벨 (UIConfig)', () => {
         it('커스텀 resetLabel 적용', () => {
             render(
-                <ControlPanelViewer {...defaultProps} resetLabel="초기화" />
+                <ControlPanelViewer
+                    {...defaultProps}
+                    ui={{ resetLabel: '초기화' }}
+                />
             );
 
             expect(
@@ -249,9 +272,12 @@ describe('ControlPanelViewer', () => {
             render(
                 <ControlPanelViewer
                     {...defaultProps}
-                    metadata={{ name: 'test' }}
+                    metadata={{
+                        data: { name: 'test' },
+                        render: (data) => <span>{data.name}</span>,
+                    }}
                     onClear={vi.fn()}
-                    clearLabel="닫기"
+                    ui={{ clearLabel: '닫기' }}
                 />
             );
 

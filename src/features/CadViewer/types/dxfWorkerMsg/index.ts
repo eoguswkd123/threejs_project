@@ -10,10 +10,15 @@ import type {
     LayerInfo,
     ParsedArc,
     ParsedCircle,
+    ParsedDimension,
+    ParsedEllipse,
     ParsedHatch,
     ParsedLine,
+    ParsedMText,
     ParsedPolyline,
-} from '../dxfEntity';
+    ParsedSpline,
+    ParsedText,
+} from '@/types/cad';
 
 /** Worker 요청 메시지 */
 export interface WorkerRequest {
@@ -38,8 +43,15 @@ export interface WorkerSuccessPayload {
     arcs: ParsedArc[];
     polylines: ParsedPolyline[];
     hatches: ParsedHatch[];
+    // Phase 2.1.4: 추가 엔티티
+    texts: ParsedText[];
+    mtexts: ParsedMText[];
+    ellipses: ParsedEllipse[];
+    splines: ParsedSpline[];
+    dimensions: ParsedDimension[];
     bounds: BoundingBox;
-    layers: [string, LayerInfo][];
+    /** 레이어 정보 (JSON 직렬화 호환) */
+    layers: Record<string, LayerInfo>;
     metadata: CADMetadata;
 }
 

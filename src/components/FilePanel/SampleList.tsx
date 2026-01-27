@@ -11,9 +11,25 @@ import { FileText, FolderOpen, Loader2 } from 'lucide-react';
 
 import { ACCENT_CLASSES } from '@/components/Common/constants';
 
-import { SAMPLE_LIST_STYLES } from './constants';
-
 import type { SampleListProps } from './types';
+
+// ============================================================
+// Styles
+// ============================================================
+
+const styles = {
+    container: 'rounded-lg bg-gray-900/90 p-3 backdrop-blur-sm',
+    header: 'mb-2 flex items-center gap-2',
+    headerIcon: 'h-4 w-4',
+    headerText: 'text-xs text-gray-400',
+    list: 'max-h-[200px] space-y-1 overflow-y-auto',
+    item: 'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-gray-200 transition-colors hover:bg-gray-700 disabled:opacity-50',
+    itemIcon: 'h-4 w-4',
+    itemName: 'flex-1 truncate',
+    itemFormat: 'text-xs text-gray-500',
+    loading: 'flex items-center justify-center py-4',
+    loadingIcon: 'h-5 w-5 animate-spin',
+};
 
 function SampleListComponent({
     samples,
@@ -29,41 +45,37 @@ function SampleListComponent({
     }
 
     return (
-        <div className={SAMPLE_LIST_STYLES.container}>
+        <div className={styles.container}>
             {/* 헤더 */}
-            <div className={SAMPLE_LIST_STYLES.header}>
-                <FolderOpen
-                    className={`${SAMPLE_LIST_STYLES.headerIcon} ${colors.icon}`}
-                />
-                <span className={SAMPLE_LIST_STYLES.headerText}>
-                    Available Samples
-                </span>
+            <div className={styles.header}>
+                <FolderOpen className={`${styles.headerIcon} ${colors.icon}`} />
+                <span className={styles.headerText}>Available Samples</span>
             </div>
 
             {/* 로딩 상태 */}
             {isLoading ? (
-                <div className={SAMPLE_LIST_STYLES.loading}>
+                <div className={styles.loading}>
                     <Loader2
-                        className={`${SAMPLE_LIST_STYLES.loadingIcon} ${colors.icon}`}
+                        className={`${styles.loadingIcon} ${colors.icon}`}
                     />
                 </div>
             ) : (
                 /* 샘플 목록 */
-                <div className={SAMPLE_LIST_STYLES.list}>
+                <div className={styles.list}>
                     {samples.map((sample) => (
                         <button
                             key={sample.id}
                             onClick={() => onSelectSample(sample)}
-                            className={SAMPLE_LIST_STYLES.item}
+                            className={styles.item}
                         >
                             <FileText
-                                className={`${SAMPLE_LIST_STYLES.itemIcon} ${colors.icon}`}
+                                className={`${styles.itemIcon} ${colors.icon}`}
                             />
-                            <span className={SAMPLE_LIST_STYLES.itemName}>
+                            <span className={styles.itemName}>
                                 {sample.name}
                             </span>
                             {sample.format && (
-                                <span className={SAMPLE_LIST_STYLES.itemFormat}>
+                                <span className={styles.itemFormat}>
                                     .{sample.format}
                                 </span>
                             )}

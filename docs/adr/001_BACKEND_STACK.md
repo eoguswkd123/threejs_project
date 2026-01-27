@@ -1150,9 +1150,9 @@ Phase 3                 Phase 5-6              Phase 7+
 
 **관련 ADR (상세 결정)**:
 
-- [x] [ADR-002](./002_API_LAYER_STACK.md): API Layer 프레임워크 선택 - FastAPI 선택 (승인됨)
-- [x] [ADR-003](./003_QUEUE_ALTERNATIVES_COMPARISON.md): Queue 대안 비교 - RabbitMQ 선택 (승인됨)
-- [x] [ADR-004](./004_PYTHON_WORKER_STACK.md): Python Worker 기술 스택 - Celery + Python 3.12 (승인됨)
+- ✅ [ADR-002](./002_API_LAYER_STACK.md): API Layer 프레임워크 선택 - FastAPI 선택 (승인됨)
+- ✅ [ADR-003](./003_QUEUE_ALTERNATIVES_COMPARISON.md): Queue 대안 비교 - RabbitMQ 선택 (승인됨)
+- ✅ [ADR-004](./004_PYTHON_WORKER_STACK.md): Python Worker 기술 스택 - Celery + Python 3.12 (승인됨)
 
 ### ADR 의존성 다이어그램
 

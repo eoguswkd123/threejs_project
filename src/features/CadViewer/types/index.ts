@@ -1,18 +1,19 @@
 /**
  * Cad Viewer - Type Definitions
- * DXF Viewer 전용 타입 정의
+ * DXF Viewer Feature 전용 타입 정의
  */
 
-// DXF 엔티티 타입 re-export
+import type {
+    HatchFillMode,
+    CadShadingMode,
+    ExtrudeOptions,
+} from '@/types/cad';
+
+// ============================================================
+// 공유 CAD 타입 (re-export for convenience)
+// ============================================================
 export type {
     BoundingBox,
-    CADMetadata,
-    DXFLibEntity,
-    DXFLibHatchBoundary,
-    DXFLibLayer,
-    DXFLibPoint,
-    HatchBoundaryPath,
-    HatchBoundaryType,
     LayerInfo,
     ParsedArc,
     ParsedCADData,
@@ -20,10 +21,20 @@ export type {
     ParsedHatch,
     ParsedLine,
     ParsedPolyline,
-    Point3D,
-} from './dxfEntity';
+} from '@/types/cad';
 
-// DXF Worker 메시지 타입 re-export
+// ============================================================
+// DXF 라이브러리 타입
+// ============================================================
+export type {
+    DXFLibEntity,
+    DXFLibHatchBoundary,
+    DXFLibLayer,
+} from './dxfEntity/library';
+
+// ============================================================
+// DXF Worker 메시지 타입 (외부 공개 API)
+// ============================================================
 export type {
     WorkerErrorCode,
     WorkerErrorPayload,
@@ -33,8 +44,9 @@ export type {
     WorkerSuccessPayload,
 } from './dxfWorkerMsg';
 
-/** CAD 렌더링 모드 */
-export type CadRenderMode = 'wireframe' | 'solid' | 'pattern';
+// ============================================================
+// Feature 내부용 타입 (외부 공개 API 아님)
+// ============================================================
 
 /** Cad Viewer 설정 */
 export interface CadViewerConfig {
@@ -48,12 +60,15 @@ export interface CadViewerConfig {
     backgroundColor: string;
     /** 자동 카메라 조정 */
     autoFitCamera: boolean;
-    /** 렌더링 모드 (wireframe/solid/pattern) */
-    renderMode: CadRenderMode;
+    /** 렌더링 모드 (outline/solid/pattern) */
+    renderMode: HatchFillMode;
+    /** 3D 돌출 모드 활성화 (Phase 2.1.6) */
+    enable3DExtrude: boolean;
+    /** 3D 돌출 옵션 (Phase 2.1.6) */
+    extrudeOptions: ExtrudeOptions;
+    /** 3D 쉐이딩 모드 (Phase 2.1.7) */
+    shadingMode: CadShadingMode;
 }
-
-/** 파일 업로드 상태 */
-export type UploadStatus = 'idle' | 'loading' | 'success' | 'error';
 
 /** 파일 업로드 에러 */
 export interface UploadError {
@@ -67,10 +82,4 @@ export interface UploadError {
         | 'INVALID_DXF_FORMAT'
         | 'FILE_READ_ERROR';
     message: string;
-}
-
-/** 파일 유효성 검사 결과 */
-export interface ValidationResult {
-    valid: boolean;
-    error?: UploadError;
 }

@@ -28,7 +28,24 @@ import { Button } from '@/components/Common';
 
 import { DEFAULT_LABELS, RESET_ICONS } from './constants';
 
-import type { ViewerActionButtonsProps } from './types';
+/** Reset Icon 타입 */
+export type ResetIconType = 'rotate' | 'home';
+
+/**
+ * ViewerActionButtons Props
+ */
+export interface ViewerActionButtonsProps {
+    /** 리셋 핸들러 */
+    onReset: () => void;
+    /** 클리어 핸들러 (없으면 클리어 버튼 숨김) */
+    onClear?: (() => void) | undefined;
+    /** 리셋 버튼 라벨 */
+    resetLabel?: string;
+    /** 클리어 버튼 라벨 */
+    clearLabel?: string;
+    /** 리셋 아이콘 타입 */
+    resetIcon?: ResetIconType;
+}
 
 function ViewerActionButtonsComponent({
     onReset,

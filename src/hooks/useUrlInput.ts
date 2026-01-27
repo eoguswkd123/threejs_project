@@ -119,8 +119,14 @@ export function useUrlInput({
                     setError(extValidation.error.message);
                     return;
                 }
-            } catch {
-                // URL 파싱 실패 시 (이미 위에서 검증됨)
+            } catch (e) {
+                // URL 파싱 실패: validateUrl을 통과했지만 new URL() 실패하는 엣지 케이스
+                // 예: 유효한 형식이지만 특수문자가 포함된 경우
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn('[useUrlInput] URL parsing failed:', e);
+                }
+                setError('URL 형식이 올바르지 않습니다.');
+                return;
             }
         }
 

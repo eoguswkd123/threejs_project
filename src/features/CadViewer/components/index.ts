@@ -2,19 +2,13 @@
  * Cad Viewer Components
  *
  * - **Entry**: CadScene - 전체 뷰어를 조율하는 메인 컨테이너
- * - **3D**: CadMesh - Canvas 내부 3D 렌더링
- * - **UI**: LayerPanel - Canvas 외부 HTML 오버레이
- * - **Shared**: FileUploadBox - @/components/FilePanel에서 import
- * - **Shared**: ControlPanelViewer - @/components/ControlPanelViewer에서 import
+ *
+ * Note: CadMeshViewer는 @/components/CadMeshViewer/에서 직접 import
+ *       LayerPanel은 CadScene 내부에서만 사용
+ *       Extrude 컨트롤은 ControlPanelViewer에 통합됨 (Phase 2.1.6)
  *
  * @see {@link ../FLOWCHART.md} - 컴포넌트 계층 및 실행 흐름도
  */
 
 // Main Container
 export { CadScene } from './CadScene';
-
-// Canvas-internal (3D Rendering)
-export { CadMesh } from './CadMesh';
-
-// HTML Overlays
-export { LayerPanel } from './LayerPanel';

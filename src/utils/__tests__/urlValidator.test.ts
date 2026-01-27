@@ -15,6 +15,8 @@ import { describe, it, expect } from 'vitest';
 import {
     validateSecureUrl,
     validateUrl,
+    isInternalResource,
+    extractFileName,
     type UrlSecurityConfig,
 } from '../urlValidator';
 
@@ -726,6 +728,143 @@ describe('validateUrl', () => {
                 'https://user:pass@example.com/file.dxf'
             );
             expect(result.valid).toBe(true);
+        });
+    });
+});
+
+// ============================================================================
+// isInternalResource 테스트
+// ============================================================================
+
+describe('isInternalResource', () => {
+    describe('내부 리소스 판단', () => {
+        it('blob: URL은 내부 리소스로 판단한다', () => {
+            expect(isInternalResource('blob:http://localhost/abc-123')).toBe(
+                true
+            );
+        });
+
+        it('blob: URL with different origin도 내부 리소스로 판단한다', () => {
+            expect(
+                isInternalResource(
+                    'blob:https://example.com/12345678-1234-1234-1234-123456789012'
+                )
+            ).toBe(true);
+        });
+
+        it('/ 경로는 내부 리소스로 판단한다', () => {
+            expect(isInternalResource('/samples/model.glb')).toBe(true);
+        });
+
+        it('루트 경로 /는 내부 리소스로 판단한다', () => {
+            expect(isInternalResource('/')).toBe(true);
+        });
+
+        it('중첩된 내부 경로도 내부 리소스로 판단한다', () => {
+            expect(
+                isInternalResource('/assets/models/hologram/robot.glb')
+            ).toBe(true);
+        });
+    });
+
+    describe('외부 리소스 판단', () => {
+        it('https:// URL은 외부 리소스로 판단한다', () => {
+            expect(isInternalResource('https://example.com/model.glb')).toBe(
+                false
+            );
+        });
+
+        it('http:// URL은 외부 리소스로 판단한다', () => {
+            expect(isInternalResource('http://example.com/model.glb')).toBe(
+                false
+            );
+        });
+
+        it('data: URL은 외부 리소스로 판단한다', () => {
+            expect(isInternalResource('data:text/html,<script>')).toBe(false);
+        });
+
+        it('file: URL은 외부 리소스로 판단한다', () => {
+            expect(isInternalResource('file:///etc/passwd')).toBe(false);
+        });
+    });
+
+    describe('엣지 케이스', () => {
+        it('빈 문자열은 외부 리소스로 판단한다', () => {
+            expect(isInternalResource('')).toBe(false);
+        });
+
+        it('상대 경로는 외부 리소스로 판단한다 (/ 없음)', () => {
+            expect(isInternalResource('path/to/model.glb')).toBe(false);
+        });
+
+        it('../ 로 시작하는 상대 경로도 외부 리소스로 판단한다', () => {
+            expect(isInternalResource('../model.glb')).toBe(false);
+        });
+    });
+});
+
+// ============================================================================
+// extractFileName 테스트
+// ============================================================================
+
+describe('extractFileName', () => {
+    describe('기본 파일명 추출', () => {
+        it('URL에서 파일명을 추출한다', () => {
+            expect(extractFileName('/path/to/model.glb')).toBe('model.glb');
+        });
+
+        it('복잡한 경로에서 파일명을 추출한다', () => {
+            expect(extractFileName('/a/b/c/d/e/file.gltf')).toBe('file.gltf');
+        });
+
+        it('https URL에서 파일명을 추출한다', () => {
+            expect(
+                extractFileName('https://example.com/assets/model.glb')
+            ).toBe('model.glb');
+        });
+
+        it('쿼리 파라미터가 있어도 마지막 세그먼트를 반환한다', () => {
+            // 참고: URL 파싱 없이 단순 split이므로 쿼리 파라미터 포함됨
+            expect(extractFileName('/path/model.glb?v=1')).toBe(
+                'model.glb?v=1'
+            );
+        });
+    });
+
+    describe('fallback 동작', () => {
+        it('경로가 /만 있을 때 기본 fallback 반환', () => {
+            expect(extractFileName('/')).toBe('file');
+        });
+
+        it('경로가 /만 있을 때 커스텀 fallback 반환', () => {
+            expect(extractFileName('/', 'default')).toBe('default');
+        });
+
+        it('빈 문자열일 때 기본 fallback 반환', () => {
+            expect(extractFileName('')).toBe('file');
+        });
+
+        it('빈 문자열일 때 커스텀 fallback 반환', () => {
+            expect(extractFileName('', 'model')).toBe('model');
+        });
+    });
+
+    describe('다양한 확장자', () => {
+        it('.glb 파일명 추출', () => {
+            expect(extractFileName('/models/robot.glb')).toBe('robot.glb');
+        });
+
+        it('.gltf 파일명 추출', () => {
+            expect(extractFileName('/models/scene.gltf')).toBe('scene.gltf');
+        });
+
+        it('확장자 없는 파일명도 추출', () => {
+            expect(extractFileName('/path/to/filename')).toBe('filename');
+        });
+
+        it('여러 점이 있는 파일명도 추출', () => {
+            expect(extractFileName('/path/model.v2.glb')).toBe('model.v2.glb');
         });
     });
 });

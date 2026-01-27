@@ -8,6 +8,7 @@ import type {
     FileUploadMessages,
 } from '@/components/FilePanel';
 import { createUrlSecurityConfig } from '@/config/urlSecurity';
+import { DEFAULT_EXTRUDE_OPTIONS, DEFAULT_SHADING_MODE } from '@/types/cad';
 
 import type { CadViewerConfig } from './types';
 
@@ -44,29 +45,32 @@ export const DEFAULT_CAD_CONFIG: CadViewerConfig = {
     rotateSpeed: 1,
     backgroundColor: '#1a1a2e',
     autoFitCamera: true,
-    renderMode: 'wireframe',
+    renderMode: 'outline',
+    enable3DExtrude: false,
+    extrudeOptions: DEFAULT_EXTRUDE_OPTIONS,
+    shadingMode: DEFAULT_SHADING_MODE,
 };
 
 /** 렌더링 모드 옵션 */
 export const RENDER_MODE_OPTIONS = [
-    { value: 'wireframe', label: 'Wireframe' },
+    { value: 'outline', label: 'Outline' },
     { value: 'solid', label: 'Solid Fill' },
     { value: 'pattern', label: 'Pattern Fill' },
 ] as const;
 
-/** HATCH 렌더링 설정 */
-export const HATCH_CONFIG = {
-    /** 솔리드 채우기 투명도 */
-    solidOpacity: 0.7,
-    /** Z축 오프셋 (와이어프레임 뒤에 렌더링) */
-    zOffset: -0.01,
-    /** 기본 HATCH 색상 */
-    defaultColor: '#00ff00',
-    /** 패턴 텍스처 크기 */
-    patternTextureSize: 128,
-    /** 기본 패턴 라인 간격 */
-    defaultPatternSpacing: 16,
-} as const;
+// ============================================================
+// 공유 CAD 상수 re-export (src/constants/cad/)
+// 후방 호환성을 위해 유지 - 새 코드는 @/constants/cad 직접 사용 권장
+// ============================================================
+export {
+    DEFAULT_BOUNDS,
+    DEFAULT_LAYER_COLOR,
+    DXF_COLOR_MAP,
+    getLODSegments,
+    HATCH_CONFIG,
+    LOD_CONFIG,
+    TEXTURE_CACHE_CONFIG,
+} from '@/constants/cad';
 
 /** 카메라 설정 */
 export const CAMERA_CONFIG = {
@@ -99,97 +103,44 @@ export const GRID_CONFIG = {
 /** WebWorker 사용 임계값 (2MB 이상 파일에서 Worker 사용) */
 export const WORKER_THRESHOLD_BYTES = 2 * 1024 * 1024;
 
+/** Worker 타임아웃 (60초) - 대용량 파일 파싱 시간 고려 */
+export const WORKER_TIMEOUT_MS = 60_000;
+
 /**
- * LOD (Level of Detail) 설정
- * 엔티티 수에 따른 세그먼트 수 조절
+ * Worker 재시도 설정
+ * 지수 백오프 전략으로 재시도 간격 증가
  */
-export const LOD_CONFIG = {
-    /** 고품질 세그먼트 수 (엔티티 < 1000) */
-    HIGH_QUALITY_SEGMENTS: 64,
-    /** 중간 품질 세그먼트 수 (엔티티 1000-5000) */
-    MEDIUM_QUALITY_SEGMENTS: 32,
-    /** 저품질 세그먼트 수 (엔티티 > 5000) */
-    LOW_QUALITY_SEGMENTS: 16,
-    /** 고품질 임계값 */
-    HIGH_QUALITY_THRESHOLD: 1000,
-    /** 중간 품질 임계값 */
-    MEDIUM_QUALITY_THRESHOLD: 5000,
+export const WORKER_RETRY_CONFIG = {
+    /** 최대 재시도 횟수 */
+    maxRetries: 3,
+    /** 기본 대기 시간 (ms) */
+    baseDelayMs: 1000,
+    /** 최대 대기 시간 (ms) */
+    maxDelayMs: 8000,
+    /** 백오프 배수 */
+    backoffMultiplier: 2,
+    /** 재시도 가능한 에러 코드 */
+    retryableErrors: ['WORKER_ERROR', 'TIMEOUT'] as const,
 } as const;
 
 /**
- * 엔티티 수에 따른 LOD 세그먼트 수 계산
- * @param entityCount 전체 엔티티 수
- * @returns 원/호에 사용할 세그먼트 수
+ * Worker Pool 설정
+ * Worker 재사용으로 생성 오버헤드 제거
  */
-export function getLODSegments(entityCount: number): number {
-    if (entityCount < LOD_CONFIG.HIGH_QUALITY_THRESHOLD) {
-        return LOD_CONFIG.HIGH_QUALITY_SEGMENTS;
-    }
-    if (entityCount < LOD_CONFIG.MEDIUM_QUALITY_THRESHOLD) {
-        return LOD_CONFIG.MEDIUM_QUALITY_SEGMENTS;
-    }
-    return LOD_CONFIG.LOW_QUALITY_SEGMENTS;
-}
-
-// ============================================================
-// DXF 색상 상수
-// ============================================================
-
-/** DXF ACI(AutoCAD Color Index) to HEX 매핑 */
-export const DXF_COLOR_MAP: Record<number, string> = {
-    // 기본 색상 (0-9)
-    0: '#ffffff', // ByBlock
-    1: '#ff0000', // Red
-    2: '#ffff00', // Yellow
-    3: '#00ff00', // Green
-    4: '#00ffff', // Cyan
-    5: '#0000ff', // Blue
-    6: '#ff00ff', // Magenta
-    7: '#ffffff', // White/Black
-    8: '#808080', // Dark Gray
-    9: '#c0c0c0', // Light Gray
-    // 확장 색상 (10-249 중 주요 색상)
-    10: '#ff0000', // Red
-    11: '#ff7f7f', // Light Red
-    12: '#cc0000', // Dark Red
-    20: '#ff7f00', // Orange
-    30: '#ff7f00', // Orange
-    40: '#ffff00', // Yellow
-    50: '#7fff00', // Yellow-Green
-    60: '#00ff00', // Green
-    70: '#00ff7f', // Green-Cyan
-    80: '#00ffff', // Cyan
-    90: '#007fff', // Cyan-Blue
-    100: '#0000ff', // Blue
-    110: '#7f00ff', // Blue-Violet
-    120: '#ff00ff', // Magenta
-    130: '#ff007f', // Magenta-Red
-    140: '#ff7f7f', // Light Pink
-    150: '#ff7f00', // Orange
-    160: '#7f7f00', // Olive
-    170: '#007f00', // Dark Green
-    180: '#007f7f', // Teal
-    190: '#00007f', // Dark Blue
-    200: '#7f007f', // Purple
-    210: '#7f3f00', // Brown
-    // 회색조 (250-255)
-    250: '#333333', // Very Dark Gray
-    251: '#505050', // Dark Gray
-    252: '#696969', // Dim Gray
-    253: '#808080', // Gray
-    254: '#c0c0c0', // Silver
-    255: '#ffffff', // White
-    // ByLayer
-    256: '#ffffff',
-} as const;
-
-/** 레이어 기본 색상 */
-export const DEFAULT_LAYER_COLOR = '#00ff00';
-
-/** 빈 도면 기본 바운딩 박스 */
-export const DEFAULT_BOUNDS = {
-    min: { x: 0, y: 0, z: 0 },
-    max: { x: 100, y: 100, z: 0 },
+export const WORKER_POOL_CONFIG = {
+    /** 최소 Worker 수 (항상 유지) */
+    minWorkers: 2,
+    /** 최대 Worker 수 (CPU 코어 수 기반) */
+    maxWorkers:
+        typeof navigator !== 'undefined'
+            ? navigator.hardwareConcurrency || 4
+            : 4,
+    /** 유휴 Worker 타임아웃 (30초) */
+    idleTimeoutMs: 30_000,
+    /** 작업 타임아웃 (60초) */
+    taskTimeoutMs: WORKER_TIMEOUT_MS,
+    /** 정리 타이머 간격 (10초) */
+    cleanupIntervalMs: 10_000,
 } as const;
 
 // aciToHex는 entityMath.ts에서 정의 (순수 함수)

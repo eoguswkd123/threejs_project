@@ -1,7 +1,7 @@
 # Roadmap
 
-> **Version**: 0.1.11
-> **Last Updated**: 2025-12-22
+> **Version**: 1.0.1
+> **Last Updated**: 2026-01-26
 
 CAD Viewer 프로젝트 로드맵 - DevOps 모범사례 적용 버전
 
@@ -10,22 +10,22 @@ CAD Viewer 프로젝트 로드맵 - DevOps 모범사례 적용 버전
 ## Table of Contents
 
 - [Project Vision](#project-vision)
-- [Phase 1: Foundation](#phase-1-foundation--완료)
+- [Phase 1: Foundation](#phase-1-foundation-완료)
     - [1.1 CI/CD + DevOps](#11-cicd--devops)
     - [1.2 Three.js Demo (Teapot)](#12-threejs-demo-teapot)
-- [Phase 2: CAD Viewer](#phase-2-cad-viewer--진행중)
-    - [2.1 DXF Viewer](#21-dxf-viewer)
-    - [2.2 PDF Viewer](#22-pdf-viewer)
-- [Phase 3: Backend](#phase-3-backend--계획됨)
+- [Phase 2: CAD Viewer](#phase-2-cad-viewer-진행중)
+    - [2.1 DXF Viewer](#21-dxf-viewer-완료)
+    - [2.2 PDF Viewer](#22-pdf-viewer-차단됨)
+- [Phase 3: Backend](#phase-3-backend-계획됨)
     - [3.1 Core Backend](#31-core-backend)
-    - [3.2 Processing Engine](#32-processing-engine)
-    - [3.3 Communication & Ops](#33-communication--ops)
-- [Phase 4: Synchronization](#phase-4-synchronization--차단됨)
-- [Phase 5: Performance & Testing](#phase-5-performance--testing--계획됨)
+    - [3.2 Processing Engine](#32-processing-engine-진행중)
+    - [3.3 Communication & Ops](#33-communication--ops-차단됨)
+- [Phase 4: Synchronization](#phase-4-synchronization-차단됨)
+- [Phase 5: Performance & Testing](#phase-5-performance--testing-계획됨)
     - [5.1 Performance Optimization](#51-performance-optimization)
     - [5.2 Staging & E2E Testing](#52-staging--e2e-testing)
-- [Phase 6: Enhancement](#phase-6-enhancement--계획됨)
-- [Phase 7: Production & Scale](#phase-7-production--scale--계획됨)
+- [Phase 6: Enhancement](#phase-6-enhancement-계획됨)
+- [Phase 7: Production & Scale](#phase-7-production--scale-계획됨)
 - [Risks & Mitigation](#risks--mitigation)
 - [Technical Decisions Summary](#technical-decisions-summary)
 - [Related Documents](#related-documents)
@@ -69,15 +69,15 @@ Three.js 기반 CAD 뷰어에서 시작하여, **건축 도면 → 3D 모델 변
 
 ### Timeline Overview
 
-| Phase | Name                  | Status    | Notes                       |
-| ----- | --------------------- | --------- | --------------------------- |
-| 1     | Foundation            | ✅ 완료   | CI/CD + Three.js Demo       |
-| 2     | CAD Viewer            | 🔄 진행중 | DXF 🔄 (HATCH 추가), PDF ⏳ |
-| 3     | Backend               | 📋 계획됨 | Core + Processing + Ops     |
-| 4     | Synchronization       | ⏳ 차단됨 | Phase 3 의존                |
-| 5     | Performance & Testing | 📋 계획됨 | 최적화 + E2E 테스트         |
-| 6     | Enhancement           | 📋 계획됨 | UX/접근성/다국어            |
-| 7     | Production & Scale    | 📋 계획됨 | K8s, Blue-Green 배포        |
+| Phase | Name                  | Status    | Notes                   |
+| ----- | --------------------- | --------- | ----------------------- |
+| 1     | Foundation            | ✅ 완료   | CI/CD + Three.js Demo   |
+| 2     | CAD Viewer            | 🔄 진행중 | DXF ✅ 완료, PDF ⏳     |
+| 3     | Backend               | 📋 계획됨 | Core + Processing + Ops |
+| 4     | Synchronization       | ⏳ 차단됨 | Phase 3 의존            |
+| 5     | Performance & Testing | 📋 계획됨 | 최적화 + E2E 테스트     |
+| 6     | Enhancement           | 📋 계획됨 | UX/접근성/다국어        |
+| 7     | Production & Scale    | 📋 계획됨 | K8s, Blue-Green 배포    |
 
 ---
 
@@ -184,7 +184,7 @@ Three.js와 React Three Fiber를 활용한 3D 렌더링 기초 학습
 
 ## Phase 2: CAD Viewer 🔄 진행중
 
-> **Status**: 🔄 진행중 | **Progress**: 45% (DXF 🔄, PDF ⏳)
+> **Status**: 🔄 진행중 | **Progress**: 50% (DXF ✅ 완료, PDF ⏳)
 
 DXF 및 PDF CAD 파일을 3D 와이어프레임으로 렌더링
 
@@ -192,12 +192,12 @@ DXF 및 PDF CAD 파일을 3D 와이어프레임으로 렌더링
 
 | Milestone      | Description                | Status    |
 | -------------- | -------------------------- | --------- |
-| 2.1 DXF Viewer | DXF 파일 파싱 + 3D 렌더링  | 🔄 진행중 |
+| 2.1 DXF Viewer | DXF 파일 파싱 + 3D 렌더링  | ✅ 완료   |
 | 2.2 PDF Viewer | PDF 도면 ML 분석 + 3D 변환 | ⏳ 차단됨 |
 
 ---
 
-### 2.1 DXF Viewer 🔄 진행중
+### 2.1 DXF Viewer ✅ 완료
 
 > **Dependencies**: Phase 1 ✅ 완료
 
@@ -207,21 +207,21 @@ DXF 파일을 **프론트엔드에서** 파싱하여 3D 와이어프레임으로
 
 #### Milestones
 
-| Milestone         | Description                             | Status    |
-| ----------------- | --------------------------------------- | --------- |
-| 2.1.1 MVP         | LINE 엔티티 파싱 + 렌더링               | ✅ 완료   |
-| 파일 업로드       | 드래그앤드롭, 타입/크기 검증            | ✅ 완료   |
-| CAD Scene         | 3D 렌더링 컴포넌트                      | ✅ 완료   |
-| Viewer Controls   | 그리드 토글, 색상 변경                  | ✅ 완료   |
-| 2.1.2 ARC/CIRCLE  | 원호, 원 엔티티 지원                    | ✅ 완료   |
-| 2.1.2 POLYLINE    | 연결선 (bulge 포함)                     | ✅ 완료   |
-| 2.1.3 HATCH (2D)  | 면 채우기 + 렌더링 모드 토글            | ✅ 완료   |
-| 2.1.4 추가 엔티티 | TEXT, MTEXT, DIMENSION, SPLINE, ELLIPSE | 📋 계획됨 |
-| 2.1.5 Layer Panel | 레이어 표시/숨김 UI, DXF 색상 매핑      | ✅ 완료   |
-| 2.1.6 HATCH 3D    | 2D HATCH → 3D 돌출 (ExtrudeGeometry)    | ⏳ 예정   |
-| 2.1.7 ShadingMode | 3D 메쉬 Material 적용 (4가지 모드)      | ⏳ 예정   |
-| 2.1.8 성능 최적화 | 2D/3D Geometry 머징, WebWorker, LOD     | 🔄 재진행 |
-| 2.1.9 Unit 테스트 | Vitest 단위 테스트 (3D 포함 확장)       | 🔄 재진행 |
+| Milestone         | Description                             | Status  |
+| ----------------- | --------------------------------------- | ------- |
+| 2.1.1 MVP         | LINE 엔티티 파싱 + 렌더링               | ✅ 완료 |
+| 파일 업로드       | 드래그앤드롭, 타입/크기 검증            | ✅ 완료 |
+| CAD Scene         | 3D 렌더링 컴포넌트                      | ✅ 완료 |
+| Viewer Controls   | 그리드 토글, 색상 변경                  | ✅ 완료 |
+| 2.1.2 ARC/CIRCLE  | 원호, 원 엔티티 지원                    | ✅ 완료 |
+| 2.1.2 POLYLINE    | 연결선 (bulge 포함)                     | ✅ 완료 |
+| 2.1.3 HATCH (2D)  | 면 채우기 + 렌더링 모드 토글            | ✅ 완료 |
+| 2.1.4 추가 엔티티 | TEXT, MTEXT, DIMENSION, SPLINE, ELLIPSE | ✅ 완료 |
+| 2.1.5 Layer Panel | 레이어 표시/숨김 UI, DXF 색상 매핑      | ✅ 완료 |
+| 2.1.6 HATCH 3D    | 2D HATCH → 3D 돌출 (ExtrudeGeometry)    | ✅ 완료 |
+| 2.1.7 ShadingMode | 3D 메쉬 Material 적용 (4가지 모드)      | ✅ 완료 |
+| 2.1.8 성능 최적화 | 2D/3D Geometry 머징, WebWorker, LOD     | ✅ 완료 |
+| 2.1.9 Unit 테스트 | Vitest 단위 테스트 (3D 포함 확장)       | ✅ 완료 |
 
 #### Details
 
@@ -230,12 +230,12 @@ Phase 2.1: DXF CAD Viewer
 ├── 2.1.1 MVP (LINE 엔티티)                           ✅ 완료
 ├── 2.1.2 엔티티 확장 I (ARC, CIRCLE, POLYLINE)       ✅ 완료
 ├── 2.1.3 엔티티 확장 II (HATCH 2D + 렌더링 모드)     ✅ 완료
-├── 2.1.4 추가 엔티티 (TEXT, MTEXT, DIMENSION 등)     📋 계획됨
+├── 2.1.4 추가 엔티티 (TEXT, MTEXT, DIMENSION 등)     ✅ 완료
 ├── 2.1.5 레이어 기능                                 ✅ 완료
-├── 2.1.6 HATCH 3D Extrusion                          ⏳ 예정
-├── 2.1.7 ShadingMode 적용                            ⏳ 예정
-├── 2.1.8 성능 최적화 (2D/3D)                         🔄 재진행
-└── 2.1.9 Unit 테스트 (3D 확장)                       🔄 재진행
+├── 2.1.6 HATCH 3D Extrusion                          ✅ 완료
+├── 2.1.7 ShadingMode 적용                            ✅ 완료
+├── 2.1.8 성능 최적화 (2D/3D)                         ✅ 완료
+└── 2.1.9 Unit 테스트 (3D 확장)                       ✅ 완료
 ```
 
 #### Implementation Summary
@@ -245,7 +245,6 @@ Phase 2.1: DXF CAD Viewer
 - `src/features/CADViewer/` - CAD 뷰어 기능 모듈
 - `src/pages/CADViewer/` - CAD 뷰어 페이지
 - `src/types/dxf-parser.d.ts` - 타입 정의
-- `public/samples/simple-room.dxf` - 테스트용 샘플
 - `tests/fixtures/dxf/` - 성능 테스트용 DXF 파일
 - `tests/scripts/` - 성능 측정 스크립트
 
@@ -270,15 +269,21 @@ Phase 2.1: DXF CAD Viewer
 
 | Test File             | Description       | Status  |
 | --------------------- | ----------------- | ------- |
-| useDXFParser.test.ts  | DXF 파서 유틸리티 | ✅ 완료 |
+| useDxfParser.test.ts  | DXF 파서 훅       | ✅ 완료 |
+| useDxfWorker.test.ts  | WebWorker 파싱 훅 | ✅ 완료 |
+| useDxfLoader.test.ts  | DXF 로더 훅       | ✅ 완료 |
 | dxfToGeometry.test.ts | 지오메트리 변환   | ✅ 완료 |
+| CadScene.test.tsx     | 메인 컴포넌트     | ✅ 완료 |
+| LayerPanel.test.tsx   | 레이어 패널 UI    | ✅ 완료 |
 | validators.test.ts    | 파일 검증 로직    | ✅ 완료 |
 
 #### Current Test Coverage
 
 | Module            | Coverage | Target | Status |
 | ----------------- | -------- | ------ | ------ |
-| useDXFParser.ts   | 100%     | 80%    | ✅     |
+| useDxfParser.ts   | 100%     | 80%    | ✅     |
+| useDxfWorker.ts   | ~80%     | 80%    | ✅     |
+| useDxfLoader.ts   | ~85%     | 80%    | ✅     |
 | dxfToGeometry.ts  | 98.5%    | 80%    | ✅     |
 | validators.ts     | 96.2%    | 80%    | ✅     |
 | Overall CADViewer | 98.29%   | 80%    | ✅     |
@@ -289,7 +294,6 @@ Phase 2.1: DXF CAD Viewer
 
 | Source                                                                        | License | Usage                           |
 | ----------------------------------------------------------------------------- | ------- | ------------------------------- |
-| 자체 생성 (simple-room.dxf)                                                   | -       | 기본 렌더링 검증                |
 | 성능 테스트용 DXF (test-1k~100k)                                              | -       | 엔티티 수별 성능 측정           |
 | [ezdxf 테스트 데이터](https://github.com/mozman/ezdxf/tree/master/tests/data) | MIT     | 다양한 DXF 버전 테스트 (필요시) |
 
@@ -305,9 +309,9 @@ Phase 2.1: DXF CAD Viewer
 - ✅ 레이어 토글 UI 정상 동작
 - ✅ WebWorker 파싱 (2MB 이상 파일) 동작
 - ✅ 단위 테스트 85개 통과, 커버리지 98.29%
-- [x] HATCH 엔티티 파싱 및 렌더링 (Solid Fill)
-- [x] 렌더링 모드 토글 (Wireframe ↔ Solid)
-- [x] HATCH 포함 단위 테스트 확장
+- ✅ HATCH 엔티티 파싱 및 렌더링 (Solid Fill)
+- ✅ 렌더링 모드 토글 (Wireframe ↔ Solid)
+- ✅ HATCH 포함 단위 테스트 확장
 
 ---
 
@@ -356,11 +360,11 @@ HATCH boundary → Three.js Shape → ShapeGeometry → Mesh
 
 #### Acceptance Criteria
 
-- [x] HATCH 엔티티 파싱 성공 (Solid Fill)
-- [x] Three.js Mesh로 면 렌더링
-- [x] Wireframe ↔ Solid 모드 토글 동작
-- [x] 기존 레이어 시스템과 통합
-- [x] 단위 테스트 추가
+- ✅ HATCH 엔티티 파싱 성공 (Solid Fill)
+- ✅ Three.js Mesh로 면 렌더링
+- ✅ Wireframe ↔ Solid 모드 토글 동작
+- ✅ 기존 레이어 시스템과 통합
+- ✅ 단위 테스트 추가
 
 ---
 
@@ -448,7 +452,7 @@ Phase 3: Backend
 
 | Component            | Selection                                   | Version       | Rationale                                                                       |
 | -------------------- | ------------------------------------------- | ------------- | ------------------------------------------------------------------------------- |
-| **API Layer**        | NestJS / FastAPI / Spring Boot (검토 중)    | TBD           | [ADR-001](./adr/001_BACKEND_STACK.md) 검토 중                                   |
+| **API Layer**        | FastAPI                                     | 0.115+        | [ADR-001](./adr/001_BACKEND_STACK.md) 승인 (Set B: FastAPI + RabbitMQ + Celery) |
 | **Message Queue**    | RabbitMQ                                    | 3.13+         | 메시지 영속성, DLQ ([ADR-003](./adr/003_QUEUE_ALTERNATIVES_COMPARISON.md) 승인) |
 | **Worker Engine**    | Python 3.12 + Celery                        | 3.12 / 5.5+   | [ADR-004](./adr/004_PYTHON_WORKER_STACK.md) 승인 (ezdxf, PyMuPDF)               |
 | **Database**         | PostgreSQL                                  | 16+           | 메타데이터, ACID 트랜잭션                                                       |
@@ -638,9 +642,9 @@ Phase 3: Backend
 
 **Acceptance Criteria**
 
-- [x] glTF/glb 파일 렌더링 성공
-- [x] 버튼 클릭으로 모델 로드
-- [x] Mock API → 실제 API 교체 가능한 구조
+- ✅ glTF/glb 파일 렌더링 성공
+- ✅ 버튼 클릭으로 모델 로드
+- ✅ Mock API → 실제 API 교체 가능한 구조
 
 **Implementation Summary**
 
@@ -1167,7 +1171,7 @@ UX 개선, 품질 향상, 접근성
 | Category      | Decision                                    | Rationale                                                       |
 | ------------- | ------------------------------------------- | --------------------------------------------------------------- |
 | Frontend      | React + R3F + Zustand                       | 이미 구축됨, 선언적 3D                                          |
-| API Layer     | NestJS / FastAPI / Spring Boot (검토 중)    | [ADR-001](./adr/001_BACKEND_STACK.md) 검토 중                   |
+| API Layer     | FastAPI                                     | [ADR-001](./adr/001_BACKEND_STACK.md) 승인 (Set B)              |
 | Message Queue | RabbitMQ                                    | [ADR-003](./adr/003_QUEUE_ALTERNATIVES_COMPARISON.md) 승인 완료 |
 | Worker Engine | Python 3.12 + Celery                        | [ADR-004](./adr/004_PYTHON_WORKER_STACK.md) 승인 완료           |
 | Database      | PostgreSQL                                  | 메타데이터, ACID 트랜잭션                                       |
@@ -1198,6 +1202,9 @@ UX 개선, 품질 향상, 접근성
 
 | 버전   | 날짜       | 변경 내용                                                                                                                                                                                                                                                                                   |
 | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.1  | 2026-01-26 | ADR-001 승인 상태 반영: API Layer를 FastAPI로 확정 (Set B: FastAPI + RabbitMQ + Celery + MinIO/S3 + PostgreSQL)                                                                                                                                                                             |
+| 1.0.0  | 2026-01-05 | Phase 2.1 DXF Viewer 100% 완료 상태 반영: 2.1.4~2.1.9 모든 마일스톤 ✅ 완료, 1156 테스트 통과                                                                                                                                                                                               |
+| 0.1.12 | 2025-12-29 | Phase 2.1.4 착수: 추가 엔티티 (TEXT, MTEXT, ELLIPSE, SPLINE, DIMENSION) 구현 시작, 상태 📋→🔄 변경                                                                                                                                                                                          |
 | 0.1.11 | 2025-12-22 | Phase 2.1 마일스톤 재배치: 2.1.6 HATCH 3D, 2.1.7 ShadingMode 신규 추가, 성능 최적화(2.1.8)/Unit 테스트(2.1.9) 3D 포함 재진행으로 이동, 2.1.4 추가 엔티티 계획 추가                                                                                                                          |
 | 0.1.10 | 2025-12-18 | Phase 2.1.3 HATCH 완료 상태 반영, Acceptance Criteria 업데이트                                                                                                                                                                                                                              |
 | 0.1.9  | 2025-12-17 | Phase 2.1.3 HATCH 엔티티 마일스톤 추가 (엔티티 연속 배치), 번호 재정렬 (2.1.3 HATCH → 2.1.4 레이어 → 2.1.5 성능 → 2.1.6 테스트), Phase 2.1 상태 변경 (✅→🔄 진행중), 렌더링 모드 토글 기능 계획 추가                                                                                        |

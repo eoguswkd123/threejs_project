@@ -3,9 +3,9 @@
  * Worker에서 사용하는 순수 함수들
  */
 
-import { DEFAULT_LAYER_COLOR, DXF_COLOR_MAP } from '../constants';
+import type { ParsedArc, Point3D } from '@/types/cad';
 
-import type { ParsedArc, Point3D } from '../types';
+import { DEFAULT_LAYER_COLOR, DXF_COLOR_MAP } from '../constants';
 
 /** ACI 색상을 HEX로 변환 */
 export function aciToHex(aciColor: number | undefined): string {

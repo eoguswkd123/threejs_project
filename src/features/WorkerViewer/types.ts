@@ -3,7 +3,7 @@
  * glTF/glb 파일 렌더링 타입 정의
  */
 
-import type { ShadingMode } from '@/components/ControlPanel';
+import type { CadShadingMode } from '@/types/cad';
 import type { CommonErrorCode } from '@/utils';
 
 /** 모델 정보 (Mock/Real API 공통) */
@@ -31,7 +31,7 @@ export interface WorkerViewerConfig {
     /** 회전 속도 */
     rotateSpeed: number;
     /** 쉐이딩 모드 */
-    shadingMode: ShadingMode;
+    shadingMode: CadShadingMode;
     /** 배경색 */
     backgroundColor: string;
     /** 카메라 자동 조정 */

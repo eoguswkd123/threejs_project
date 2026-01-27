@@ -1,7 +1,7 @@
 # 테스트 커버리지 결과
 
-> **Version**: 0.0.6
-> **Last Updated**: 2025-12-26
+> **Version**: 1.0.1
+> **Last Updated**: 2026-01-16
 
 ---
 
@@ -430,8 +430,6 @@ All files                             |   48.34 |    89.55 |   85.29 |   48.34 |
 
 </details>
 
----
-
 <details>
 <summary>📊 6. 2025-12-23 4-2차 Line 커버율 50.77%</summary>
 
@@ -673,10 +671,8 @@ All files                             |   61.44 |    87.96 |    87.8 |   61.44 |
 
 </details>
 
----
-
-<details open>
-<summary>📊 8. 2025-12-26 5-2차 Line 커버율 62.18% (최신)</summary>
+<details>
+<summary>📊 8. 2025-12-26 5-2차 Line 커버율 62.18%</summary>
 
 <br>
 
@@ -799,10 +795,341 @@ All files                               |   62.18 |    90.48 |   88.07 |   62.18
 
 ---
 
+<details>
+<summary>📊 9. 2025-12-30 6-1차 Line 커버율 66.58%</summary>
+
+<br>
+
+> 프로젝트 구조 재편, CadMesh 92.8%, entityMath 100% 유지, utils/cad 및 constants/cad 신규 추가
+
+```
+File                                       | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------
+All files                                  |   66.58 |    90.43 |   88.44 |   66.58 |
+ src                                       |     100 |      100 |     100 |     100 |
+  App.tsx                                  |     100 |      100 |     100 |     100 |
+ src/api                                   |       0 |      100 |     100 |       0 |
+  apiCaller.ts                             |       0 |      100 |     100 |       0 | 6-14
+ src/components/CadMesh                    |   92.85 |       90 |     100 |   92.85 |
+  CadMesh.tsx                              |   92.85 |       90 |     100 |   92.85 | 40-41,44-46
+ src/components/CadMeshViewer              |       0 |      100 |     100 |       0 |
+  index.tsx                                |       0 |      100 |     100 |       0 | 10-45
+ src/components/Common                     |     100 |      100 |     100 |     100 |
+  Button.tsx                               |     100 |      100 |     100 |     100 |
+  LoadingSpinner.tsx                       |     100 |      100 |     100 |     100 |
+  PanelErrorBoundary.tsx                   |     100 |      100 |     100 |     100 |
+  ToggleControl.tsx                        |     100 |      100 |     100 |     100 |
+  Typography.tsx                           |     100 |      100 |     100 |     100 |
+  ViewerErrorBoundary.tsx                  |     100 |      100 |     100 |     100 |
+ src/components/Common/DropZone            |   98.85 |    81.81 |     100 |   98.85 |
+  DropZone.tsx                             |   98.85 |    81.81 |     100 |   98.85 | 82
+ src/components/ControlPanel               |   79.59 |      100 |   83.33 |   79.59 |
+  GridToggle.tsx                           |     100 |      100 |     100 |     100 |
+  RotateToggle.tsx                         |     100 |      100 |     100 |     100 |
+  ShadingSelect.tsx                        |   23.07 |      100 |       0 |   23.07 | 31-63
+  SpeedSlider.tsx                          |     100 |      100 |     100 |     100 |
+  ViewerActionButtons.tsx                  |     100 |      100 |     100 |     100 |
+ src/components/ControlPanelViewer         |    94.8 |    83.33 |     100 |    94.8 |
+  index.tsx                                |    94.8 |    83.33 |     100 |    94.8 | 71-74
+ src/components/FilePanel                  |   90.53 |     87.8 |   88.88 |   90.53 |
+  FileUploadBox.tsx                        |   81.14 |    77.27 |   83.33 |   81.14 | 65-75,133-138,159-166
+  SampleList.tsx                           |     100 |      100 |     100 |     100 |
+  UrlInput.tsx                             |     100 |      100 |     100 |     100 |
+ src/components/FilePanelViewer            |     100 |    83.33 |     100 |     100 |
+  index.tsx                                |     100 |    83.33 |     100 |     100 | 57
+ src/components/Layout                     |     100 |      100 |     100 |     100 |
+  Footer.tsx                               |     100 |      100 |     100 |     100 |
+  MainLayout.tsx                           |     100 |      100 |     100 |     100 |
+  MobileDrawer.tsx                         |     100 |      100 |     100 |     100 |
+  MobileHeader.tsx                         |     100 |      100 |     100 |     100 |
+  SideBar.tsx                              |     100 |      100 |     100 |     100 |
+  SideBarMenuItem.tsx                      |     100 |      100 |     100 |     100 |
+ src/components/SceneCanvasViewer          |   87.67 |      100 |      50 |   87.67 |
+  SceneCanvas.tsx                          |   87.67 |      100 |      50 |   87.67 | 23-32
+ src/config                                |   75.75 |       75 |     100 |   75.75 |
+  api.ts                                   |       0 |      100 |     100 |       0 | 5-11
+  urlSecurity.ts                           |   96.15 |    66.66 |     100 |   96.15 | 22
+ src/constants                             |     100 |      100 |     100 |     100 |
+  app.ts                                   |     100 |      100 |     100 |     100 |
+  menu.ts                                  |     100 |      100 |     100 |     100 |
+  routes.ts                                |     100 |      100 |     100 |     100 |
+ src/constants/cad                         |   93.33 |      100 |     100 |   93.33 |
+  index.ts                                 |   93.33 |      100 |     100 |   93.33 | 26
+ src/features/CadViewer/components         |       0 |      100 |     100 |       0 |
+  CadScene.tsx                             |       0 |      100 |     100 |       0 | 10-189
+  LayerPanel.tsx                           |       0 |      100 |     100 |       0 | 9-104
+ src/features/CadViewer/hooks              |   57.04 |    79.16 |     100 |   57.04 |
+  useDXFParser.ts                          |   31.96 |     37.5 |     100 |   31.96 | 59-60,63-81,86-161,167-168
+  useDXFWorker.ts                          |   25.76 |       60 |     100 |   25.76 | 55-57,59-61,73-75,77-79,86-226
+  useDxfLoader.ts                          |   97.75 |    91.66 |     100 |   97.75 | 198-199,211-212
+ src/features/CadViewer/services           |   43.77 |    86.95 |     100 |   43.77 |
+  dxfParser.worker.ts                      |       0 |      100 |     100 |       0 | 9-461
+  entityMath.ts                            |     100 |      100 |     100 |     100 |
+  entityParsers.ts                         |   92.55 |    83.33 |     100 |   92.55 | 89-93,112-116,296-299
+ src/features/CadViewer/types/dxfEntity    |       0 |        0 |       0 |       0 |
+  library.ts                               |       0 |        0 |       0 |       0 |
+ src/features/CadViewer/types/dxfWorkerMsg |       0 |        0 |       0 |       0 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+ src/features/CadViewer/utils              |   83.33 |    89.32 |   95.23 |   83.33 |
+  dxfSamples.ts                            |       0 |      100 |     100 |       0 | 10-31
+  dxfToGeometry.ts                         |   85.73 |    89.21 |      95 |   85.73 | 323-355,412-413,442-462,472-473,522-523,579-580,587-593,604-608,784,794-804
+ src/features/TeapotDemo/components        |       0 |      100 |     100 |       0 |
+  TeapotControls.tsx                       |       0 |      100 |     100 |       0 | 5-140
+  TeapotMesh.tsx                           |       0 |      100 |     100 |       0 | 5-97
+  TeapotScene.tsx                          |       0 |      100 |     100 |       0 | 7-93
+ src/features/TeapotDemo/hooks             |     100 |      100 |     100 |     100 |
+  useTeapotMaterial.ts                     |     100 |      100 |     100 |     100 |
+ src/features/WorkerViewer/components      |       0 |      100 |     100 |       0 |
+  WorkerMesh.tsx                           |       0 |      100 |     100 |       0 | 6-117
+  WorkerScene.tsx                          |       0 |      100 |     100 |       0 | 10-219
+ src/features/WorkerViewer/hooks           |   89.69 |    84.21 |     100 |   89.69 |
+  useGltfLoader.ts                         |   89.69 |    84.21 |     100 |   89.69 | 109-115,126-128
+ src/features/WorkerViewer/services        |     100 |    88.88 |     100 |     100 |
+  workerService.ts                         |     100 |    88.88 |     100 |     100 | 73
+ src/features/WorkerViewer/utils           |       0 |      100 |     100 |       0 |
+  gltfSamples.ts                           |       0 |      100 |     100 |       0 | 11-49
+ src/hooks                                 |   88.88 |    93.33 |     100 |   88.88 |
+  useMobileDrawer.ts                       |   78.57 |       90 |     100 |   78.57 | 74-95
+  useSceneControls.ts                      |     100 |      100 |     100 |     100 |
+  useUrlInput.ts                           |    98.5 |       95 |     100 |    98.5 | 118
+ src/locales                               |   97.81 |      100 |      25 |   97.81 |
+  en.ts                                    |   96.59 |      100 |       0 |   96.59 | 48,55,88
+  ko.ts                                    |   98.94 |      100 |      50 |   98.94 | 100
+ src/pages/CadViewer                       |   85.71 |      100 |      50 |   85.71 |
+  index.tsx                                |   85.71 |      100 |      50 |   85.71 | 15-16
+ src/pages/Error                           |   10.81 |      100 |       0 |   10.81 |
+  index.tsx                                |   10.81 |      100 |       0 |   10.81 | 15-63
+ src/pages/Home                            |       0 |       50 |      50 |       0 |
+  DemoCard.tsx                             |       0 |        0 |       0 |       0 | 1-47
+  index.tsx                                |       0 |      100 |     100 |       0 | 5-80
+ src/pages/TeapotDemo                      |       0 |      100 |     100 |       0 |
+  index.tsx                                |       0 |      100 |     100 |       0 | 6-25
+ src/pages/WorkerViewer                    |   70.58 |      100 |      50 |   70.58 |
+  index.tsx                                |   70.58 |      100 |      50 |   70.58 | 16-20
+ src/routes                                |      96 |      100 |     100 |      96 |
+  root.tsx                                 |      96 |      100 |     100 |      96 | 9
+ src/stores                                |     100 |      100 |     100 |     100 |
+  useMobileMenuStore.ts                    |     100 |      100 |     100 |     100 |
+ src/types                                 |       0 |        0 |       0 |       0 |
+  menu.ts                                  |       0 |        0 |       0 |       0 |
+ src/types/cad                             |       0 |        0 |       0 |       0 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+ src/utils                                 |   93.86 |    97.95 |   93.75 |   93.86 |
+  errorClassifier.ts                       |     100 |      100 |     100 |     100 |
+  errorFormatter.ts                        |   94.87 |      100 |      80 |   94.87 | 127-130
+  fileValidator.ts                         |    86.8 |    93.75 |     100 |    86.8 | 78-93,235-239
+  urlValidator.ts                          |     100 |      100 |     100 |     100 |
+ src/utils/cad                             |   62.41 |     87.5 |      75 |   62.41 |
+  dxfToGeometry.ts                         |   62.41 |     87.5 |      75 |   62.41 | 121-153,216-217,246-262,272-273,322-323,379-380,387-393,404-408
+-------------------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------
+```
+
+**Test Summary**:
+
+- Test Files: 53 passed (53)
+- Tests: 1042 passed, 4 skipped (1046)
+- Duration: ~36s
+
+</details>
+
+---
+
+<details open>
+<summary>📊 10. 2026-01-15 7-1차 Line 커버율 76.98%</summary>
+
+<br>
+
+> CadMesh 테스트 전체 통과, 테스트 파일 81→83개 증가, 전체 tests 1654개로 증가
+
+```
+File                                       | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------------------------------|---------|----------|---------|---------|-------------------
+All files                                  |   76.98 |    89.01 |   85.13 |   76.98 |
+ src/components/CadMesh                    |   98.79 |    93.33 |     100 |   98.79 |
+  CurveMesh.tsx                            |     100 |      100 |     100 |     100 |
+  DimensionMesh.tsx                        |     100 |      100 |     100 |     100 |
+  Hatch3DMesh.tsx                          |     100 |      100 |     100 |     100 |
+  HatchMesh.tsx                            |    92.3 |       80 |     100 |    92.3 | 85-90
+  TextMesh.tsx                             |     100 |       90 |     100 |     100 | 113
+  WireframeMesh.tsx                        |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+  types.ts                                 |       0 |        0 |       0 |       0 |
+ src/components/CadMeshViewer              |   83.33 |       50 |     100 |   83.33 |
+  index.tsx                                |   83.33 |       50 |     100 |   83.33 | 41-43
+ src/components/Common                     |     100 |      100 |     100 |     100 |
+  DropZone/index.tsx                       |     100 |      100 |     100 |     100 |
+  LoadingSpinnerCanvas.tsx                 |     100 |      100 |     100 |     100 |
+  ToggleControl.tsx                        |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+ src/components/ControlPanel               |     100 |      100 |     100 |     100 |
+  BevelToggle.tsx                          |     100 |      100 |     100 |     100 |
+  DepthSlider.tsx                          |     100 |      100 |     100 |     100 |
+  Extrude3DToggle.tsx                      |     100 |      100 |     100 |     100 |
+  GridToggle.tsx                           |     100 |      100 |     100 |     100 |
+  RenderModeSelect.tsx                     |     100 |      100 |     100 |     100 |
+  RotateToggle.tsx                         |     100 |      100 |     100 |     100 |
+  ShadingSelect.tsx                        |     100 |      100 |     100 |     100 |
+  ViewerActionButtons.tsx                  |     100 |      100 |     100 |     100 |
+  constants.ts                             |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+ src/components/ControlPanelViewer         |   98.78 |    97.22 |     100 |   98.78 |
+  index.tsx                                |   98.78 |    97.22 |     100 |   98.78 | 100
+  types.ts                                 |       0 |        0 |       0 |       0 |
+ src/components/FilePanel                  |     100 |      100 |     100 |     100 |
+  SampleList.tsx                           |     100 |      100 |     100 |     100 |
+  UrlInput.tsx                             |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+ src/components/FilePanelViewer            |     100 |      100 |     100 |     100 |
+  index.tsx                                |     100 |      100 |     100 |     100 |
+ src/components/Layout                     |     100 |      100 |     100 |     100 |
+  Footer.tsx                               |     100 |      100 |     100 |     100 |
+  MainLayout.tsx                           |     100 |      100 |     100 |     100 |
+  MobileDrawer.tsx                         |     100 |      100 |     100 |     100 |
+  MobileHeader.tsx                         |     100 |      100 |     100 |     100 |
+  SideBar.tsx                              |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+ src/components/ModelMesh                  |     100 |      100 |     100 |     100 |
+  index.tsx                                |     100 |      100 |     100 |     100 |
+ src/components/SceneCanvas                |     100 |      100 |     100 |     100 |
+  index.tsx                                |     100 |      100 |     100 |     100 |
+ src/components/SceneCanvasViewer          |   83.33 |       60 |     100 |   83.33 |
+  index.tsx                                |   83.33 |       60 |     100 |   83.33 | 53-55
+ src/constants                             |     100 |      100 |     100 |     100 |
+  files.ts                                 |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+  menu.ts                                  |     100 |      100 |     100 |     100 |
+  routes.ts                                |     100 |      100 |     100 |     100 |
+ src/constants/cad                         |   93.33 |      100 |     100 |   93.33 |
+  colorSchemes.ts                          |     100 |      100 |     100 |     100 |
+  defaultMaterialConfig.ts                 |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+  materialMappings.ts                      |   85.71 |      100 |     100 |   85.71 | 83-89
+ src/features/CadViewer                    |   60.87 |    85.71 |     100 |   60.87 |
+  constants.ts                             |   60.87 |    85.71 |     100 |   60.87 | 74-102
+ src/features/CadViewer/components         |   86.66 |    66.66 |     100 |   86.66 |
+  CadScene.tsx                             |   86.66 |    66.66 |     100 |   86.66 | 78-79
+  index.ts                                 |       0 |        0 |       0 |       0 |
+ src/features/CadViewer/hooks              |   85.55 |    87.09 |   93.75 |   85.55 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+  useCadMaterial.ts                        |     100 |      100 |     100 |     100 |
+  useCameraControl.ts                      |     100 |      100 |     100 |     100 |
+  useDxfFileLoader.ts                      |    78.2 |    77.77 |   85.71 |    78.2 | 86-96,113-123
+  useDxfLoader.ts                          |     100 |      100 |     100 |     100 |
+  useDxfWorker.ts                          |   71.05 |    83.33 |     100 |   71.05 | 71-78,88-95,104-109
+  useLayerManager.ts                       |     100 |      100 |     100 |     100 |
+  useWorkerPool.ts                         |     100 |      100 |     100 |     100 |
+ src/features/CadViewer/services           |   79.17 |    90.62 |   88.88 |   79.17 |
+  dxfParser.worker.ts                      |   47.22 |    76.47 |   33.33 |   47.22 | 106-125,145-217
+  entityMath.ts                            |     100 |      100 |     100 |     100 |
+  hatchParser.ts                           |     100 |      100 |     100 |     100 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+  workerPool.ts                            |     100 |      100 |     100 |     100 |
+ src/features/CadViewer/services/parsers   |   98.24 |       95 |     100 |   98.24 |
+  arcParser.ts                             |     100 |      100 |     100 |     100 |
+  baseParser.ts                            |     100 |      100 |     100 |     100 |
+  circleParser.ts                          |     100 |      100 |     100 |     100 |
+  dimensionParser.ts                       |     100 |      100 |     100 |     100 |
+  ellipseParser.ts                         |     100 |      100 |     100 |     100 |
+  hatchEntityParser.ts                     |     100 |      100 |     100 |     100 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+  insertParser.ts                          |     100 |      100 |     100 |     100 |
+  lineParser.ts                            |     100 |      100 |     100 |     100 |
+  mtextParser.ts                           |     100 |      100 |     100 |     100 |
+  pointParser.ts                           |     100 |      100 |     100 |     100 |
+  polylineParser.ts                        |   94.73 |    83.33 |     100 |   94.73 | 102-103
+  solidParser.ts                           |     100 |      100 |     100 |     100 |
+  splineParser.ts                          |     100 |      100 |     100 |     100 |
+  textParser.ts                            |     100 |      100 |     100 |     100 |
+ src/features/CadViewer/types              |       0 |        0 |       0 |       0 |
+  library.ts                               |       0 |        0 |       0 |       0 |
+ src/features/CadViewer/types/dxfWorkerMsg |       0 |        0 |       0 |       0 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+ src/features/CadViewer/utils              |   83.33 |    89.32 |   95.23 |   83.33 |
+  dxfSamples.ts                            |       0 |      100 |     100 |       0 | 10-31
+  dxfToGeometry.ts                         |   85.73 |    89.21 |      95 |   85.73 | 323-355,412-413,442-462,472-473,522-523,579-580,587-593,604-608,784,794-804
+ src/features/TeapotDemo/components        |       0 |      100 |     100 |       0 |
+  TeapotControls.tsx                       |       0 |      100 |     100 |       0 | 5-140
+  TeapotMesh.tsx                           |       0 |      100 |     100 |       0 | 5-97
+  TeapotScene.tsx                          |       0 |      100 |     100 |       0 | 7-93
+ src/features/TeapotDemo/hooks             |     100 |      100 |     100 |     100 |
+  useTeapotMaterial.ts                     |     100 |      100 |     100 |     100 |
+ src/features/WorkerViewer/components      |       0 |      100 |     100 |       0 |
+  WorkerScene.tsx                          |       0 |      100 |     100 |       0 | 10-219
+ src/features/WorkerViewer/hooks           |   89.69 |    84.21 |     100 |   89.69 |
+  useGltfLoader.ts                         |   89.69 |    84.21 |     100 |   89.69 | 109-115,126-128
+ src/features/WorkerViewer/services        |     100 |    88.88 |     100 |     100 |
+  workerService.ts                         |     100 |    88.88 |     100 |     100 | 73
+ src/features/WorkerViewer/types.ts        |       0 |        0 |       0 |       0 |
+ src/features/WorkerViewer/utils           |       0 |      100 |     100 |       0 |
+  gltfSamples.ts                           |       0 |      100 |     100 |       0 | 11-49
+ src/hooks                                 |   92.53 |    93.33 |     100 |   92.53 |
+  constants.ts                             |     100 |      100 |     100 |     100 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+  useAutoRotate.ts                         |     100 |      100 |     100 |     100 |
+  useMobileDrawer.ts                       |   78.57 |       90 |     100 |   78.57 | 74-95
+  useModelLoader.ts                        |     100 |      100 |     100 |     100 |
+  useSceneControls.ts                      |     100 |      100 |     100 |     100 |
+  useShadingMode.ts                        |     100 |      100 |     100 |     100 |
+  useUrlInput.ts                           |    98.5 |       95 |     100 |    98.5 | 118
+ src/locales                               |   97.81 |      100 |      25 |   97.81 |
+  en.ts                                    |   96.59 |      100 |       0 |   96.59 | 48,55,88
+  ko.ts                                    |   98.94 |      100 |      50 |   98.94 | 100
+ src/pages/CadViewer                       |   85.71 |      100 |      50 |   85.71 |
+  index.tsx                                |   85.71 |      100 |      50 |   85.71 | 15-16
+ src/pages/Error                           |   10.81 |      100 |       0 |   10.81 |
+  index.tsx                                |   10.81 |      100 |       0 |   10.81 | 15-63
+ src/pages/Home                            |       0 |       50 |      50 |       0 |
+  DemoCard.tsx                             |       0 |        0 |       0 |       0 | 1-47
+  index.tsx                                |       0 |      100 |     100 |       0 | 5-80
+ src/pages/TeapotDemo                      |       0 |      100 |     100 |       0 |
+  index.tsx                                |       0 |      100 |     100 |       0 | 6-25
+ src/pages/WorkerViewer                    |   70.58 |      100 |      50 |   70.58 |
+  index.tsx                                |   70.58 |      100 |      50 |   70.58 | 16-20
+ src/routes                                |      96 |      100 |     100 |      96 |
+  root.tsx                                 |      96 |      100 |     100 |      96 | 9
+ src/stores                                |     100 |      100 |     100 |     100 |
+  useMobileMenuStore.ts                    |     100 |      100 |     100 |     100 |
+ src/types                                 |       0 |        0 |       0 |       0 |
+  menu.ts                                  |       0 |        0 |       0 |       0 |
+ src/types/cad                             |       0 |        0 |       0 |       0 |
+  entity.ts                                |       0 |        0 |       0 |       0 |
+  extrude.ts                               |       0 |        0 |       0 |       0 |
+  hologram.ts                              |       0 |        0 |       0 |       0 |
+  index.ts                                 |       0 |        0 |       0 |       0 |
+  shading.ts                               |       0 |        0 |       0 |       0 |
+ src/utils                                 |   93.86 |    97.95 |   93.75 |   93.86 |
+  errorClassifier.ts                       |     100 |      100 |     100 |     100 |
+  errorFormatter.ts                        |   94.87 |      100 |      80 |   94.87 | 127-130
+  fileValidator.ts                         |    86.8 |    93.75 |     100 |    86.8 | 78-93,235-239
+  index.ts                                 |       0 |        0 |       0 |       0 |
+  urlValidator.ts                          |     100 |      100 |     100 |     100 |
+ src/utils/cad                             |   77.59 |    89.92 |   81.81 |   77.59 |
+  cadDataUtils.ts                          |   72.72 |       80 |      50 |   72.72 | 79-97
+  dxfToGeometry.ts                         |   62.41 |     87.5 |      75 |   62.41 | 121-153,216-217,246-262,272-273,322-323,379-380,387-393,404-408
+  hatch3DExtrude.ts                        |     100 |      100 |     100 |     100 |
+  index.ts                                 |     100 |      100 |     100 |     100 |
+  materialFactory.ts                       |     100 |      100 |     100 |     100 |
+  measureUtils.ts                          |     100 |      100 |     100 |     100 |
+-------------------------------------------|---------|----------|---------|---------|-------------------
+```
+
+**Test Summary**:
+
+- Test Files: 83 passed (83)
+- Tests: 1654 passed, 4 skipped (1658)
+- Duration: 169.62s
+
+</details>
+
+---
+
 ## Changelog (변경 이력)
 
 | 버전  | 날짜       | 변경 내용                                                                                                       |
 | ----- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| 1.0.1 | 2026-01-16 | 문서 정리: 기존 7-1차(구조변경) 삭제, 7-2차를 7-1차(10번)로 통합                                                |
+| 1.0.0 | 2026-01-15 | 7-1차 커버리지 결과 (테스트 파일 83개, 1654 tests, 76.98% Line), CadMesh 테스트 전체 통과                       |
+| 0.0.7 | 2025-12-30 | 6-1차 커버리지 결과 (62.18%→66.58% Line), CadMesh 92.8%, utils/cad 62.41%, constants/cad 93.33% 신규 추가       |
 | 0.0.6 | 2025-12-26 | 5-1차~5-2차 커버리지 결과 (61.44%→62.18% Line), entityMath 100%, Layout 100%, utils 93.86%, types 리팩토링 반영 |
 | 0.0.5 | 2025-12-23 | 4-1차~4-2차 커버리지 결과 (48.34%→50.77% Line), 핵심 인프라 테스트 추가, 신규 Common 컴포넌트 100%              |
 | 0.0.2 | 2025-12-18 | 3-1차 커버리지 결과 (325 tests, 36.08% Line), Common/ControlPanelViewer/Layout 테스트 추가, 테스트 캐시 최적화  |

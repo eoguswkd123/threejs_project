@@ -291,11 +291,16 @@ describe('DXF Parser Worker', () => {
                     arcs: [],
                     polylines: [],
                     hatches: [],
+                    texts: [],
+                    mtexts: [],
+                    ellipses: [],
+                    splines: [],
+                    dimensions: [],
                     bounds: {
                         min: { x: 0, y: 0, z: 0 },
                         max: { x: 100, y: 100, z: 0 },
                     },
-                    layers: [],
+                    layers: {},
                     metadata: {
                         fileName: 'test.dxf',
                         fileSize: 1024,

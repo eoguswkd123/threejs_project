@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/src/assets/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com https://github.com https://gitlab.com https://bitbucket.org; worker-src 'self' blob:; frame-ancestors 'none';" />
+    <!-- X-Frame-Options (클릭재킹 방지) -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
     <title>Three.js 3D 이미지 테스트</title>
   </head>
   <body>

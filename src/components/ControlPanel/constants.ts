@@ -4,7 +4,7 @@
 
 import { Home, RotateCcw } from 'lucide-react';
 
-import type { ResetIconType } from './types';
+import type { ResetIconType } from './ViewerActionButtons';
 
 /** 회전 속도 슬라이더 설정 */
 export const SPEED_SLIDER_CONFIG = {
@@ -14,6 +14,14 @@ export const SPEED_SLIDER_CONFIG = {
     default: 1,
 } as const;
 
+/** 깊이 슬라이더 설정 */
+export const DEPTH_SLIDER_CONFIG = {
+    min: 0,
+    max: 100,
+    step: 1,
+    default: 10,
+} as const;
+
 /** 기본 라벨 */
 export const DEFAULT_LABELS = {
     grid: 'Grid',
@@ -21,6 +29,9 @@ export const DEFAULT_LABELS = {
     rotateSpeed: 'Rotate Speed',
     reset: 'Reset',
     clear: 'Clear',
+    extrude3D: '3D Extrude',
+    depth: 'Depth',
+    bevel: 'Bevel',
 } as const;
 
 /** 리셋 아이콘 매핑 */

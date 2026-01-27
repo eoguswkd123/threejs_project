@@ -173,3 +173,45 @@ export function validateSecureUrl(
 
     return { valid: true };
 }
+
+// ============================================================================
+// 내부 리소스 확인
+// ============================================================================
+
+/**
+ * URL이 내부 리소스인지 확인 (외부 검증 스킵 대상)
+ *
+ * - blob: URL (로컬 파일 ObjectURL)
+ * - / 경로 (내부 샘플 파일)
+ *
+ * @param url 검사할 URL
+ * @returns 내부 리소스 여부
+ *
+ * @example
+ * isInternalResource('blob:http://localhost/abc'); // true
+ * isInternalResource('/samples/model.glb');        // true
+ * isInternalResource('https://example.com/a.glb'); // false
+ */
+export function isInternalResource(url: string): boolean {
+    return url.startsWith('blob:') || url.startsWith('/');
+}
+
+// ============================================================================
+// URL 파일명 추출
+// ============================================================================
+
+/**
+ * URL에서 파일명 추출
+ *
+ * @param url 파일 URL
+ * @param fallback 기본값 (default: 'file')
+ * @returns 파일명
+ *
+ * @example
+ * extractFileName('/path/to/model.glb');      // 'model.glb'
+ * extractFileName('https://x.com/a/b.gltf');  // 'b.gltf'
+ * extractFileName('/');                        // 'file'
+ */
+export function extractFileName(url: string, fallback = 'file'): string {
+    return url.split('/').pop() || fallback;
+}

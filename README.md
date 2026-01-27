@@ -65,26 +65,14 @@ Three.js 기반 CAD 파일 3D 뷰어 및 키오스크 동기화 프로젝트
 
 ```
 src/
-├── api/              # API 레이어 (Axios 인스턴스, 엔드포인트)
-├── assets/           # 정적 리소스 (이미지, 아이콘)
-├── components/       # 공통 컴포넌트
-│   └── Layout/       # 레이아웃 (MainLayout, SideBar, Footer)
-├── config/           # 전역 설정
-├── constants/        # 상수 정의
-├── features/         # 도메인 기능 모듈
-│   ├── TeapotDemo/   # Three.js 학습 예제
-│   ├── CadViewer/    # DXF 파일 3D 뷰어
-│   └── WorkerViewer/ # glTF/glb 3D 뷰어
-├── hooks/            # 전역 커스텀 훅
-├── locales/          # 다국어 (i18n)
-├── pages/            # 페이지 컴포넌트
-├── routes/           # 라우팅 설정
-├── services/         # 비즈니스 로직
-├── stores/           # Zustand 스토어
-├── styles/           # 전역 스타일
-├── types/            # TypeScript 타입 정의
-└── utils/            # 유틸리티 함수
+├── components/   # 공통 UI 컴포넌트
+├── features/     # 도메인 기능 (CadViewer, WorkerViewer, TeapotDemo)
+├── pages/        # 페이지 컴포넌트
+├── hooks/        # 전역 커스텀 훅
+└── utils/        # 유틸리티 함수
 ```
+
+> 상세 구조는 [ARCHITECTURE.md](./docs/ARCHITECTURE.md) 참조
 
 ## 시작하기
 
@@ -150,7 +138,7 @@ npm run test:coverage
 - **레이어 제어**: 레이어별 표시/숨김, DXF 색상 매핑
 - **성능 최적화**: Geometry 머징, WebWorker, LOD
 - **Worker Viewer**: glTF/glb 파일 3D 렌더링
-- **단위 테스트**: Vitest 167개 테스트 (utils 커버리지 98%)
+- **단위/통합 테스트**: Vitest 250개+ 테스트 (전체 커버리지 98%)
 
 ### 개발 예정
 
@@ -173,4 +161,4 @@ Private Project © [개쿠](https://javaoop.tistory.com)
 
 ---
 
-> **Note**: 이 프로젝트는 활발히 개발 중입니다. Phase 2.1 진행중 (85%), ADR-002/003/004 승인 완료 (2025-12-12). Phase 3 백엔드 통합이 진행될 예정입니다.
+> **Note**: 이 프로젝트는 활발히 개발 중입니다. Phase 2.1 진행중 (90%), ADR-002/003/004 승인 완료. Phase 3 백엔드 통합이 진행될 예정입니다.

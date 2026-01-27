@@ -16,7 +16,7 @@ import {
     parsePolyline,
     toPoint3D,
     toPoint3DArray,
-} from '../entityParsers';
+} from '../parsers';
 
 import type { DXFLibEntity, DXFLibHatchBoundary } from '../../types';
 
@@ -546,6 +546,12 @@ describe('getTotalEntityCount', () => {
             arcs: [],
             polylines: [{ vertices: [], closed: false, layer: '0' }],
             hatches: [],
+            // Phase 2.1.4: 추가 엔티티
+            texts: [],
+            mtexts: [],
+            ellipses: [],
+            splines: [],
+            dimensions: [],
         };
 
         const count = getTotalEntityCount(entities);
@@ -559,6 +565,12 @@ describe('getTotalEntityCount', () => {
             arcs: [],
             polylines: [],
             hatches: [],
+            // Phase 2.1.4: 추가 엔티티
+            texts: [],
+            mtexts: [],
+            ellipses: [],
+            splines: [],
+            dimensions: [],
         };
 
         const count = getTotalEntityCount(entities);
