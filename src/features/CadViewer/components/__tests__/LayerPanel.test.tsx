@@ -316,4 +316,56 @@ describe('LayerPanel', () => {
             );
         });
     });
+
+    describe('가상 스크롤링', () => {
+        it('50개 미만 레이어는 일반 렌더링', () => {
+            const layers = createMockLayers(10);
+
+            render(
+                <LayerPanel layers={layers} onToggleLayer={mockOnToggleLayer} />
+            );
+
+            // 모든 레이어가 DOM에 존재해야 함
+            for (let i = 0; i < 10; i++) {
+                expect(screen.getByText(`Layer${i}`)).toBeInTheDocument();
+            }
+        });
+
+        it('50개 이상 레이어는 가상 스크롤링 컨테이너를 사용', () => {
+            const layers = createMockLayers(100);
+
+            render(
+                <LayerPanel
+                    layers={layers}
+                    onToggleLayer={mockOnToggleLayer}
+                    onToggleAll={mockOnToggleAll}
+                />
+            );
+
+            // 헤더에 총 레이어 수 표시
+            expect(screen.getByText('레이어 (100)')).toBeInTheDocument();
+
+            // 가상 스크롤링 컨테이너가 전체 높이를 가지고 있음
+            // 100개 * 32px = 3200px
+            const virtualContainer = document.querySelector(
+                '[style*="height: 3200px"]'
+            );
+            expect(virtualContainer).toBeInTheDocument();
+        });
+
+        it('49개 레이어는 일반 렌더링을 사용', () => {
+            const layers = createMockLayers(49);
+
+            render(
+                <LayerPanel layers={layers} onToggleLayer={mockOnToggleLayer} />
+            );
+
+            // 헤더에 레이어 수 표시
+            expect(screen.getByText('레이어 (49)')).toBeInTheDocument();
+
+            // 모든 레이어가 DOM에 존재해야 함 (가상 스크롤링 미사용)
+            expect(screen.getByText('Layer0')).toBeInTheDocument();
+            expect(screen.getByText('Layer48')).toBeInTheDocument();
+        });
+    });
 });

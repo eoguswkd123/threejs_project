@@ -32,7 +32,7 @@ vi.mock('../Footer', () => ({
     Footer: () => <footer data-testid="footer">Footer</footer>,
 }));
 
-import { MainLayout } from '../MainLayout';
+import MainLayout from '../MainLayout';
 
 describe('MainLayout', () => {
     const renderWithRouter = (initialRoute = '/') => {

@@ -1,24 +1,27 @@
 /**
- * CAD Viewer - useDxfLoader Hook
- * DXF 파일 로딩, 레이어 관리, 카메라 제어를 담당하는 훅
+ * CAD Viewer - useDxfLoader Hook (Orchestrator)
+ * DXF 파일 로딩, 레이어 관리, 카메라 제어를 조율하는 Orchestrator 훅
+ *
+ * SRP 리팩토링: 3개 훅을 조합하여 기존 API 100% 유지
+ * - useDxfFileLoader: 파일 로딩 담당
+ * - useLayerManager: 레이어 관리 담당
+ * - useCameraControl: 카메라 제어 담당
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 
-import type { SampleInfo } from '@/components/FilePanel';
+import type { SampleInfo, UploadError } from '@/components/FilePanel';
 import type { ParsedCADData, LayerInfo } from '@/types/cad';
-import { validateSecureUrl, validateExtension } from '@/utils';
-import { calculateCameraDistance } from '@/utils/cad';
 
-import { CAMERA_CONFIG, URL_SECURITY_CONFIG } from '../constants';
+import { useCameraControl } from './useCameraControl';
+import { useDxfFileLoader } from './useDxfFileLoader';
+import { useLayerManager } from './useLayerManager';
 
-import { useDxfWorker } from './useDxfWorker';
-
-/** Hook 반환 타입 */
+/** Hook 반환 타입 (기존 API 유지) */
 export interface UseDxfLoaderReturn {
     /** 파싱된 CAD 데이터 */
     cadData: ParsedCADData | null;
-    /** 레이어 정보 */
+    /** 레이어 정보 (Map) */
     layers: Map<string, LayerInfo>;
     /** 카메라 위치 */
     cameraPosition: [number, number, number];
@@ -29,7 +32,7 @@ export interface UseDxfLoaderReturn {
     /** 진행 단계 */
     progressStage: string;
     /** 에러 정보 */
-    error: { code: string; message: string } | null;
+    error: UploadError | null;
     /** 파일 선택 핸들러 */
     handleFileSelect: (file: File) => Promise<void>;
     /** 샘플 파일 선택 핸들러 */
@@ -48,14 +51,20 @@ export interface UseDxfLoaderReturn {
     clearError: () => void;
 }
 
-/** useDxfLoader 옵션 */
+/** useDxfLoader 옵션 (기존 API 유지) */
 export interface UseDxfLoaderOptions {
     /** 카메라 자동 맞춤 여부 */
     autoFitCamera?: boolean;
 }
 
 /**
- * DXF 파일 로딩 및 관리 훅
+ * DXF 파일 로딩 및 관리 훅 (Orchestrator)
+ *
+ * 내부적으로 3개의 SRP 훅을 조합:
+ * - useDxfFileLoader: 파일 로딩
+ * - useLayerManager: 레이어 관리
+ * - useCameraControl: 카메라 제어
+ *
  * @param options 훅 옵션
  * @returns 파일 상태 및 제어 함수
  */
@@ -64,225 +73,77 @@ export function useDxfLoader(
 ): UseDxfLoaderReturn {
     const { autoFitCamera = true } = options;
 
-    // DXF 파서 훅
-    const { parse, isLoading, progress, progressStage, error, clearError } =
-        useDxfWorker();
+    // SRP 훅 조합
+    const {
+        layers,
+        setLayers,
+        handleToggleLayer,
+        handleToggleAllLayers,
+        resetLayers,
+    } = useLayerManager();
 
-    // 상태
-    const [cadData, setCadData] = useState<ParsedCADData | null>(null);
-    const [layers, setLayers] = useState<Map<string, LayerInfo>>(new Map());
-    const [cameraPosition, setCameraPosition] = useState<
-        [number, number, number]
-    >([...CAMERA_CONFIG.defaultPosition]);
+    const {
+        cameraPosition,
+        updateFromBounds,
+        resetCameraPosition: resetCamera,
+    } = useCameraControl({ autoFitCamera });
 
-    /** 레이어 토글 핸들러 */
-    const handleToggleLayer = useCallback((layerName: string) => {
-        setLayers((prev) => {
-            const newLayers = new Map(prev);
-            const layer = newLayers.get(layerName);
-            if (layer) {
-                newLayers.set(layerName, { ...layer, visible: !layer.visible });
-            }
-            return newLayers;
-        });
-    }, []);
+    // 파일 로드 시 레이어/카메라 연동
+    const handleDataLoaded = useCallback(
+        (data: ParsedCADData) => {
+            // 레이어 데이터 설정 (setLayers가 Record → Map 변환 처리)
+            setLayers(data.layers);
 
-    /** 전체 레이어 토글 핸들러 */
-    const handleToggleAllLayers = useCallback((visible: boolean) => {
-        setLayers((prev) => {
-            const newLayers = new Map(prev);
-            for (const [name, layer] of newLayers) {
-                newLayers.set(name, { ...layer, visible });
-            }
-            return newLayers;
-        });
-    }, []);
-
-    /** 파일 선택 핸들러 */
-    const handleFileSelect = useCallback(
-        async (file: File) => {
-            clearError();
-            try {
-                const data = await parse(file);
-                setCadData(data);
-
-                // 레이어 정보 설정
-                setLayers(new Map(data.layers));
-
-                // 카메라 위치 자동 조정
-                if (autoFitCamera && data.bounds) {
-                    const distance = calculateCameraDistance(
-                        data.bounds,
-                        CAMERA_CONFIG.fov
-                    );
-                    setCameraPosition([0, 0, distance]);
-                }
-            } catch (err) {
-                // 에러는 useDXFWorker에서 처리됨
-                if (import.meta.env.DEV) {
-                    console.error('Failed to parse DXF:', err);
-                }
+            // 카메라 위치 자동 조정
+            if (autoFitCamera && data.bounds) {
+                updateFromBounds(data.bounds);
             }
         },
-        [parse, clearError, autoFitCamera]
+        [setLayers, updateFromBounds, autoFitCamera]
     );
 
-    /** 샘플 파일 선택 핸들러 */
-    const handleSelectSample = useCallback(
-        async (sample: SampleInfo) => {
-            try {
-                const response = await fetch(sample.path);
-                if (!response.ok) {
-                    throw new Error('샘플 파일을 불러올 수 없습니다.');
-                }
-                const text = await response.text();
-                const file = new File([text], sample.name + '.dxf', {
-                    type: 'application/dxf',
-                });
-                await handleFileSelect(file);
-            } catch (err) {
-                if (import.meta.env.DEV) {
-                    console.error('Failed to load sample:', err);
-                }
-            }
-        },
-        [handleFileSelect]
-    );
+    const fileLoader = useDxfFileLoader({
+        onDataLoaded: handleDataLoaded,
+    });
 
-    /** URL 로드 핸들러 (보안 강화) */
-    const handleUrlSubmit = useCallback(
-        async (url: string) => {
-            clearError();
+    // fileLoader에서 안정적 참조를 위해 개별 함수 추출
+    const { handleResetFile: fileLoaderReset } = fileLoader;
 
-            // 1. URL 보안 검증
-            const urlValidation = validateSecureUrl(url, {
-                allowedProtocols: URL_SECURITY_CONFIG.allowedProtocols,
-                allowedHosts: URL_SECURITY_CONFIG.allowedHosts,
-            });
-            if (!urlValidation.valid) {
-                if (import.meta.env.DEV) {
-                    console.error(
-                        'URL validation failed:',
-                        urlValidation.error?.message
-                    );
-                }
-                return;
-            }
-
-            // 2. 확장자 검증
-            const pathname = new URL(url).pathname;
-            const extValidation = validateExtension(pathname, ['.dxf']);
-            if (!extValidation.valid) {
-                if (import.meta.env.DEV) {
-                    console.error(
-                        'Extension validation failed:',
-                        extValidation.error?.message
-                    );
-                }
-                return;
-            }
-
-            try {
-                // 3. AbortController로 타임아웃 설정
-                const controller = new AbortController();
-                const timeoutId = setTimeout(
-                    () => controller.abort(),
-                    URL_SECURITY_CONFIG.fetchTimeout
-                );
-
-                const response = await fetch(url, {
-                    signal: controller.signal,
-                    headers: {
-                        Accept: 'application/dxf, text/plain, */*',
-                    },
-                });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error('URL에서 파일을 불러올 수 없습니다.');
-                }
-
-                // 4. 응답 크기 검증
-                const contentLength = response.headers.get('content-length');
-                if (
-                    contentLength &&
-                    parseInt(contentLength) >
-                        URL_SECURITY_CONFIG.maxResponseSize
-                ) {
-                    throw new Error('파일 크기가 너무 큽니다.');
-                }
-
-                const text = await response.text();
-
-                // 5. 응답 크기 재검증 (Content-Length 헤더가 없는 경우)
-                if (text.length > URL_SECURITY_CONFIG.maxResponseSize) {
-                    throw new Error('파일 크기가 너무 큽니다.');
-                }
-
-                // URL에서 파일명 추출 (경로 탐색 방지)
-                const pathParts = new URL(url).pathname.split('/');
-                const rawFileName =
-                    pathParts[pathParts.length - 1] || 'remote.dxf';
-                // 파일명 정제 (경로 구분자 제거)
-                const fileName = rawFileName.replace(/[/\\]/g, '_');
-
-                const file = new File([text], fileName, {
-                    type: 'application/dxf',
-                });
-                await handleFileSelect(file);
-            } catch (err) {
-                if (import.meta.env.DEV) {
-                    if (err instanceof Error && err.name === 'AbortError') {
-                        console.error('URL fetch timeout');
-                    } else {
-                        console.error('Failed to load from URL:', err);
-                    }
-                }
-            }
-        },
-        [handleFileSelect, clearError]
-    );
-
-    /** 파일 리셋 핸들러 */
+    // 파일 리셋 시 레이어/카메라도 리셋
     const handleResetFile = useCallback(() => {
-        setCadData(null);
-        setLayers(new Map());
-        setCameraPosition([...CAMERA_CONFIG.defaultPosition]);
-        clearError();
-    }, [clearError]);
+        fileLoaderReset();
+        resetLayers();
+        resetCamera(false);
+    }, [fileLoaderReset, resetLayers, resetCamera]);
 
-    /** 카메라 위치 리셋 */
+    // 카메라 리셋 (기존 API 유지: cadData.bounds 참조)
     const resetCameraPosition = useCallback(
         (autoFit?: boolean) => {
-            const shouldAutoFit = autoFit ?? autoFitCamera;
-            if (cadData && shouldAutoFit && cadData.bounds) {
-                const distance = calculateCameraDistance(
-                    cadData.bounds,
-                    CAMERA_CONFIG.fov
-                );
-                setCameraPosition([0, 0, distance]);
-            } else {
-                setCameraPosition([...CAMERA_CONFIG.defaultPosition]);
-            }
+            resetCamera(autoFit, fileLoader.cadData?.bounds);
         },
-        [cadData, autoFitCamera]
+        [resetCamera, fileLoader.cadData?.bounds]
     );
 
     return {
-        cadData,
-        layers,
-        cameraPosition,
-        isLoading,
-        progress,
-        progressStage,
-        error,
-        handleFileSelect,
-        handleSelectSample,
-        handleUrlSubmit,
+        // File Loader
+        cadData: fileLoader.cadData,
+        isLoading: fileLoader.isLoading,
+        progress: fileLoader.progress,
+        progressStage: fileLoader.progressStage,
+        error: fileLoader.error,
+        handleFileSelect: fileLoader.handleFileSelect,
+        handleSelectSample: fileLoader.handleSelectSample,
+        handleUrlSubmit: fileLoader.handleUrlSubmit,
         handleResetFile,
+        clearError: fileLoader.clearError,
+
+        // Layer Manager
+        layers,
         handleToggleLayer,
         handleToggleAllLayers,
+
+        // Camera Control
+        cameraPosition,
         resetCameraPosition,
-        clearError,
     };
 }

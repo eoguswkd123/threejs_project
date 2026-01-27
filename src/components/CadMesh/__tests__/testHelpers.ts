@@ -43,7 +43,7 @@ export function createEmptyCADData(): ParsedCADData {
             entityCount: 0,
             parseTime: 10,
         },
-        layers: new Map(),
+        layers: {},
     };
 }
 

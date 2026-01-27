@@ -26,10 +26,10 @@ import type {
 import { DEFAULT_BOUNDS, DEFAULT_LAYER_COLOR } from '../constants';
 
 import { aciToHex, getArcBounds } from './entityMath';
+import { parseHatchesFromDxf } from './hatchParser';
 import {
     parseArc,
     parseCircle,
-    parseHatch,
     parseLine,
     parsePolyline,
     parseText,
@@ -38,7 +38,7 @@ import {
     parseSpline,
     parseDimension,
     getTotalEntityCount,
-} from './entityParsers';
+} from './parsers';
 
 import type {
     DXFLibEntity,
@@ -295,13 +295,22 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
         const circles: ParsedCircle[] = [];
         const arcs: ParsedArc[] = [];
         const polylines: ParsedPolyline[] = [];
-        const hatches: ParsedHatch[] = [];
         // Phase 2.1.4: 추가 엔티티 배열
         const texts: ParsedText[] = [];
         const mtexts: ParsedMText[] = [];
         const ellipses: ParsedEllipse[] = [];
         const splines: ParsedSpline[] = [];
         const dimensions: ParsedDimension[] = [];
+
+        // HATCH: 커스텀 파서 사용 (dxf-parser가 HATCH를 지원하지 않음)
+        const hatches = parseHatchesFromDxf(text);
+
+        // HATCH 레이어 카운트 추가
+        for (const hatch of hatches) {
+            if (hatch.layer) {
+                countLayer(layers, hatch.layer);
+            }
+        }
 
         const entities = dxf.entities as DXFLibEntity[];
         const totalEntities = entities.length;
@@ -350,14 +359,7 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
                     }
                     break;
                 }
-                case 'HATCH': {
-                    const hatch = parseHatch(entity);
-                    if (hatch) {
-                        hatches.push(hatch);
-                        countLayer(layers, entity.layer);
-                    }
-                    break;
-                }
+                // HATCH: dxf-parser가 지원하지 않음 - parseHatchesFromDxf()로 별도 처리됨
                 // Phase 2.1.4: 추가 엔티티 타입
                 case 'TEXT': {
                     const text = parseText(entity);
@@ -425,8 +427,9 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
 
         const endTime = performance.now();
 
-        // Map을 배열로 변환 (직렬화 가능)
-        const layersArray: [string, LayerInfo][] = Array.from(layers.entries());
+        // Map을 Record로 변환 (JSON 직렬화 호환)
+        const layersRecord: Record<string, LayerInfo> =
+            Object.fromEntries(layers);
 
         self.postMessage({
             type: 'success',
@@ -449,7 +452,7 @@ function parseDXF(text: string, fileName: string, fileSize: number): void {
                     polylines,
                     hatches
                 ),
-                layers: layersArray,
+                layers: layersRecord,
                 metadata: {
                     fileName,
                     fileSize,

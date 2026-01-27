@@ -27,13 +27,19 @@ interface RotateToggleProps {
 }
 
 function RotateToggleComponent({
+    checked,
+    onChange,
     label = DEFAULT_LABELS.autoRotate,
-    ...props
+    accentColor = 'green',
+    ariaLabel,
 }: RotateToggleProps): JSX.Element {
     return (
         <ToggleControl
-            {...props}
+            checked={checked}
+            onChange={onChange}
             label={label}
+            accentColor={accentColor}
+            ariaLabel={ariaLabel}
             icon={<RefreshCw className="h-4 w-4 text-gray-400" />}
             marginClass="mb-3"
         />

@@ -39,9 +39,22 @@ const mockSplineGeometry = {
     dispose: vi.fn(),
 };
 
+// Mock material
+const mockMaterial = {
+    dispose: vi.fn(),
+};
+
+// Mock material pool
+const mockMaterialPool = {
+    get: vi.fn(() => mockMaterial),
+    dispose: vi.fn(),
+    size: 0,
+};
+
 vi.mock('@/utils/cad', () => ({
     ellipsesToGeometry: vi.fn(() => mockEllipseGeometry),
     splinesToGeometry: vi.fn(() => mockSplineGeometry),
+    createLineMaterialPool: vi.fn(() => mockMaterialPool),
 }));
 
 // Mock React Three Fiber
@@ -278,7 +291,7 @@ describe('CurveMesh', () => {
     });
 
     describe('메모리 정리', () => {
-        it('언마운트 시 geometry와 material이 dispose됨', () => {
+        it('언마운트 시 geometry가 dispose됨', () => {
             const data = createEmptyCADData();
             data.ellipses = [createTestEllipse(50, 50, 40, 20)];
 
@@ -293,6 +306,23 @@ describe('CurveMesh', () => {
             unmount();
 
             expect(mockEllipseGeometry.dispose).toHaveBeenCalled();
+        });
+
+        it('언마운트 시 material pool이 dispose됨', () => {
+            const data = createEmptyCADData();
+            data.ellipses = [createTestEllipse(50, 50, 40, 20)];
+
+            const { unmount } = render(
+                <CurveMesh
+                    data={data}
+                    layers={undefined}
+                    dataCenter={defaultDataCenter}
+                />
+            );
+
+            unmount();
+
+            expect(mockMaterialPool.dispose).toHaveBeenCalled();
         });
     });
 

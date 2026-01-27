@@ -36,6 +36,18 @@ const mockGeometry = {
     dispose: vi.fn(),
 };
 
+// Mock material for createLineMaterial
+const mockMaterial = {
+    dispose: vi.fn(),
+};
+
+// Mock material pool
+const mockMaterialPool = {
+    get: vi.fn(() => mockMaterial),
+    dispose: vi.fn(),
+    size: 0,
+};
+
 vi.mock('@/utils/cad', () => ({
     cadDataToGeometry: vi.fn(() => mockGeometry),
     filterDataByLayerName: vi.fn((data, layerName) => {
@@ -62,6 +74,19 @@ vi.mock('@/utils/cad', () => ({
             data.circles.length +
             data.arcs.length +
             data.polylines.length
+    ),
+    createLineMaterial: vi.fn(() => mockMaterial),
+    createLineMaterialPool: vi.fn(() => mockMaterialPool),
+    translateToCenter: vi.fn(
+        (
+            geom: { translate: (x: number, y: number, z: number) => void },
+            center: { x: number; y: number; z: number },
+            shouldCenter: boolean
+        ) => {
+            if (shouldCenter && center) {
+                geom.translate(-center.x, -center.y, -center.z);
+            }
+        }
     ),
 }));
 
@@ -236,7 +261,7 @@ describe('WireframeMesh', () => {
     });
 
     describe('메모리 정리', () => {
-        it('언마운트 시 geometry와 material이 dispose됨', () => {
+        it('언마운트 시 geometry가 dispose됨', () => {
             const data = createEmptyCADData();
             data.lines = [createTestLine(0, 0, 100, 0)];
 
@@ -251,6 +276,23 @@ describe('WireframeMesh', () => {
             unmount();
 
             expect(mockGeometry.dispose).toHaveBeenCalled();
+        });
+
+        it('언마운트 시 material pool이 dispose됨', () => {
+            const data = createEmptyCADData();
+            data.lines = [createTestLine(0, 0, 100, 0)];
+
+            const { unmount } = render(
+                <WireframeMesh
+                    data={data}
+                    layers={undefined}
+                    dataCenter={defaultDataCenter}
+                />
+            );
+
+            unmount();
+
+            expect(mockMaterialPool.dispose).toHaveBeenCalled();
         });
     });
 });

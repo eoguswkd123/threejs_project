@@ -7,11 +7,11 @@
 // Components
 export { ToggleControl } from './ToggleControl';
 export { Button } from './Button';
-export { Heading, Text, Label } from './Typography';
 export { DropZone } from './DropZone';
 export { ViewerErrorBoundary } from './ViewerErrorBoundary';
 export { PanelErrorBoundary } from './PanelErrorBoundary';
 export { LoadingSpinner } from './LoadingSpinner';
+export { LoadingSpinnerCanvas } from './LoadingSpinnerCanvas';
 
 // Constants
 export { ACCENT_CLASSES } from './constants';

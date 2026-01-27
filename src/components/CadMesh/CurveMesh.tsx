@@ -2,20 +2,31 @@
  * CurveMesh - ELLIPSE/SPLINE 렌더링 컴포넌트
  *
  * ELLIPSE 및 SPLINE 엔티티를 레이어별 색상으로 렌더링
+ *
+ * ## Material Pooling
+ * 50+ 레이어 시 성능을 위해 색상별 Material을 풀링합니다.
+ * 동일 색상의 레이어는 같은 Material 인스턴스를 공유합니다.
  */
 
-import { useMemo, useEffect, memo } from 'react';
-
-import * as THREE from 'three';
+import { useMemo, useEffect, memo, useRef } from 'react';
 
 import { DEFAULT_LAYER_COLOR, getLODSegments } from '@/constants/cad';
-import { ellipsesToGeometry, splinesToGeometry } from '@/utils/cad';
+import type { ParsedEllipse, ParsedSpline } from '@/types/cad';
+import {
+    ellipsesToGeometry,
+    splinesToGeometry,
+    createLineMaterialPool,
+} from '@/utils/cad';
+import type { MaterialPool } from '@/utils/cad';
 
 import type { CadMeshBaseProps, LayerMeshData } from './types';
+import type { LineBasicMaterial } from 'three';
 
 /**
  * CurveMesh 컴포넌트
  * ELLIPSE 및 SPLINE 엔티티를 레이어별로 렌더링
+ *
+ * Material Pooling으로 50+ 레이어에서도 효율적으로 렌더링
  */
 function CurveMeshComponent({
     data,
@@ -26,8 +37,41 @@ function CurveMeshComponent({
     const totalEntities = data.metadata.entityCount;
     const segments = getLODSegments(totalEntities);
 
+    // Material Pool (컴포넌트 수명 동안 유지)
+    const materialPoolRef = useRef<MaterialPool<LineBasicMaterial> | null>(
+        null
+    );
+
+    // Pool 초기화 (최초 한 번)
+    if (!materialPoolRef.current) {
+        materialPoolRef.current = createLineMaterialPool();
+    }
+
+    // ELLIPSE를 레이어별로 사전 그룹핑 (O(E) - 한 번만 실행)
+    const ellipsesByLayer = useMemo(() => {
+        const map = new Map<string, ParsedEllipse[]>();
+        for (const ellipse of data.ellipses ?? []) {
+            const layer = ellipse.layer ?? '0';
+            if (!map.has(layer)) map.set(layer, []);
+            map.get(layer)!.push(ellipse);
+        }
+        return map;
+    }, [data.ellipses]);
+
+    // SPLINE를 레이어별로 사전 그룹핑 (O(S) - 한 번만 실행)
+    const splinesByLayer = useMemo(() => {
+        const map = new Map<string, ParsedSpline[]>();
+        for (const spline of data.splines ?? []) {
+            const layer = spline.layer ?? '0';
+            if (!map.has(layer)) map.set(layer, []);
+            map.get(layer)!.push(spline);
+        }
+        return map;
+    }, [data.splines]);
+
     // ELLIPSE/SPLINE 지오메트리 생성
     const ellipseSplineMeshes = useMemo((): LayerMeshData[] => {
+        const pool = materialPoolRef.current!;
         const hasEllipses = data.ellipses && data.ellipses.length > 0;
         const hasSplines = data.splines && data.splines.length > 0;
 
@@ -39,7 +83,8 @@ function CurveMeshComponent({
 
         if (!layers || layers.size === 0) {
             // 레이어 정보 없으면 단일 메시
-            const geometries: THREE.BufferGeometry[] = [];
+            // Material Pool에서 가져오기
+            const mat = pool.get(DEFAULT_LAYER_COLOR);
 
             if (hasEllipses) {
                 const ellipseGeom = ellipsesToGeometry(data.ellipses, segments);
@@ -50,7 +95,12 @@ function CurveMeshComponent({
                         -dataCenter.z
                     );
                 }
-                geometries.push(ellipseGeom);
+                meshes.push({
+                    layerName: 'ellipse-spline-default-ellipse',
+                    geometry: ellipseGeom,
+                    material: mat,
+                    visible: true,
+                });
             }
 
             if (hasSplines) {
@@ -62,35 +112,25 @@ function CurveMeshComponent({
                         -dataCenter.z
                     );
                 }
-                geometries.push(splineGeom);
-            }
-
-            for (let i = 0; i < geometries.length; i++) {
-                const mat = new THREE.LineBasicMaterial({
-                    color: new THREE.Color(DEFAULT_LAYER_COLOR),
-                    linewidth: 1,
-                });
                 meshes.push({
-                    layerName: `ellipse-spline-default-${i}`,
-                    geometry: geometries[i]!,
+                    layerName: 'ellipse-spline-default-spline',
+                    geometry: splineGeom,
                     material: mat,
                     visible: true,
                 });
             }
         } else {
-            for (const [layerName, layerInfo] of layers) {
-                const layerEllipses = data.ellipses.filter(
-                    (e) => (e.layer ?? '0') === layerName
-                );
-                const layerSplines = data.splines.filter(
-                    (s) => (s.layer ?? '0') === layerName
-                );
+            for (const [layerName, layerInfo] of layers.entries()) {
+                // O(1) 조회로 변경 (기존: O(E), O(S) filter)
+                const layerEllipses = ellipsesByLayer.get(layerName) ?? [];
+                const layerSplines = splinesByLayer.get(layerName) ?? [];
 
                 if (layerEllipses.length === 0 && layerSplines.length === 0) {
                     continue;
                 }
 
-                const geometries: THREE.BufferGeometry[] = [];
+                // Material Pool에서 가져오기 (같은 색상은 재사용)
+                const mat = pool.get(layerInfo.color);
 
                 if (layerEllipses.length > 0) {
                     const ellipseGeom = ellipsesToGeometry(
@@ -104,7 +144,12 @@ function CurveMeshComponent({
                             -dataCenter.z
                         );
                     }
-                    geometries.push(ellipseGeom);
+                    meshes.push({
+                        layerName: `ellipse-spline-${layerName}-ellipse`,
+                        geometry: ellipseGeom,
+                        material: mat,
+                        visible: layerInfo.visible,
+                    });
                 }
 
                 if (layerSplines.length > 0) {
@@ -119,17 +164,9 @@ function CurveMeshComponent({
                             -dataCenter.z
                         );
                     }
-                    geometries.push(splineGeom);
-                }
-
-                for (let i = 0; i < geometries.length; i++) {
-                    const mat = new THREE.LineBasicMaterial({
-                        color: new THREE.Color(layerInfo.color),
-                        linewidth: 1,
-                    });
                     meshes.push({
-                        layerName: `ellipse-spline-${layerName}-${i}`,
-                        geometry: geometries[i]!,
+                        layerName: `ellipse-spline-${layerName}-spline`,
+                        geometry: splineGeom,
                         material: mat,
                         visible: layerInfo.visible,
                     });
@@ -138,17 +175,34 @@ function CurveMeshComponent({
         }
 
         return meshes;
-    }, [data.ellipses, data.splines, layers, center, dataCenter, segments]);
+    }, [
+        data.ellipses,
+        data.splines,
+        layers,
+        center,
+        dataCenter,
+        segments,
+        ellipsesByLayer,
+        splinesByLayer,
+    ]);
 
-    // Geometry 및 Material 정리
+    // Geometry 정리 (Material은 Pool에서 관리)
     useEffect(() => {
         return () => {
             for (const mesh of ellipseSplineMeshes) {
                 mesh.geometry.dispose();
-                mesh.material.dispose();
+                // Material은 pool에서 관리하므로 개별 dispose 안 함
             }
         };
     }, [ellipseSplineMeshes]);
+
+    // 컴포넌트 언마운트 시 Material Pool 정리
+    useEffect(() => {
+        return () => {
+            materialPoolRef.current?.dispose();
+            materialPoolRef.current = null;
+        };
+    }, []);
 
     return (
         <>

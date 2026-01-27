@@ -55,7 +55,15 @@ vi.mock('@/hooks/useSceneControls', () => ({
             rotateSpeed: 1,
             showGrid: true,
             autoFitCamera: true,
-            renderMode: 'wireframe',
+            renderMode: 'outline',
+            // Phase 2.1.6: 3D Extrude 옵션
+            enable3DExtrude: false,
+            extrudeOptions: {
+                depth: 10,
+                bevel: false,
+                bevelSize: 0.1,
+                bevelSegments: 1,
+            },
         },
         controlsRef: mockControlsRef,
         handleConfigChange: mockHandleConfigChange,
@@ -86,9 +94,22 @@ vi.mock('@/components/ControlPanelViewer', () => ({
     ControlPanelViewer: ({
         onResetView,
         onClear,
+        extrude,
+        renderMode,
+        metadata,
     }: {
         onResetView: () => void;
         onClear: () => void;
+        extrude?: {
+            showControls: boolean;
+            enabled: boolean;
+        };
+        renderMode?: {
+            mode: string;
+        };
+        metadata?: {
+            data: { hatches?: unknown[] } | null;
+        };
     }) => (
         <div data-testid="control-panel">
             <button onClick={onResetView} data-testid="reset-view-btn">
@@ -97,6 +118,17 @@ vi.mock('@/components/ControlPanelViewer', () => ({
             <button onClick={onClear} data-testid="clear-btn">
                 Clear
             </button>
+            {/* Extrude controls with Render Mode (Phase 2.1.6) */}
+            {extrude?.showControls && !extrude.enabled && renderMode && (
+                <div data-testid="render-mode-section">
+                    <span>Render Mode</span>
+                    <span>{renderMode.mode}</span>
+                </div>
+            )}
+            {/* HATCH count display */}
+            {metadata?.data?.hatches && metadata.data.hatches.length > 0 && (
+                <span>HATCH: {metadata.data.hatches.length}개</span>
+            )}
         </div>
     ),
 }));
@@ -150,6 +182,11 @@ vi.mock('lucide-react', () => ({
     Layers: () => <span data-testid="layers-icon" />,
     Eye: () => <span data-testid="eye-icon" />,
     EyeOff: () => <span data-testid="eye-off-icon" />,
+    // Phase 2.1.6: DepthControl icons
+    Box: () => <span data-testid="box-icon" />,
+    RotateCcw: () => <span data-testid="rotate-ccw-icon" />,
+    ChevronDown: () => <span data-testid="chevron-down-icon" />,
+    ChevronUp: () => <span data-testid="chevron-up-icon" />,
 }));
 
 // Import CadScene after mocks
@@ -180,12 +217,14 @@ const createMockCadData = (
         min: { x: 0, y: 0, z: 0 },
         max: { x: 100, y: 100, z: 0 },
     },
-    layers: new Map([
-        [
-            'Layer0',
-            { name: 'Layer0', color: '#ffffff', visible: true, entityCount: 1 },
-        ],
-    ]),
+    layers: {
+        Layer0: {
+            name: 'Layer0',
+            color: '#ffffff',
+            visible: true,
+            entityCount: 1,
+        },
+    },
     metadata: {
         fileName: 'test.dxf',
         fileSize: 1024,

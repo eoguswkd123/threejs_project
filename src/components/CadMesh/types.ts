@@ -10,7 +10,7 @@
  * @see {@link DimensionMesh} - DIMENSION 렌더링
  */
 
-import type { CadRenderMode, LayerInfo, ParsedCADData } from '@/types/cad';
+import type { HatchFillMode, LayerInfo, ParsedCADData } from '@/types/cad';
 
 import type * as THREE from 'three';
 
@@ -81,5 +81,5 @@ export interface DimensionRenderData {
  */
 export interface HatchMeshProps extends CadMeshBaseProps {
     /** 렌더링 모드 */
-    renderMode: CadRenderMode;
+    renderMode: HatchFillMode;
 }

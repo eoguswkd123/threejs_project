@@ -1,6 +1,6 @@
 /**
  * HatchMesh Component Tests
- * HATCH 렌더링 테스트 (wireframe/solid/pattern 모드)
+ * HATCH 렌더링 테스트 (outline/solid/pattern 모드)
  */
 
 import { render, cleanup } from '@testing-library/react';
@@ -62,6 +62,39 @@ vi.mock('@/utils/cad', () => ({
             (h: { layer?: string }) => (h.layer ?? '0') === layerName
         )
     ),
+    translateToCenter: vi.fn(
+        (
+            geom: { translate: (x: number, y: number, z: number) => void },
+            center: { x: number; y: number; z: number },
+            shouldCenter: boolean
+        ) => {
+            if (shouldCenter && center) {
+                geom.translate(-center.x, -center.y, -center.z);
+            }
+        }
+    ),
+    translateToCenterXY: vi.fn(
+        (
+            geom: { translate: (x: number, y: number, z: number) => void },
+            center: { x: number; y: number; z: number },
+            shouldCenter: boolean
+        ) => {
+            if (shouldCenter && center) {
+                geom.translate(-center.x, -center.y, 0);
+            }
+        }
+    ),
+    calculateCenteredZPosition: vi.fn(
+        (zPosition: number, center: { z: number }, shouldCenter: boolean) =>
+            shouldCenter ? zPosition - center.z : zPosition
+    ),
+    createLineMaterialPool: vi.fn(() => ({
+        get: vi.fn(() => ({
+            dispose: vi.fn(),
+        })),
+        dispose: vi.fn(),
+        size: 0,
+    })),
 }));
 
 // Mock React Three Fiber
@@ -88,7 +121,7 @@ describe('HatchMesh', () => {
                         data={data}
                         layers={undefined}
                         dataCenter={defaultDataCenter}
-                        renderMode="wireframe"
+                        renderMode="outline"
                     />
                 )
             ).not.toThrow();
@@ -105,7 +138,7 @@ describe('HatchMesh', () => {
                         data={data}
                         layers={undefined}
                         dataCenter={defaultDataCenter}
-                        renderMode="wireframe"
+                        renderMode="outline"
                     />
                 )
             ).not.toThrow();
@@ -113,7 +146,7 @@ describe('HatchMesh', () => {
     });
 
     describe('렌더 모드', () => {
-        it('wireframe 모드에서 경계선만 렌더링', async () => {
+        it('outline 모드에서 경계선만 렌더링', async () => {
             const data = createEmptyCADData();
             data.hatches = [createTestHatch(0, 0, 100, 100, true)];
 
@@ -122,7 +155,7 @@ describe('HatchMesh', () => {
                     data={data}
                     layers={undefined}
                     dataCenter={defaultDataCenter}
-                    renderMode="wireframe"
+                    renderMode="outline"
                 />
             );
 
@@ -179,7 +212,7 @@ describe('HatchMesh', () => {
                         data={data}
                         layers={undefined}
                         dataCenter={defaultDataCenter}
-                        renderMode="wireframe"
+                        renderMode="outline"
                     />
                 )
             ).not.toThrow();
@@ -202,7 +235,7 @@ describe('HatchMesh', () => {
                     data={data}
                     layers={layers}
                     dataCenter={defaultDataCenter}
-                    renderMode="wireframe"
+                    renderMode="outline"
                 />
             );
 
@@ -212,7 +245,7 @@ describe('HatchMesh', () => {
     });
 
     describe('중심 정렬', () => {
-        it('center=true일 때 wireframe geometry가 translate됨', () => {
+        it('center=true일 때 outline geometry가 translate됨', () => {
             const data = createEmptyCADData();
             data.hatches = [createTestHatch(0, 0, 100, 100, true)];
 
@@ -224,7 +257,7 @@ describe('HatchMesh', () => {
                     center={true}
                     layers={undefined}
                     dataCenter={customCenter}
-                    renderMode="wireframe"
+                    renderMode="outline"
                 />
             );
 
@@ -246,7 +279,7 @@ describe('HatchMesh', () => {
                     data={data}
                     layers={undefined}
                     dataCenter={defaultDataCenter}
-                    renderMode="wireframe"
+                    renderMode="outline"
                 />
             );
 

@@ -1,14 +1,14 @@
 # Architecture
 
-> **Version**: 0.1.8
-> **Last Updated**: 2025-12-29
+> **Version**: 1.0.1
+> **Last Updated**: 2026-01-26
 
 CAD Viewer 프로젝트의 시스템 아키텍처와 패키지 구조를 설명합니다.
 
 ## 목차
 
 - [전체 시스템 흐름](#전체-시스템-흐름)
-- [아키텍처 개요](#아키텍처-개요)
+- [Frontend 아키텍처](#frontend-아키텍처)
 - [패키지 구조](#패키지-구조)
 - [레이어별 역할](#레이어별-역할)
 
@@ -181,7 +181,7 @@ Teapot Demo는 CAD Viewer의 핵심 패턴을 학습하기 위한 예제입니�
 
 ---
 
-## 아키텍처 개요
+## Frontend 아키텍처
 
 Layer-Based Architecture를 채택하여 관심사 분리와 의존성 방향을 명확히 합니다.
 
@@ -377,6 +377,56 @@ BASE_ALLOWED_HOSTS = [
 
 ---
 
+## CadMesh 컴포넌트 아키텍처
+
+DXF 엔티티 타입별로 전문화된 Mesh 컴포넌트를 제공합니다. Phase 2.1 완료 후 도입된 구조입니다.
+
+### 컴포넌트 분리 구조
+
+```
+src/components/CadMesh/
+├── index.ts              # Barrel export
+├── types.ts              # 공통 타입 정의
+├── WireframeMesh.tsx     # 선 지오메트리 (LINE, POLYLINE, LWPOLYLINE)
+├── CurveMesh.tsx         # 곡선 (ARC, CIRCLE, ELLIPSE, SPLINE)
+├── HatchMesh.tsx         # 2D 해치 패턴
+├── Hatch3DMesh.tsx       # 3D 돌출 해치 (ExtrudeGeometry)
+├── TextMesh.tsx          # 텍스트 (TEXT, MTEXT)
+└── DimensionMesh.tsx     # 치수 주석 (DIMENSION)
+```
+
+### 엔티티-컴포넌트 매핑
+
+| DXF 엔티티 타입            | Mesh 컴포넌트   | 렌더링 방식       |
+| -------------------------- | --------------- | ----------------- |
+| LINE, POLYLINE, LWPOLYLINE | `WireframeMesh` | LineBasicMaterial |
+| ARC, CIRCLE                | `CurveMesh`     | 곡선 세그먼트     |
+| ELLIPSE, SPLINE            | `CurveMesh`     | 보간 곡선         |
+| HATCH (solid=false)        | `HatchMesh`     | 2D 패턴           |
+| HATCH (solid=true)         | `Hatch3DMesh`   | ExtrudeGeometry   |
+| TEXT, MTEXT                | `TextMesh`      | Drei Text         |
+| DIMENSION                  | `DimensionMesh` | 선 + 텍스트 조합  |
+
+### Services 계층 확장
+
+```
+src/features/CadViewer/services/
+├── dxfParser.worker.ts   # DXF 파싱 WebWorker
+├── entityParsers.ts      # 엔티티별 파싱 로직
+├── entityMath.ts         # 기하학 계산 유틸리티
+├── hatchParser.ts        # 해치→지오메트리 변환
+└── workerPool.ts         # 워커 풀 관리 (병렬 처리)
+```
+
+### 신규 Feature 모듈
+
+| Feature        | 경로                           | 설명                 |
+| -------------- | ------------------------------ | -------------------- |
+| WorkerViewer   | `src/features/WorkerViewer/`   | GLTF/glb 파일 렌더링 |
+| HologramViewer | `src/features/HologramViewer/` | 홀로그램 효과 뷰어   |
+
+---
+
 ## 관련 문서
 
 | 문서                                                     | 설명                        |
@@ -391,15 +441,17 @@ BASE_ALLOWED_HOSTS = [
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                                                                          |
-| ----- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
-| 0.1.8 | 2025-12-29 | 코드 동기화: CadViewer services/types 구조, Composite 패턴, Validation 아키텍처, locales TS 전환, 새 컴포넌트 반영 |
-| 0.1.7 | 2025-12-18 | CadViewer 폴더명 대소문자 수정, Phase 2.1 상태 동기화                                                              |
-| 0.1.6 | 2025-12-16 | 깨진 링크 수정 (1.2_TEAPOT_DEMO→THREEJS_DEMO_TEAPOT, ADR-003→ADR-004)                                              |
-| 0.1.5 | 2025-12-10 | Python Worker 아키텍처 섹션 추가 (ADR-003 승인 반영)                                                               |
-| 0.1.4 | 2025-12-08 | 메시지 큐 아키텍처 섹션 추가 (ADR-002 승인 반영)                                                                   |
-| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                                                                            |
-| 0.1.2 | 2025-12-03 | Phase 2.1 완료 반영, CADViewer 테스트 디렉토리 추가                                                                |
-| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                                                          |
-| 0.1.0 | 2025-12-01 | 아키텍처 문서 업데이트, CAD Viewer 기능 추가                                                                       |
-| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리                                                                |
+| 버전  | 날짜       | 변경 내용                                                                                                                                  |
+| ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.1 | 2026-01-26 | "아키텍처 개요" 섹션명을 "Frontend 아키텍처"로 명확화 (실제 내용이 Frontend Layer Architecture임을 반영)                                   |
+| 1.0.0 | 2026-01-15 | CadMesh 컴포넌트 아키텍처 섹션 추가, Services 계층 확장 (hatchParser, workerPool), 신규 Feature 모듈 문서화 (WorkerViewer, HologramViewer) |
+| 0.1.8 | 2025-12-29 | 코드 동기화: CadViewer services/types 구조, Composite 패턴, Validation 아키텍처, locales TS 전환, 새 컴포넌트 반영                         |
+| 0.1.7 | 2025-12-18 | CadViewer 폴더명 대소문자 수정, Phase 2.1 상태 동기화                                                                                      |
+| 0.1.6 | 2025-12-16 | 깨진 링크 수정 (1.2_TEAPOT_DEMO→THREEJS_DEMO_TEAPOT, ADR-003→ADR-004)                                                                      |
+| 0.1.5 | 2025-12-10 | Python Worker 아키텍처 섹션 추가 (ADR-003 승인 반영)                                                                                       |
+| 0.1.4 | 2025-12-08 | 메시지 큐 아키텍처 섹션 추가 (ADR-002 승인 반영)                                                                                           |
+| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                                                                                                    |
+| 0.1.2 | 2025-12-03 | Phase 2.1 완료 반영, CADViewer 테스트 디렉토리 추가                                                                                        |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                                                                                  |
+| 0.1.0 | 2025-12-01 | 아키텍처 문서 업데이트, CAD Viewer 기능 추가                                                                                               |
+| 0.0.0 | 2025-11-28 | 초기 버전, 로드맵/아키텍처/깃컨벤션 문서가이드 정리                                                                                        |

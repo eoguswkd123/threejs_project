@@ -3,7 +3,11 @@
  * DXF Viewer Feature 전용 타입 정의
  */
 
-import type { CadRenderMode } from '@/types/cad';
+import type {
+    HatchFillMode,
+    CadShadingMode,
+    ExtrudeOptions,
+} from '@/types/cad';
 
 // ============================================================
 // 공유 CAD 타입 (re-export for convenience)
@@ -56,8 +60,14 @@ export interface CadViewerConfig {
     backgroundColor: string;
     /** 자동 카메라 조정 */
     autoFitCamera: boolean;
-    /** 렌더링 모드 (wireframe/solid/pattern) */
-    renderMode: CadRenderMode;
+    /** 렌더링 모드 (outline/solid/pattern) */
+    renderMode: HatchFillMode;
+    /** 3D 돌출 모드 활성화 (Phase 2.1.6) */
+    enable3DExtrude: boolean;
+    /** 3D 돌출 옵션 (Phase 2.1.6) */
+    extrudeOptions: ExtrudeOptions;
+    /** 3D 쉐이딩 모드 (Phase 2.1.7) */
+    shadingMode: CadShadingMode;
 }
 
 /** 파일 업로드 에러 */

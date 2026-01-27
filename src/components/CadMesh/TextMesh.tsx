@@ -24,6 +24,17 @@ function TextMeshComponent({
     layers,
     dataCenter,
 }: CadMeshBaseProps) {
+    // TEXT를 레이어별로 사전 그룹핑 (O(T) - 한 번만 실행)
+    const textsByLayer = useMemo(() => {
+        const map = new Map<string, ParsedText[]>();
+        for (const text of data.texts ?? []) {
+            const layer = text.layer ?? '0';
+            if (!map.has(layer)) map.set(layer, []);
+            map.get(layer)!.push(text);
+        }
+        return map;
+    }, [data.texts]);
+
     // TEXT 렌더링 데이터 생성
     const textRenderData = useMemo((): TextRenderData[] => {
         if (!data.texts || data.texts.length === 0) {
@@ -64,10 +75,9 @@ function TextMeshComponent({
             });
         } else {
             let globalIndex = 0;
-            for (const [layerName, layerInfo] of layers) {
-                const layerTexts = data.texts.filter(
-                    (t) => (t.layer ?? '0') === layerName
-                );
+            for (const [layerName, layerInfo] of layers.entries()) {
+                // O(1) 조회로 변경 (기존: O(T) filter)
+                const layerTexts = textsByLayer.get(layerName) ?? [];
                 for (const text of layerTexts) {
                     processText(
                         text,
@@ -80,7 +90,18 @@ function TextMeshComponent({
         }
 
         return results;
-    }, [data.texts, layers, center, dataCenter]);
+    }, [data.texts, layers, center, dataCenter, textsByLayer]);
+
+    // MTEXT를 레이어별로 사전 그룹핑 (O(M) - 한 번만 실행)
+    const mtextsByLayer = useMemo(() => {
+        const map = new Map<string, ParsedMText[]>();
+        for (const mtext of data.mtexts ?? []) {
+            const layer = mtext.layer ?? '0';
+            if (!map.has(layer)) map.set(layer, []);
+            map.get(layer)!.push(mtext);
+        }
+        return map;
+    }, [data.mtexts]);
 
     // MTEXT 렌더링 데이터 생성
     const mtextRenderData = useMemo((): TextRenderData[] => {
@@ -124,10 +145,9 @@ function TextMeshComponent({
             });
         } else {
             let globalIndex = 0;
-            for (const [layerName, layerInfo] of layers) {
-                const layerMTexts = data.mtexts.filter(
-                    (m) => (m.layer ?? '0') === layerName
-                );
+            for (const [layerName, layerInfo] of layers.entries()) {
+                // O(1) 조회로 변경 (기존: O(M) filter)
+                const layerMTexts = mtextsByLayer.get(layerName) ?? [];
                 for (const mtext of layerMTexts) {
                     processMText(
                         mtext,
@@ -140,7 +160,7 @@ function TextMeshComponent({
         }
 
         return results;
-    }, [data.mtexts, layers, center, dataCenter]);
+    }, [data.mtexts, layers, center, dataCenter, mtextsByLayer]);
 
     return (
         <>

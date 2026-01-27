@@ -14,16 +14,11 @@
  * ```
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
-/** 포커스 가능한 요소 선택자 */
-const FOCUSABLE_SELECTOR =
-    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-/** 포커스 설정 지연 시간 (애니메이션 완료 대기) */
-const FOCUS_DELAY_MS = 100;
+import { FOCUSABLE_SELECTOR, FOCUS_DELAY_MS } from './constants';
 
 interface UseMobileDrawerReturn {
     /** 드로어 요소에 연결할 ref */
@@ -44,6 +39,13 @@ export function useMobileDrawer(
     const location = useLocation();
     const drawerRef = useRef<HTMLElement>(null);
     const previousActiveElement = useRef<HTMLElement | null>(null);
+    const previousPathnameRef = useRef(location.pathname);
+
+    // close 함수 참조 안정화 (ESLint deps 경고 해결)
+    const closeRef = useRef(close);
+    useLayoutEffect(() => {
+        closeRef.current = close;
+    }, [close]);
 
     /**
      * 드로어 내부의 포커스 가능한 요소들 반환
@@ -144,14 +146,18 @@ export function useMobileDrawer(
     // Effect 3: 라우트 변경 시 자동 닫기
     // =========================================================================
     useEffect(() => {
-        // 라우트 변경 시 드로어 닫기
-        // close는 안정적인 참조이므로 deps에서 제외해도 안전
-        if (isOpen) {
-            close();
+        // 실제 라우트 변경 시에만 드로어 닫기
+        // (isOpen 변경만으로는 닫지 않음 - 드로어 열릴 때 바로 닫히는 버그 방지)
+        const hasPathnameChanged =
+            previousPathnameRef.current !== location.pathname;
+
+        if (hasPathnameChanged && isOpen) {
+            closeRef.current();
         }
-        // Note: close를 deps에 포함하면 close 호출 → isOpen 변경 → 재실행 루프 발생
-        // location.pathname 변경 시에만 트리거되어야 함
-    }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+        // 현재 pathname 저장
+        previousPathnameRef.current = location.pathname;
+    }, [location.pathname, isOpen]);
 
     // =========================================================================
     // Effect 4: 스크롤 잠금

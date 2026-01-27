@@ -8,6 +8,7 @@ import type {
     FileUploadMessages,
 } from '@/components/FilePanel';
 import { createUrlSecurityConfig } from '@/config/urlSecurity';
+import { DEFAULT_EXTRUDE_OPTIONS, DEFAULT_SHADING_MODE } from '@/types/cad';
 
 import type { CadViewerConfig } from './types';
 
@@ -44,12 +45,15 @@ export const DEFAULT_CAD_CONFIG: CadViewerConfig = {
     rotateSpeed: 1,
     backgroundColor: '#1a1a2e',
     autoFitCamera: true,
-    renderMode: 'wireframe',
+    renderMode: 'outline',
+    enable3DExtrude: false,
+    extrudeOptions: DEFAULT_EXTRUDE_OPTIONS,
+    shadingMode: DEFAULT_SHADING_MODE,
 };
 
 /** 렌더링 모드 옵션 */
 export const RENDER_MODE_OPTIONS = [
-    { value: 'wireframe', label: 'Wireframe' },
+    { value: 'outline', label: 'Outline' },
     { value: 'solid', label: 'Solid Fill' },
     { value: 'pattern', label: 'Pattern Fill' },
 ] as const;
@@ -117,6 +121,26 @@ export const WORKER_RETRY_CONFIG = {
     backoffMultiplier: 2,
     /** 재시도 가능한 에러 코드 */
     retryableErrors: ['WORKER_ERROR', 'TIMEOUT'] as const,
+} as const;
+
+/**
+ * Worker Pool 설정
+ * Worker 재사용으로 생성 오버헤드 제거
+ */
+export const WORKER_POOL_CONFIG = {
+    /** 최소 Worker 수 (항상 유지) */
+    minWorkers: 2,
+    /** 최대 Worker 수 (CPU 코어 수 기반) */
+    maxWorkers:
+        typeof navigator !== 'undefined'
+            ? navigator.hardwareConcurrency || 4
+            : 4,
+    /** 유휴 Worker 타임아웃 (30초) */
+    idleTimeoutMs: 30_000,
+    /** 작업 타임아웃 (60초) */
+    taskTimeoutMs: WORKER_TIMEOUT_MS,
+    /** 정리 타이머 간격 (10초) */
+    cleanupIntervalMs: 10_000,
 } as const;
 
 // aciToHex는 entityMath.ts에서 정의 (순수 함수)

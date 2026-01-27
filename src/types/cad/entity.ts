@@ -176,6 +176,9 @@ export interface ParsedHatch {
     layer: string | undefined;
 }
 
+/** HATCH 채움 모드 */
+export type HatchFillMode = 'outline' | 'solid' | 'pattern';
+
 // ========================================
 // Text Types
 // ========================================
@@ -337,6 +340,6 @@ export interface ParsedCADData {
     bounds: BoundingBox;
     /** 파일 메타데이터 */
     metadata: CADMetadata;
-    /** 레이어 정보 맵 */
-    layers: Map<string, LayerInfo>;
+    /** 레이어 정보 (JSON 직렬화 호환) */
+    layers: Record<string, LayerInfo>;
 }

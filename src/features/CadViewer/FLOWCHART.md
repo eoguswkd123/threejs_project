@@ -41,9 +41,9 @@ CadViewerPage (src/pages/CADViewer/index.tsx)
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │                 3. 샘플 파일 Fetch                               │
-│  fetch('/samples/simple-room.dxf') → File 객체 생성             │
+│  fetch('/samples/dxf/*.dxf') → File 객체 생성                   │
 │  src/features/CADViewer/components/CADScene.tsx:114-128         │
-│  샘플 파일: public/samples/simple-room.dxf                      │
+│  샘플 파일: public/samples/dxf/*.dxf (자동 스캔)                │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -171,7 +171,7 @@ THREE.LineSegments (per layer)
 | Worker 훅       | src/features/CadViewer/hooks/useDxfWorker.ts        |
 | DXF 파싱 Worker | src/features/CadViewer/services/dxfParser.worker.ts |
 | Geometry 변환   | src/utils/cad/dxfToGeometry.ts                      |
-| 샘플 파일       | public/samples/simple-room.dxf                      |
+| 샘플 파일       | public/samples/dxf/\*.dxf (자동 스캔)               |
 | 상수/설정       | src/features/CADViewer/constants.ts                 |
 
 ---

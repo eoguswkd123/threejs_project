@@ -5,7 +5,7 @@ import { MobileDrawer } from './MobileDrawer';
 import { MobileHeader } from './MobileHeader';
 import { SideBar } from './SideBar';
 
-export const MainLayout = (): JSX.Element => {
+const MainLayout = (): JSX.Element => {
     return (
         <div className="flex h-screen flex-col bg-gray-50">
             {/* 모바일 헤더 (md 미만에서만 표시) */}
@@ -30,3 +30,5 @@ export const MainLayout = (): JSX.Element => {
         </div>
     );
 };
+
+export default MainLayout;

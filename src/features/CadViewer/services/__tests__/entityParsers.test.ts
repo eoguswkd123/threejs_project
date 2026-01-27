@@ -16,7 +16,7 @@ import {
     parsePolyline,
     toPoint3D,
     toPoint3DArray,
-} from '../entityParsers';
+} from '../parsers';
 
 import type { DXFLibEntity, DXFLibHatchBoundary } from '../../types';
 

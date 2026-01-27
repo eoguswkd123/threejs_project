@@ -1,7 +1,7 @@
 # 개발자 가이드
 
-> **Version**: 0.1.7
-> **Last Updated**: 2025-12-29
+> **Version**: 1.0.0
+> **Last Updated**: 2026-01-15
 
 프로젝트 개발 시 참고하는 가이드 문서
 
@@ -22,6 +22,7 @@
     - [Import 순서](#import-순서)
     - [Feature 모듈 Import 패턴](#feature-모듈-import-패턴)
     - [R3F 컴포넌트 패턴](#r3f-컴포넌트-패턴)
+    - [CadMesh 컴포넌트 패턴](#cadmesh-컴포넌트-패턴)
     - [컴포넌트 작성 패턴](#컴포넌트-작성-패턴)
     - [타입 정의 패턴](#타입-정의-패턴)
     - [Props 설계 가이드](#props-설계-가이드)
@@ -416,6 +417,87 @@ CadViewerPage (Page)
 
 > **참고**: R3F에서 `<Canvas>` 내부는 Three.js 컨텍스트, 외부는 일반 React DOM입니다.
 > UI 컨트롤은 HTML Overlay로 구현하는 것이 R3F Best Practice입니다.
+
+### CadMesh 컴포넌트 패턴
+
+DXF 엔티티 타입별로 전문화된 Mesh 컴포넌트를 제공합니다. Phase 2.1 이후 도입된 구조입니다.
+
+#### 엔티티-컴포넌트 매핑
+
+| DXF 엔티티 타입            | Mesh 컴포넌트   | 렌더링 방식       |
+| -------------------------- | --------------- | ----------------- |
+| LINE, POLYLINE, LWPOLYLINE | `WireframeMesh` | LineBasicMaterial |
+| ARC, CIRCLE                | `CurveMesh`     | 곡선 세그먼트     |
+| ELLIPSE, SPLINE            | `CurveMesh`     | 보간 곡선         |
+| HATCH (solid=false)        | `HatchMesh`     | 2D 패턴           |
+| HATCH (solid=true)         | `Hatch3DMesh`   | ExtrudeGeometry   |
+| TEXT, MTEXT                | `TextMesh`      | Drei Text         |
+| DIMENSION                  | `DimensionMesh` | 선 + 텍스트 조합  |
+
+#### CadMesh 컴포넌트 구조
+
+```
+src/components/CadMesh/
+├── index.ts              # Barrel export
+├── types.ts              # 공통 타입 정의 (CadMeshProps 등)
+├── WireframeMesh.tsx     # 선 지오메트리
+├── CurveMesh.tsx         # 곡선 (arc, circle, ellipse, spline)
+├── HatchMesh.tsx         # 2D 해치 패턴
+├── Hatch3DMesh.tsx       # 3D 돌출 해치
+├── TextMesh.tsx          # 텍스트 렌더링
+└── DimensionMesh.tsx     # 치수 주석
+```
+
+#### 사용 예시
+
+```tsx
+// CadScene에서 엔티티별 Mesh 선택
+import {
+    WireframeMesh,
+    CurveMesh,
+    HatchMesh,
+    TextMesh,
+} from '@/components/CadMesh';
+
+// 엔티티 타입에 따라 적절한 Mesh 컴포넌트 렌더링
+{
+    entities.map((entity) => {
+        switch (entity.type) {
+            case 'LINE':
+            case 'POLYLINE':
+                return <WireframeMesh key={entity.id} entity={entity} />;
+            case 'ARC':
+            case 'CIRCLE':
+                return <CurveMesh key={entity.id} entity={entity} />;
+            case 'HATCH':
+                return entity.solid ? (
+                    <Hatch3DMesh key={entity.id} entity={entity} />
+                ) : (
+                    <HatchMesh key={entity.id} entity={entity} />
+                );
+            // ...
+        }
+    });
+}
+```
+
+#### Props 패턴
+
+```typescript
+// 공통 CadMesh Props 타입
+interface CadMeshProps {
+    entity: DxfEntity; // 파싱된 DXF 엔티티
+    color?: string; // 오버라이드 색상
+    opacity?: number; // 투명도 (0-1)
+    visible?: boolean; // 표시 여부
+}
+
+// 특화된 Props (확장)
+interface Hatch3DMeshProps extends CadMeshProps {
+    extrudeDepth?: number; // 돌출 깊이
+    bevelEnabled?: boolean; // 베벨 적용 여부
+}
+```
 
 ### 컴포넌트 작성 패턴
 
@@ -930,14 +1012,15 @@ docs: README 업데이트
 
 ## Changelog (변경 이력)
 
-| 버전  | 날짜       | 변경 내용                                                |
-| ----- | ---------- | -------------------------------------------------------- |
-| 0.1.7 | 2025-12-29 | 코드 동기화: 훅 예시, R3F 패턴, 테스트 예시 업데이트     |
-| 0.1.6 | 2025-12-18 | Quick Start 섹션 추가, TODO 섹션 삭제 (완료된 항목)      |
-| 0.1.5 | 2025-12-17 | Props 정의 위치 가이드 추가 (인라인 권장)                |
-| 0.1.4 | 2025-12-15 | R3F 컴포넌트 패턴 섹션 추가 (Canvas-internal vs Overlay) |
-| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                  |
-| 0.1.2 | 2025-12-03 | pre-push lint 적용                                       |
-| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                |
-| 0.1.0 | 2025-12-01 | 개발자가이드 문서 업데이트, CAD Viewer 기능 추가         |
-| 0.0.0 | 2025-11-28 | 초기 버전                                                |
+| 버전  | 날짜       | 변경 내용                                                                |
+| ----- | ---------- | ------------------------------------------------------------------------ |
+| 1.0.0 | 2026-01-15 | CadMesh 컴포넌트 패턴 섹션 추가 (엔티티-컴포넌트 매핑, 구조, Props 패턴) |
+| 0.1.7 | 2025-12-29 | 코드 동기화: 훅 예시, R3F 패턴, 테스트 예시 업데이트                     |
+| 0.1.6 | 2025-12-18 | Quick Start 섹션 추가, TODO 섹션 삭제 (완료된 항목)                      |
+| 0.1.5 | 2025-12-17 | Props 정의 위치 가이드 추가 (인라인 권장)                                |
+| 0.1.4 | 2025-12-15 | R3F 컴포넌트 패턴 섹션 추가 (Canvas-internal vs Overlay)                 |
+| 0.1.3 | 2025-12-04 | 삭제된 PHASE_DEV_DOC_GUIDE.md 참조 제거                                  |
+| 0.1.2 | 2025-12-03 | pre-push lint 적용                                                       |
+| 0.1.1 | 2025-12-02 | Phase개발 템플릿 개발완료                                                |
+| 0.1.0 | 2025-12-01 | 개발자가이드 문서 업데이트, CAD Viewer 기능 추가                         |
+| 0.0.0 | 2025-11-28 | 초기 버전                                                                |

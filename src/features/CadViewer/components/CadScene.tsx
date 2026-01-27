@@ -4,12 +4,13 @@
  * 3D 캔버스, 파일 업로드, 컨트롤, 레이어 패널을 오케스트레이션하는 메인 컨테이너
  *
  * @see {@link CadMeshViewer} - 3D 렌더링 오케스트레이터
- * @see {@link SceneCanvas} - 공통 3D 캔버스
+ * @see {@link SceneCanvasViewer} - 공통 3D 캔버스 Viewer
+ * @see {@link ControlPanelViewer} - 통합 컨트롤 패널 (Extrude 포함, Phase 2.1.6)
  */
 
 import { useCallback, lazy, Suspense } from 'react';
 
-import { FileText, Layers } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 import { CadMeshViewer } from '@/components/CadMeshViewer';
 import { LoadingSpinner, PanelErrorBoundary } from '@/components/Common';
@@ -17,12 +18,12 @@ import { ControlPanelViewer } from '@/components/ControlPanelViewer';
 import { formatFileSize } from '@/components/FilePanel';
 import { FilePanelViewer } from '@/components/FilePanelViewer';
 import { useSceneControls } from '@/hooks/useSceneControls';
-import type { ParsedCADData, CadRenderMode } from '@/types/cad';
+import type { ParsedCADData, HatchFillMode, ExtrudeOptions } from '@/types/cad';
 
-// React.lazy - SceneCanvas만 적용 (Three.js 무거운 의존성)
-const SceneCanvas = lazy(() =>
+// React.lazy - SceneCanvasViewer (Three.js 무거운 의존성)
+const SceneCanvasViewer = lazy(() =>
     import('@/components/SceneCanvasViewer').then((m) => ({
-        default: m.SceneCanvas,
+        default: m.SceneCanvasViewer,
     }))
 );
 
@@ -31,7 +32,6 @@ import {
     CAMERA_CONFIG,
     ORBIT_CONTROLS_CONFIG,
     GRID_CONFIG,
-    RENDER_MODE_OPTIONS,
     DXF_UPLOAD_CONFIG,
     DXF_UPLOAD_MESSAGES,
 } from '../constants';
@@ -77,28 +77,61 @@ export function CadScene() {
         controlsRef.current?.reset();
     }, [handleResetFile, controlsRef]);
 
+    // 3D 모드 토글 핸들러 (Phase 2.1.6)
+    const handleToggle3D = useCallback(
+        (enabled: boolean) => {
+            handleConfigChange({ enable3DExtrude: enabled });
+        },
+        [handleConfigChange]
+    );
+
+    // Extrude 옵션 변경 핸들러 (Phase 2.1.6)
+    const handleExtrudeOptionsChange = useCallback(
+        (options: ExtrudeOptions) => {
+            handleConfigChange({ extrudeOptions: options });
+        },
+        [handleConfigChange]
+    );
+
+    // RenderMode 변경 핸들러
+    const handleRenderModeChange = useCallback(
+        (mode: HatchFillMode) => {
+            handleConfigChange({ renderMode: mode });
+        },
+        [handleConfigChange]
+    );
+
+    // HATCH 엔티티 존재 여부
+    const hasHatches = cadData?.hatches && cadData.hatches.length > 0;
+
     return (
         <div className="relative h-full w-full overflow-hidden">
             {/* 3D Canvas - 공통 컴포넌트 사용 */}
             <Suspense fallback={<LoadingSpinner size="lg" />}>
-                <SceneCanvas
-                    cameraPosition={cameraPosition}
-                    cameraFov={CAMERA_CONFIG.fov}
-                    cameraNear={CAMERA_CONFIG.near}
-                    cameraFar={CAMERA_CONFIG.far}
-                    controlsRef={controlsRef}
-                    enableDamping={ORBIT_CONTROLS_CONFIG.enableDamping}
-                    dampingFactor={ORBIT_CONTROLS_CONFIG.dampingFactor}
-                    minDistance={ORBIT_CONTROLS_CONFIG.minDistance}
-                    maxDistance={ORBIT_CONTROLS_CONFIG.maxDistance}
-                    autoRotate={config.autoRotate}
-                    rotateSpeed={config.rotateSpeed}
-                    showGrid={config.showGrid}
-                    gridSize={GRID_CONFIG.size}
-                    gridDivisions={GRID_CONFIG.divisions}
-                    gridColorCenterLine={GRID_CONFIG.colorCenterLine}
-                    gridColorGrid={GRID_CONFIG.colorGrid}
-                    gridRotation={[Math.PI / 2, 0, 0]}
+                <SceneCanvasViewer
+                    camera={{
+                        position: cameraPosition,
+                        fov: CAMERA_CONFIG.fov,
+                        near: CAMERA_CONFIG.near,
+                        far: CAMERA_CONFIG.far,
+                    }}
+                    controls={{
+                        ref: controlsRef,
+                        enableDamping: ORBIT_CONTROLS_CONFIG.enableDamping,
+                        dampingFactor: ORBIT_CONTROLS_CONFIG.dampingFactor,
+                        minDistance: ORBIT_CONTROLS_CONFIG.minDistance,
+                        maxDistance: ORBIT_CONTROLS_CONFIG.maxDistance,
+                        autoRotate: config.autoRotate,
+                        rotateSpeed: config.rotateSpeed,
+                    }}
+                    grid={{
+                        show: config.showGrid,
+                        size: GRID_CONFIG.size,
+                        divisions: GRID_CONFIG.divisions,
+                        colorCenterLine: GRID_CONFIG.colorCenterLine,
+                        colorGrid: GRID_CONFIG.colorGrid,
+                        rotation: [Math.PI / 2, 0, 0],
+                    }}
                 >
                     {/* Cad 모델 */}
                     {cadData && (
@@ -107,9 +140,12 @@ export function CadScene() {
                             center={true}
                             layers={layers}
                             renderMode={config.renderMode}
+                            enable3DExtrude={config.enable3DExtrude}
+                            extrudeOptions={config.extrudeOptions}
+                            shadingMode={config.shadingMode}
                         />
                     )}
-                </SceneCanvas>
+                </SceneCanvasViewer>
             </Suspense>
 
             {/* HTML Overlay - 파일 패널 */}
@@ -138,91 +174,62 @@ export function CadScene() {
                     onConfigChange={handleConfigChange}
                     onResetView={handleResetView}
                     onClear={handleClear}
-                    metadata={cadData}
-                    renderMetadata={(data: ParsedCADData) => (
-                        <>
-                            {/* 헤더: 이름 + 포맷 뱃지 */}
-                            <div className="mb-2 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-green-400" />
-                                    <span
-                                        className="max-w-[120px] truncate text-sm font-medium text-gray-200"
-                                        title={data.metadata.fileName}
-                                    >
-                                        {data.metadata.fileName}
+                    metadata={{
+                        data: cadData,
+                        render: (data: ParsedCADData) => (
+                            <>
+                                {/* 헤더: 이름 + 포맷 뱃지 */}
+                                <div className="mb-2 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="h-4 w-4 text-green-400" />
+                                        <span
+                                            className="max-w-[120px] truncate text-sm font-medium text-gray-200"
+                                            title={data.metadata.fileName}
+                                        >
+                                            {data.metadata.fileName}
+                                        </span>
+                                    </div>
+                                    <span className="rounded bg-green-900/50 px-1.5 py-0.5 text-[10px] text-green-400">
+                                        DXF
                                     </span>
                                 </div>
-                                <span className="rounded bg-green-900/50 px-1.5 py-0.5 text-[10px] text-green-400">
-                                    DXF
-                                </span>
-                            </div>
 
-                            {/* P0: 핵심 정보 */}
-                            <div className="mb-2 space-y-1 text-xs text-gray-400">
-                                <p>{formatFileSize(data.metadata.fileSize)}</p>
-                                <p>
-                                    {data.metadata.entityCount.toLocaleString()}{' '}
-                                    entities
+                                {/* P0: 핵심 정보 */}
+                                <div className="mb-2 space-y-1 text-xs text-gray-400">
+                                    <p>
+                                        {formatFileSize(data.metadata.fileSize)}
+                                    </p>
+                                    <p>
+                                        {data.metadata.entityCount.toLocaleString()}{' '}
+                                        entities
+                                    </p>
+                                </div>
+
+                                {/* P2: 성능 (작게) */}
+                                <p className="text-[10px] text-gray-500">
+                                    Parsed in {data.metadata.parseTime}ms
                                 </p>
-                            </div>
-
-                            {/* P2: 성능 (작게) */}
-                            <p className="text-[10px] text-gray-500">
-                                Parsed in {data.metadata.parseTime}ms
-                            </p>
-                        </>
-                    )}
-                    accentColor="green"
-                    helpText="DXF 파일을 업로드하면 3D 와이어프레임으로 표시됩니다."
+                            </>
+                        ),
+                    }}
+                    extrude={{
+                        showControls: !!hasHatches,
+                        enabled: config.enable3DExtrude ?? false,
+                        options: config.extrudeOptions!,
+                        onToggle: handleToggle3D,
+                        onOptionsChange: handleExtrudeOptionsChange,
+                    }}
+                    renderMode={{
+                        mode: config.renderMode ?? 'outline',
+                        onModeChange: handleRenderModeChange,
+                    }}
+                    ui={{
+                        accentColor: 'green',
+                        helpText:
+                            'DXF 파일을 업로드하면 3D 와이어프레임으로 표시됩니다.',
+                    }}
                 />
             </PanelErrorBoundary>
-
-            {/* HTML Overlay - 렌더링 모드 선택 (HATCH 엔티티가 있을 때만) */}
-            {cadData && cadData.hatches && cadData.hatches.length > 0 && (
-                <PanelErrorBoundary panelName="렌더 모드">
-                    <div className="absolute top-[320px] right-4 min-w-[180px]">
-                        <div className="rounded-lg bg-gray-800/90 p-3 shadow-lg backdrop-blur-sm">
-                            <div className="mb-2 flex items-center gap-2">
-                                <Layers className="h-4 w-4 text-green-400" />
-                                <span className="text-xs font-medium text-gray-400">
-                                    Render Mode
-                                </span>
-                            </div>
-                            <div className="space-y-1">
-                                {RENDER_MODE_OPTIONS.map((option) => (
-                                    <label
-                                        key={option.value}
-                                        className="flex cursor-pointer items-center gap-2"
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="renderMode"
-                                            value={option.value}
-                                            checked={
-                                                config.renderMode ===
-                                                option.value
-                                            }
-                                            onChange={() =>
-                                                handleConfigChange({
-                                                    renderMode:
-                                                        option.value as CadRenderMode,
-                                                })
-                                            }
-                                            className="h-3 w-3 border-gray-600 bg-gray-700 text-green-500"
-                                        />
-                                        <span className="text-sm text-gray-200">
-                                            {option.label}
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                            <p className="mt-2 text-[10px] text-gray-500">
-                                HATCH: {cadData.hatches.length}개
-                            </p>
-                        </div>
-                    </div>
-                </PanelErrorBoundary>
-            )}
 
             {/* HTML Overlay - 레이어 패널 */}
             {cadData && layers.size > 0 && (

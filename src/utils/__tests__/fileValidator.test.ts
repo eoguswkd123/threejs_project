@@ -16,6 +16,8 @@ import {
     validateExtension,
     validateDXFMagicBytes,
     shouldShowSizeWarning,
+    detectGltfFormat,
+    GLTF_ALLOWED_EXTENSIONS,
     type FileUploadConfig,
 } from '../fileValidator';
 
@@ -318,5 +320,116 @@ describe('shouldShowSizeWarning', () => {
     it('경고 크기가 undefined면 false 반환', () => {
         const file = createTestFile('test.dxf', 100 * 1024 * 1024);
         expect(shouldShowSizeWarning(file, undefined)).toBe(false);
+    });
+});
+
+// ============================================================================
+// GLTF_ALLOWED_EXTENSIONS 테스트
+// ============================================================================
+
+describe('GLTF_ALLOWED_EXTENSIONS', () => {
+    it('상수가 정의되어 있다', () => {
+        expect(GLTF_ALLOWED_EXTENSIONS).toBeDefined();
+    });
+
+    it('.glb 확장자를 포함한다', () => {
+        expect(GLTF_ALLOWED_EXTENSIONS).toContain('.glb');
+    });
+
+    it('.gltf 확장자를 포함한다', () => {
+        expect(GLTF_ALLOWED_EXTENSIONS).toContain('.gltf');
+    });
+
+    it('정확히 2개의 확장자만 포함한다', () => {
+        expect(GLTF_ALLOWED_EXTENSIONS).toHaveLength(2);
+    });
+
+    it('readonly 배열로 선언되어 있다 (타입 안전성)', () => {
+        // TypeScript 컴파일 타임 체크를 위한 테스트
+        const extensions: readonly string[] = GLTF_ALLOWED_EXTENSIONS;
+        expect(Array.isArray(extensions)).toBe(true);
+    });
+});
+
+// ============================================================================
+// detectGltfFormat 테스트
+// ============================================================================
+
+describe('detectGltfFormat', () => {
+    describe('.gltf 형식 감지', () => {
+        it('.gltf 확장자는 gltf를 반환한다', () => {
+            expect(detectGltfFormat('model.gltf')).toBe('gltf');
+        });
+
+        it('대문자 .GLTF 확장자도 gltf를 반환한다', () => {
+            expect(detectGltfFormat('model.GLTF')).toBe('gltf');
+        });
+
+        it('혼합 대소문자 .GlTf 확장자도 gltf를 반환한다', () => {
+            expect(detectGltfFormat('model.GlTf')).toBe('gltf');
+        });
+
+        it('경로가 포함된 .gltf 파일도 gltf를 반환한다', () => {
+            expect(detectGltfFormat('/path/to/scene.gltf')).toBe('gltf');
+        });
+
+        it('URL 형식의 .gltf 파일도 gltf를 반환한다', () => {
+            expect(
+                detectGltfFormat('https://example.com/models/robot.gltf')
+            ).toBe('gltf');
+        });
+    });
+
+    describe('.glb 형식 감지', () => {
+        it('.glb 확장자는 glb를 반환한다', () => {
+            expect(detectGltfFormat('model.glb')).toBe('glb');
+        });
+
+        it('대문자 .GLB 확장자도 glb를 반환한다', () => {
+            expect(detectGltfFormat('model.GLB')).toBe('glb');
+        });
+
+        it('경로가 포함된 .glb 파일도 glb를 반환한다', () => {
+            expect(detectGltfFormat('/assets/models/hologram.glb')).toBe('glb');
+        });
+    });
+
+    describe('기본값 동작 (glb)', () => {
+        it('확장자가 없으면 glb를 반환한다', () => {
+            expect(detectGltfFormat('model')).toBe('glb');
+        });
+
+        it('다른 확장자(.obj)면 glb를 반환한다', () => {
+            expect(detectGltfFormat('model.obj')).toBe('glb');
+        });
+
+        it('다른 확장자(.fbx)면 glb를 반환한다', () => {
+            expect(detectGltfFormat('model.fbx')).toBe('glb');
+        });
+
+        it('빈 문자열이면 glb를 반환한다', () => {
+            expect(detectGltfFormat('')).toBe('glb');
+        });
+
+        it('.gltf를 포함하지만 확장자가 아닌 경우 glb를 반환한다', () => {
+            expect(detectGltfFormat('gltf-model.glb')).toBe('glb');
+        });
+    });
+
+    describe('엣지 케이스', () => {
+        it('여러 점이 있는 파일명에서 마지막 확장자를 감지한다', () => {
+            expect(detectGltfFormat('model.v2.backup.gltf')).toBe('gltf');
+        });
+
+        it('.gltf로 끝나는 디렉토리명도 gltf로 판단한다', () => {
+            // 참고: 실제로는 파일명/URL에서만 사용해야 함
+            expect(detectGltfFormat('/path/models.gltf')).toBe('gltf');
+        });
+
+        it('쿼리 파라미터가 있어도 확장자 기반으로 판단한다', () => {
+            // 참고: 쿼리 파라미터 포함 시 .gltf?v=1 는 .gltf로 끝나지 않음
+            expect(detectGltfFormat('model.gltf?v=1')).toBe('glb');
+            expect(detectGltfFormat('model.glb?v=1')).toBe('glb');
+        });
     });
 });

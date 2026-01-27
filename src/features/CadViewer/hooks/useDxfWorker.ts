@@ -5,24 +5,20 @@
  * Phase 2.1.5: 재시도 로직 및 Fallback 메커니즘 추가
  * - 지수 백오프 재시도 (WORKER_ERROR, TIMEOUT)
  * - Main Thread 파서로 Fallback
+ *
+ * Phase 2.2.0: Worker Pool 사용
+ * - Worker 재사용으로 생성 오버헤드 제거
+ * - Pool 기반 병렬 처리 지원
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 import { MESSAGES } from '@/locales';
-import type { ParsedCADData, LayerInfo } from '@/types/cad';
+import type { ParsedCADData } from '@/types/cad';
 
-import {
-    WORKER_THRESHOLD_BYTES,
-    WORKER_TIMEOUT_MS,
-    WORKER_RETRY_CONFIG,
-} from '../constants';
+import { WORKER_THRESHOLD_BYTES, WORKER_RETRY_CONFIG } from '../constants';
+import { DxfWorkerPool } from '../services/workerPool';
 
-import type {
-    WorkerRequest,
-    WorkerResponse,
-    WorkerSuccessPayload,
-} from '../services';
 import type { UploadError } from '../types';
 
 /** 재시도 상태 */
@@ -87,7 +83,7 @@ function calculateBackoffDelay(attempt: number): number {
 
 /**
  * WebWorker를 사용한 DXF 파싱 훅
- * 대용량 파일 (> 1MB)에서 자동으로 Worker 사용
+ * Worker Pool 사용으로 생성 오버헤드 제거
  *
  * 재시도 전략:
  * - WORKER_ERROR, TIMEOUT: 지수 백오프로 최대 3회 재시도
@@ -100,21 +96,17 @@ export function useDxfWorker(): UseDxfWorkerReturn {
     const [error, setError] = useState<UploadError | null>(null);
     const [retryState, setRetryState] =
         useState<RetryState>(INITIAL_RETRY_STATE);
-    const workerRef = useRef<Worker | null>(null);
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const cancelledRef = useRef(false);
 
-    // Cleanup worker and timeout on unmount
+    // Worker Pool (Singleton) - 재사용으로 생성 오버헤드 제거
+    const pool = useMemo(() => DxfWorkerPool.getInstance(), []);
+
+    // Pool은 Singleton이므로 컴포넌트 언마운트 시 정리 불필요
+    // Pool 자체의 정리는 앱 종료 시에만 수행
     useEffect(() => {
         return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-                timeoutRef.current = null;
-            }
-            if (workerRef.current) {
-                workerRef.current.terminate();
-                workerRef.current = null;
-            }
+            // 컴포넌트 언마운트 시 진행 중인 작업 취소 플래그만 설정
+            cancelledRef.current = true;
         };
     }, []);
 
@@ -127,14 +119,6 @@ export function useDxfWorker(): UseDxfWorkerReturn {
 
     const cancel = useCallback(() => {
         cancelledRef.current = true;
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-        }
-        if (workerRef.current) {
-            workerRef.current.terminate();
-            workerRef.current = null;
-        }
         setIsLoading(false);
         setProgress(0);
         setProgressStage('');
@@ -142,135 +126,42 @@ export function useDxfWorker(): UseDxfWorkerReturn {
     }, []);
 
     /**
-     * 단일 Worker 파싱 시도
+     * Pool을 통한 단일 파싱 시도
      * @param text DXF 파일 텍스트
      * @param fileName 파일명
      * @param fileSize 파일 크기
      * @returns 파싱된 CAD 데이터
      */
-    const attemptWorkerParse = useCallback(
-        (
+    const attemptPoolParse = useCallback(
+        async (
             text: string,
             fileName: string,
             fileSize: number
         ): Promise<ParsedCADData> => {
-            return new Promise<ParsedCADData>((resolve, reject) => {
-                // Worker 생성
-                const worker = new Worker(
-                    new URL('../services/dxfParser.worker.ts', import.meta.url),
-                    { type: 'module' }
-                );
-                workerRef.current = worker;
-
-                // 타임아웃 설정
-                timeoutRef.current = setTimeout(() => {
-                    const timeoutError: UploadError = {
-                        code: 'TIMEOUT',
-                        message:
-                            '파일 처리 시간이 초과되었습니다. 파일이 너무 크거나 복잡할 수 있습니다.',
-                    };
-                    worker.terminate();
-                    workerRef.current = null;
-                    timeoutRef.current = null;
-                    reject(timeoutError);
-                }, WORKER_TIMEOUT_MS);
-
-                worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
-                    const { type, payload } = event.data;
-
-                    if (type === 'progress') {
-                        const progressPayload = payload as {
-                            stage: string;
-                            percent: number;
-                        };
-                        setProgress(progressPayload.percent);
-                        setProgressStage(progressPayload.stage);
-                    } else if (type === 'success') {
-                        // 성공 시 타임아웃 취소
-                        if (timeoutRef.current) {
-                            clearTimeout(timeoutRef.current);
-                            timeoutRef.current = null;
-                        }
-
-                        const successPayload = payload as WorkerSuccessPayload;
-
-                        // 배열을 다시 Map으로 변환
-                        const layersMap = new Map<string, LayerInfo>(
-                            successPayload.layers
-                        );
-
-                        const result: ParsedCADData = {
-                            lines: successPayload.lines,
-                            circles: successPayload.circles,
-                            arcs: successPayload.arcs,
-                            polylines: successPayload.polylines,
-                            hatches: successPayload.hatches,
-                            texts: successPayload.texts,
-                            mtexts: successPayload.mtexts,
-                            ellipses: successPayload.ellipses,
-                            splines: successPayload.splines,
-                            dimensions: successPayload.dimensions,
-                            bounds: successPayload.bounds,
-                            metadata: successPayload.metadata,
-                            layers: layersMap,
-                        };
-
-                        worker.terminate();
-                        workerRef.current = null;
-                        resolve(result);
-                    } else if (type === 'error') {
-                        // 에러 시 타임아웃 취소
-                        if (timeoutRef.current) {
-                            clearTimeout(timeoutRef.current);
-                            timeoutRef.current = null;
-                        }
-
-                        const errorPayload = payload as {
-                            code: UploadError['code'];
-                            message: string;
-                        };
-                        const parseError: UploadError = {
-                            code: errorPayload.code,
-                            message:
-                                errorPayload.code === 'EMPTY_FILE'
-                                    ? MESSAGES.cadViewer.errors.emptyFile
-                                    : MESSAGES.cadViewer.errors.parseError,
-                        };
-                        worker.terminate();
-                        workerRef.current = null;
-                        reject(parseError);
-                    }
-                };
-
-                worker.onerror = () => {
-                    // 워커 에러 시 타임아웃 취소
-                    if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current);
-                        timeoutRef.current = null;
-                    }
-
-                    const parseError: UploadError = {
-                        code: 'WORKER_ERROR',
-                        message: 'Worker 오류가 발생했습니다.',
-                    };
-                    worker.terminate();
-                    workerRef.current = null;
-                    reject(parseError);
-                };
-
-                // Worker에 파싱 요청
-                const request: WorkerRequest = {
-                    type: 'parse',
-                    payload: {
-                        text,
-                        fileName,
-                        fileSize,
+            try {
+                const result = await pool.execute({
+                    text,
+                    fileName,
+                    fileSize,
+                    onProgress: (stage, percent) => {
+                        setProgress(percent);
+                        setProgressStage(stage);
                     },
-                };
-                worker.postMessage(request);
-            });
+                });
+                return result;
+            } catch (err) {
+                const uploadError = err as UploadError;
+                // 에러 메시지 로컬라이즈
+                if (uploadError.code === 'EMPTY_FILE') {
+                    throw {
+                        code: 'EMPTY_FILE',
+                        message: MESSAGES.cadViewer.errors.emptyFile,
+                    } as UploadError;
+                }
+                throw uploadError;
+            }
         },
-        []
+        [pool]
     );
 
     const parse = useCallback(
@@ -339,7 +230,8 @@ export function useDxfWorker(): UseDxfWorkerReturn {
                 }
 
                 try {
-                    const result = await attemptWorkerParse(
+                    // Pool을 통한 파싱 (Worker 재사용)
+                    const result = await attemptPoolParse(
                         text,
                         file.name,
                         file.size
@@ -393,7 +285,7 @@ export function useDxfWorker(): UseDxfWorkerReturn {
             });
             throw finalError;
         },
-        [attemptWorkerParse]
+        [attemptPoolParse]
     );
 
     return {

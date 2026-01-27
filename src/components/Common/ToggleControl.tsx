@@ -25,9 +25,11 @@ interface ToggleControlProps {
     /** 액센트 컬러 */
     accentColor?: AccentColor;
     /** 접근성 라벨 */
-    ariaLabel?: string;
+    ariaLabel?: string | undefined;
     /** 하단 마진 클래스 */
     marginClass?: string;
+    /** 비활성화 여부 */
+    disabled?: boolean;
 }
 
 function ToggleControlComponent({
@@ -38,17 +40,21 @@ function ToggleControlComponent({
     accentColor = 'green',
     ariaLabel,
     marginClass = 'mb-2',
+    disabled = false,
 }: ToggleControlProps): JSX.Element {
     const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (disabled) return;
             onChange(e.target.checked);
         },
-        [onChange]
+        [onChange, disabled]
     );
 
     return (
         <label
-            className={`flex cursor-pointer items-center justify-between ${marginClass}`}
+            className={`flex items-center justify-between ${marginClass} ${
+                disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            }`}
         >
             <div className="flex items-center gap-2">
                 {icon}
@@ -58,8 +64,11 @@ function ToggleControlComponent({
                 type="checkbox"
                 checked={checked}
                 onChange={handleChange}
+                disabled={disabled}
                 aria-label={ariaLabel ?? label}
-                className={`h-4 w-4 rounded border-gray-600 bg-gray-700 ${ACCENT_CLASSES[accentColor].checkbox}`}
+                className={`h-4 w-4 rounded border-gray-600 bg-gray-700 ${ACCENT_CLASSES[accentColor].checkbox} ${
+                    disabled ? 'cursor-not-allowed' : ''
+                }`}
             />
         </label>
     );

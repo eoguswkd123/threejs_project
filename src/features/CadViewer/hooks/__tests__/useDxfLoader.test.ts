@@ -77,16 +77,20 @@ const createMockCadData = (
         min: { x: 0, y: 0, z: 0 },
         max: { x: 100, y: 100, z: 0 },
     },
-    layers: new Map([
-        [
-            'Layer1',
-            { name: 'Layer1', color: '#ff0000', visible: true, entityCount: 1 },
-        ],
-        [
-            'Layer2',
-            { name: 'Layer2', color: '#00ff00', visible: true, entityCount: 0 },
-        ],
-    ]),
+    layers: {
+        Layer1: {
+            name: 'Layer1',
+            color: '#ff0000',
+            visible: true,
+            entityCount: 1,
+        },
+        Layer2: {
+            name: 'Layer2',
+            color: '#00ff00',
+            visible: true,
+            entityCount: 0,
+        },
+    },
     metadata: {
         fileName: 'test.dxf',
         fileSize: 1024,
@@ -116,7 +120,6 @@ describe('useDxfLoader', () => {
 
         it('should initialize with empty layers Map', () => {
             const { result } = renderHook(() => useDxfLoader());
-            expect(result.current.layers).toBeInstanceOf(Map);
             expect(result.current.layers.size).toBe(0);
         });
 
@@ -530,26 +533,20 @@ describe('useDxfLoader', () => {
 
         it('handleToggleAllLayers(true) should show all layers', async () => {
             const mockData = createMockCadData({
-                layers: new Map([
-                    [
-                        'Layer1',
-                        {
-                            name: 'Layer1',
-                            color: '#ff0000',
-                            visible: false,
-                            entityCount: 1,
-                        },
-                    ],
-                    [
-                        'Layer2',
-                        {
-                            name: 'Layer2',
-                            color: '#00ff00',
-                            visible: false,
-                            entityCount: 0,
-                        },
-                    ],
-                ]),
+                layers: {
+                    Layer1: {
+                        name: 'Layer1',
+                        color: '#ff0000',
+                        visible: false,
+                        entityCount: 1,
+                    },
+                    Layer2: {
+                        name: 'Layer2',
+                        color: '#00ff00',
+                        visible: false,
+                        entityCount: 0,
+                    },
+                },
             });
             mockParse.mockResolvedValueOnce(mockData);
             const { result } = renderHook(() => useDxfLoader());
@@ -564,7 +561,7 @@ describe('useDxfLoader', () => {
                 result.current.handleToggleAllLayers(true);
             });
 
-            for (const [, layer] of result.current.layers) {
+            for (const layer of result.current.layers.values()) {
                 expect(layer.visible).toBe(true);
             }
         });
@@ -583,7 +580,7 @@ describe('useDxfLoader', () => {
                 result.current.handleToggleAllLayers(false);
             });
 
-            for (const [, layer] of result.current.layers) {
+            for (const layer of result.current.layers.values()) {
                 expect(layer.visible).toBe(false);
             }
         });
@@ -598,7 +595,7 @@ describe('useDxfLoader', () => {
                 );
             });
 
-            const layersBefore = new Map(result.current.layers);
+            const layer1Before = result.current.layers.get('Layer1');
 
             act(() => {
                 result.current.handleToggleLayer('NonExistentLayer');
@@ -606,7 +603,7 @@ describe('useDxfLoader', () => {
 
             // Layers should remain unchanged
             expect(result.current.layers.get('Layer1')?.visible).toBe(
-                layersBefore.get('Layer1')?.visible
+                layer1Before?.visible
             );
         });
     });

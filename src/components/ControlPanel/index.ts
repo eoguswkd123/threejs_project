@@ -13,8 +13,12 @@ export { RotateToggle } from './RotateToggle';
 export { SpeedSlider } from './SpeedSlider';
 export { ViewerActionButtons } from './ViewerActionButtons';
 export { ShadingSelect } from './ShadingSelect';
+export { RenderModeSelect } from './RenderModeSelect';
+export { Extrude3DToggle } from './Extrude3DToggle';
+export { DepthSlider } from './DepthSlider';
+export { BevelToggle } from './BevelToggle';
+export type { RenderMode } from './RenderModeSelect';
 export type {
-    ShadingMode,
     ResetIconType,
     ViewerActionButtonsProps,
-} from './types';
+} from './ViewerActionButtons';

@@ -7,6 +7,7 @@
 // Components
 export { WireframeMesh } from './WireframeMesh';
 export { HatchMesh } from './HatchMesh';
+export { Hatch3DMesh } from './Hatch3DMesh';
 export { TextMesh } from './TextMesh';
 export { CurveMesh } from './CurveMesh';
 export { DimensionMesh } from './DimensionMesh';

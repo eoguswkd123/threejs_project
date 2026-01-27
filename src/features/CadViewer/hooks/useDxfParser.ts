@@ -165,7 +165,7 @@ export function useDxfParser(): UseDxfParserReturn {
                     entityCount: totalEntityCount,
                     parseTime: Math.round(endTime - startTime),
                 },
-                layers,
+                layers: Object.fromEntries(layers),
             };
 
             setIsLoading(false);

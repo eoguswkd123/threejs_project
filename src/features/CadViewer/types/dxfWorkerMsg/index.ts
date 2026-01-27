@@ -50,7 +50,8 @@ export interface WorkerSuccessPayload {
     splines: ParsedSpline[];
     dimensions: ParsedDimension[];
     bounds: BoundingBox;
-    layers: [string, LayerInfo][];
+    /** 레이어 정보 (JSON 직렬화 호환) */
+    layers: Record<string, LayerInfo>;
     metadata: CADMetadata;
 }
 

@@ -1,4 +1,4 @@
-import { Coffee, Home, FileBox, Box } from 'lucide-react';
+import { Coffee, Home, FileBox, Box, Scan } from 'lucide-react';
 
 import type { MenuItem } from '@/types/menu';
 
@@ -28,5 +28,11 @@ export const MENU_ITEMS: MenuItem[] = [
         icon: Box,
         label: 'Worker Viewer',
         description: 'glTF/glb 3D 모델 뷰어',
+    },
+    {
+        path: ROUTES.HOLOGRAM_VIEWER,
+        icon: Scan,
+        label: 'Hologram Viewer',
+        description: 'Iron Man 스타일 홀로그램 뷰어',
     },
 ];

@@ -33,6 +33,7 @@ vi.mock('@/constants/routes', () => ({
         TEAPOT_DEMO: '/teapot-demo',
         CAD_VIEWER: '/cad-viewer',
         WORKER_VIEWER: '/worker-viewer',
+        HOLOGRAM_VIEWER: '/hologram',
     },
 }));
 
@@ -133,6 +134,15 @@ describe('Router 설정', () => {
             expect(workerRoute).toBeDefined();
         });
 
+        it('HologramViewer 라우트가 정의되어 있다', () => {
+            const childRoutes = getChildRoutes();
+            const hologramRoute = childRoutes.find(
+                (r: { path?: string }) => r.path === ROUTES.HOLOGRAM_VIEWER
+            );
+
+            expect(hologramRoute).toBeDefined();
+        });
+
         it('모든 필수 라우트가 등록되어 있다', () => {
             const childRoutes = getChildRoutes();
             const paths = childRoutes.map(
@@ -144,6 +154,7 @@ describe('Router 설정', () => {
             expect(paths).toContain(ROUTES.TEAPOT_DEMO);
             expect(paths).toContain(ROUTES.CAD_VIEWER);
             expect(paths).toContain(ROUTES.WORKER_VIEWER);
+            expect(paths).toContain(ROUTES.HOLOGRAM_VIEWER);
         });
 
         it('각 자식 라우트에 element가 정의되어 있다', () => {
@@ -172,6 +183,10 @@ describe('Router 설정', () => {
 
         it('ROUTES.WORKER_VIEWER는 "/worker-viewer"이다', () => {
             expect(ROUTES.WORKER_VIEWER).toBe('/worker-viewer');
+        });
+
+        it('ROUTES.HOLOGRAM_VIEWER는 "/hologram"이다', () => {
+            expect(ROUTES.HOLOGRAM_VIEWER).toBe('/hologram');
         });
     });
 });

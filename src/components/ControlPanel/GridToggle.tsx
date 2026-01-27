@@ -27,13 +27,19 @@ interface GridToggleProps {
 }
 
 function GridToggleComponent({
+    checked,
+    onChange,
     label = DEFAULT_LABELS.grid,
-    ...props
+    accentColor = 'green',
+    ariaLabel,
 }: GridToggleProps): JSX.Element {
     return (
         <ToggleControl
-            {...props}
+            checked={checked}
+            onChange={onChange}
             label={label}
+            accentColor={accentColor}
+            ariaLabel={ariaLabel}
             icon={<Grid3X3 className="h-4 w-4 text-gray-400" />}
             marginClass="mb-2"
         />

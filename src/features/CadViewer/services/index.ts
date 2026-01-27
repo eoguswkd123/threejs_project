@@ -12,7 +12,11 @@ export type {
     WorkerSuccessPayload,
 } from '../types';
 
-export { parseAllEntities, getTotalEntityCount } from './entityParsers';
-export type { ParsedEntities } from './entityParsers';
+export { parseAllEntities, getTotalEntityCount } from './parsers';
+export type { ParsedEntities } from './parsers';
 
 export { aciToHex, isAngleInArc, getArcBounds } from './entityMath';
+
+// Worker Pool
+export { DxfWorkerPool } from './workerPool';
+export type { PoolConfig, ParseTask, PoolStatus } from './workerPool';
